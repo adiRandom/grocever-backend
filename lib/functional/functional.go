@@ -1,30 +1,27 @@
 package functional
 
-type MappedSlice[T, R any] []T
+import (
+	types "dealScraper/lib/helpers"
+)
+
 type ReduceCb[T, R any] func(acc R, current T) R
 
-type Error string
-
-func (e Error) Error() string {
-	return string(e)
-}
-
-func (s *MappedSlice[T, R]) Reduce(fn ReduceCb[T, R], initialValue R) R {
+func Reduce[T any, R any](s []T, fn ReduceCb[T, R], initialValue R) R {
 	partial := initialValue
-	for _, el := range *s {
+	for _, el := range s {
 		partial = fn(partial, el)
 	}
 
 	return partial
 }
 
-func (s *MappedSlice[T, T]) Accumulate(fn ReduceCb[T, T]) (T, error) {
+func Accumulate[T any](s []T, fn ReduceCb[T, T]) (T, error) {
 	var partial T
-	if len(*s) == 0 {
-		return partial, Error("Empty slice")
+	if len(s) == 0 {
+		return partial, types.Error{"Empty slice", ""}
 	}
-	partial = (*s)[0]
-	for i, el := range *s {
+	partial = (s)[0]
+	for i, el := range s {
 		if i == 0 {
 			continue
 		}

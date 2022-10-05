@@ -13,7 +13,10 @@ const titleElementQuerySelector = utils.CssSelector(".col-md-6 .product-title h1
 const priceElementQuerySelector = utils.CssSelector(".col-md-6 .productDescription .wrapper .price-wrapper-prod-details .big-price #big-price")
 const priceAttrib = "data-price"
 
-func ScrapeProductPage(url string, resCh chan models.CrawlerResult) {
+type AuchanCrawler struct {
+}
+
+func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan models.CrawlerResult) {
 	collyClient := colly.NewCollector()
 
 	collyClient.OnHTML(contentElementQuerySelector.

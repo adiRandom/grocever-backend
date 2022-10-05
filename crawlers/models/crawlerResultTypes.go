@@ -9,6 +9,7 @@ type CrawlerResult struct {
 	// TODO: Add
 	// UnitPrice float64
 	// Unit string
+	// ImageUrl string
 }
 
 func (res CrawlerResult) String() string {
