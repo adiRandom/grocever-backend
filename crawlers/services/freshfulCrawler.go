@@ -14,8 +14,8 @@ type FreshfulCrawler struct {
 }
 
 type feshfulDto struct {
-	name  string  `json:"name"`
-	price float64 `json:"price"`
+	Name  string  `json:"name"`
+	Price float64 `json:"price"`
 }
 
 const freshfulApiUrl = "https://www.freshful.ro/api/v2/shop/product-by-slug/%s"
@@ -49,18 +49,14 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan models.Crawler
 		return
 	}
 
-	testRes, _ := network.GetSync[map[string]any](*correctUrl)
-	println(testRes)
-
-	// TODO: Fix this
 	apiRes, err := network.GetSync[feshfulDto](*correctUrl)
 	if err != nil {
 		return
 	}
 
 	res := models.CrawlerResult{}
-	res.ProductName = apiRes.name
-	res.ProductPrice = apiRes.price
+	res.ProductName = apiRes.Name
+	res.ProductPrice = apiRes.Price
 	res.StoreId = constants.FreshfulStoreId
 
 	resCh <- res
