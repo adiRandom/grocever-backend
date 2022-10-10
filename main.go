@@ -8,7 +8,7 @@ import (
 
 func main() {
 	resChan := make(chan models.CrawlerResult)
-	go crawlers.MegaImageCrawler{}.ScrapeProductPage("https://www.mega-image.ro/ro-ro/Lactate-si-oua/Lapte/Lapte-de-consum-semidegresat/Lapte-de-consum-1-5-grasime-1L/p/36688", resChan)
+	go crawlers.CoraCrawler{}.ScrapeProductPage("https://www.cora.ro/zuzu-lapte-de-consum-3-5-grasime-1-l-2077870.html", resChan)
 	res := <-resChan
 	fmt.Println(res.String())
 }

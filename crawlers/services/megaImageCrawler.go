@@ -50,7 +50,7 @@ func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan models.
 	res := models.CrawlerResult{}
 	res.ProductName = apiRes.Data.ProductDetails.Name
 	res.ProductPrice = apiRes.Data.ProductDetails.Price.Value
-	res.StoreId = constants.FreshfulStoreId
+	res.StoreId = constants.MegaImageStoreId
 
 	resCh <- res
 }
