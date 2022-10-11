@@ -30,3 +30,23 @@ func Accumulate[T any](s []T, fn ReduceCb[T, T]) (T, error) {
 
 	return partial, nil
 }
+
+func Map[T any, R any](s []T, fn func(T) R) []R {
+	var mapped []R
+	for _, el := range s {
+		mapped = append(mapped, fn(el))
+	}
+
+	return mapped
+}
+
+func Filter[T any](s []T, fn func(T) bool) []T {
+	var filtered []T
+	for _, el := range s {
+		if fn(el) {
+			filtered = append(filtered, el)
+		}
+	}
+
+	return filtered
+}
