@@ -1,18 +1,18 @@
 package main
 
 import (
-	"dealScraper/search/services"
+	"dealScraper/data/database"
+	"dealScraper/data/database/entities"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	godotenv.Load()
-	res, err := services.GoogleSearchService{}.SearchCrawlSources("lapte zuzu")
+	err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
-
-	for _, item := range res {
-		println(item.Url + " " + string(item.StoreId))
+	err = database.InitDatabase(&entities.ProductWithBestOfferEntity{})
+	if err != nil {
+		panic(err)
 	}
 }
