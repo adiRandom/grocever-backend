@@ -1,9 +1,9 @@
 package crawlers
 
 import (
-	"dealScraper/crawlers/data/constants"
 	"dealScraper/crawlers/models"
 	"dealScraper/crawlers/utils"
+	"dealScraper/lib/data/constants"
 	"github.com/gocolly/colly"
 	"strconv"
 )

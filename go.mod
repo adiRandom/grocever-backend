@@ -4,7 +4,10 @@ go 1.19
 
 require (
 	github.com/gocolly/colly v1.2.0
-	golang.org/x/net v0.0.0-20220923203811-8be639271d50
+	github.com/joho/godotenv v1.4.0
+	github.com/rabbitmq/amqp091-go v1.5.0
+	gorm.io/driver/mysql v1.4.1
+	gorm.io/gorm v1.24.0
 )
 
 require (
@@ -20,17 +23,11 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
-	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
+	golang.org/x/net v0.0.0-20220923203811-8be639271d50 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/yaml.v2 v2.2.5 // indirect
-	gorm.io/driver/mysql v1.4.1 // indirect
-	gorm.io/driver/sqlite v1.4.2 // indirect
-	gorm.io/gorm v1.24.0 // indirect
 )

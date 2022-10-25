@@ -1,9 +1,9 @@
 package crawlers
 
 import (
-	"dealScraper/crawlers/data/constants"
 	types "dealScraper/crawlers/data/dto"
 	"dealScraper/crawlers/models"
+	"dealScraper/lib/data/constants"
 	"dealScraper/lib/helpers"
 	"dealScraper/lib/network"
 	"fmt"
