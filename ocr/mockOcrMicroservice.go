@@ -2,9 +2,9 @@ package ocr
 
 import (
 	"context"
-	amqpLib "dealScraper/lib/amqp"
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/helpers"
+	"dealScraper/lib/network"
 	"encoding/json"
 	"log"
 	"time"
@@ -23,7 +23,7 @@ func SendOcrProductToQueue() {
 	defer helpers.SafeClose(ch)
 
 	q, err := ch.QueueDeclare(
-		amqpLib.SearchQueue,
+		network.SearchQueue,
 		false,
 		false,
 		false,

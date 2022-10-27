@@ -1,12 +1,15 @@
 package network
 
 import (
-	amqpLib "dealScraper/lib/amqp"
 	"dealScraper/lib/helpers"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func GetRabbitMQConnection() (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
+const SearchQueue = "search"
+const CrawlQueue = "crawl"
+const PriorityCrawlQueue = "priorityCrawl"
+
+func GetRabbitMQConnection(queueName string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, nil, nil, &helpers.Error{Msg: "Failed to connect to RabbitMQ", Reason: err.Error()}
@@ -18,7 +21,7 @@ func GetRabbitMQConnection() (*amqp.Connection, *amqp.Channel, *amqp.Queue, *hel
 	}
 
 	q, err := ch.QueueDeclare(
-		amqpLib.SearchQueue,
+		queueName,
 		false,
 		false,
 		false,

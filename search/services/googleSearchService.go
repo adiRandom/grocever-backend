@@ -1,10 +1,10 @@
 package services
 
 import (
+	"dealScraper/lib/data/dto"
 	"dealScraper/lib/functional"
 	httpClient "dealScraper/lib/network"
 	dtoTypes "dealScraper/search/data/dto"
-	types "dealScraper/search/data/models"
 	urlUtils "dealScraper/search/utils"
 	"fmt"
 	"net/url"
@@ -35,32 +35,32 @@ func queryGoogle(searchTerm string) (*dtoTypes.GoogleSearchDto, error) {
 
 }
 
-func (searchService GoogleSearchService) SearchCrawlSources(query string) ([]types.CrawlSource, error) {
+func (searchService GoogleSearchService) SearchCrawlSources(query string) ([]dto.CrawlSourceDto, error) {
 	searchResult, err := queryGoogle(query)
 
 	if err != nil {
 		return nil, err
 	}
 
-	crawlSources := functional.Map[dtoTypes.GoogleSearchItemDto, types.CrawlSource](
+	crawlSources := functional.Map[dtoTypes.GoogleSearchItemDto, dto.CrawlSourceDto](
 		searchResult.Items,
-		func(item dtoTypes.GoogleSearchItemDto) types.CrawlSource {
+		func(item dtoTypes.GoogleSearchItemDto) dto.CrawlSourceDto {
 			parsedUrl, err := url.Parse(item.Link)
 			if err != nil {
-				return types.CrawlSource{
+				return dto.CrawlSourceDto{
 					Url:     "",
 					StoreId: 0,
 				}
 			}
-			return types.CrawlSource{
+			return dto.CrawlSourceDto{
 				Url:     item.Link,
 				StoreId: urlUtils.GetStoreIdForDomain(*parsedUrl),
 			}
 		})
 
-	filteredCrawlSources := functional.Filter[types.CrawlSource](
+	filteredCrawlSources := functional.Filter[dto.CrawlSourceDto](
 		crawlSources,
-		func(source types.CrawlSource) bool {
+		func(source dto.CrawlSourceDto) bool {
 			return source.StoreId != 0
 		})
 
