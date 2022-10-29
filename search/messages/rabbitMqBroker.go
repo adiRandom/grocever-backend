@@ -62,11 +62,11 @@ func GetRabbitMqBroker() *messages.RabbitMqJsonBroker[dto.OcrProductDto] {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = &messages.RabbitMqJsonBroker[dto.OcrProductDto]{}
-	rabbitMqBroker.InboundQueueName = network.SearchQueue
-	rabbitMqBroker.OutboundQueueName = network.PriorityCrawlQueue
-	rabbitMqBroker.ProcessTimeout = &searchRequestTimeout
-	rabbitMqBroker.ProcessJsonMessage = processJsonMessage
-
+	rabbitMqBroker = &messages.RabbitMqJsonBroker[dto.OcrProductDto]{
+		ProcessJsonMessage: processJsonMessage,
+		InboundQueueName:   network.SearchQueue,
+		OutboundQueueName:  network.PriorityCrawlQueue,
+		ProcessTimeout:     &searchRequestTimeout,
+	}
 	return rabbitMqBroker
 }

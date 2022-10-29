@@ -25,13 +25,14 @@ func (broker RabbitMqJsonBroker[T]) ListenAndHandleRequests(
 	ctx context.Context,
 ) {
 	conn, ch, q, connErr := network.GetRabbitMQConnection(broker.InboundQueueName)
-	var outConn, outCh, outQ, outConnErr = network.GetRabbitMQConnection(broker.OutboundQueueName)
 
 	if connErr != nil {
 		helpers.PanicOnError(connErr, connErr.Reason)
 	}
 	defer helpers.SafeClose(conn)
 	defer helpers.SafeClose(ch)
+
+	var outConn, outCh, outQ, outConnErr = network.GetRabbitMQConnection(broker.OutboundQueueName)
 
 	if outConnErr != nil {
 		helpers.PanicOnError(outConnErr, outConnErr.Reason)
