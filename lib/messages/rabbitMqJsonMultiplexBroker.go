@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// AmpqJsonMultiplexBrokerProcessArgs /**
+// AmqpJsonMultiplexBrokerProcessArgs /**
 //   - @param {amqp.Delivery} Msg The message to process
 //   - @param {string} From The name of the queue the message was received from
 //   - @param {amqp.Channel} OutCh The channel to use for publishing
@@ -18,7 +18,7 @@ import (
 //   - @param {context.Context} Ctx The context to use
 //
 // */
-type AmpqJsonMultiplexBrokerProcessArgs[T any] struct {
+type AmqpJsonMultiplexBrokerProcessArgs[T any] struct {
 	Msg   T
 	From  string
 	OutCh *amqp.Channel
@@ -26,12 +26,12 @@ type AmpqJsonMultiplexBrokerProcessArgs[T any] struct {
 	Ctx   context.Context
 }
 
-type AmpqJsonMultiplexBrokerInboundQueueMetadata struct {
+type AmqpJsonMultiplexBrokerInboundQueueMetadata struct {
 	QueueName      string
 	ProcessTimeout *time.Duration
 }
 
-type AmpqJsonMultiplexBrokerSelectQueueMetadata[T any] struct {
+type AmqpJsonMultiplexBrokerSelectQueueMetadata[T any] struct {
 	QueueName           string
 	LastMessage         T
 	ProcessedCount      int
@@ -39,27 +39,59 @@ type AmpqJsonMultiplexBrokerSelectQueueMetadata[T any] struct {
 	MessageCount        int
 }
 
-type AmpqJsonMultiplexBrokerSelectQueueMetadataMap[T any] map[string]AmpqJsonMultiplexBrokerSelectQueueMetadata[T]
+type AmqpJsonMultiplexBrokerSelectQueueMetadataMap[T any] map[string]AmqpJsonMultiplexBrokerSelectQueueMetadata[T]
 
-type AmpqJsonMultiplexBrokerInboundQueueMap = map[string]AmpqJsonMultiplexBrokerInboundQueueMetadata
+type AmqpJsonMultiplexBrokerInboundQueueMap = map[string]AmqpJsonMultiplexBrokerInboundQueueMetadata
 
 // RabbitMqJsonMultiplexBroker /**
-//   - @param {AmpqJsonMultiplexBrokerProcessArgs[T] => void} ProcessJsonMessage The function to process the message
-//   - @param {AmpqJsonMultiplexBrokerInboundQueueMetadata[]} InboundQueues The inbound queues to listen to
+//   - @param {AmqpJsonMultiplexBrokerProcessArgs[T] => void} ProcessJsonMessage The function to process the message
+//   - @param {AmqpJsonMultiplexBrokerInboundQueueMetadata[]} InboundQueues The inbound queues to listen to
 //   - @param {string} OutboundQueueName The outbound queue to publish to
-//   - @param {AmpqJsonMultiplexBrokerSelectQueueMetadata[T] => *string}
+//   - @param {AmqpJsonMultiplexBrokerSelectQueueMetadata[T] => *string}
 //     PickInboundQueue The function to pick the inbound queue to process from next.
 //     For the first call, it will be called with an empty string and an empty map to pick the first queue.
 //     Only the current queue has the LastMessage field set.
+//   - @param PickQueueTimeout Besides picking the next queue after processing a message, it will also pick the next queue
+//     after this timeout. This is to prevent a deadlock when the current queue is empty and the other queues are full.
 //     @returns null if you still want to pick from the current queue, or the name of the next queue otherwise
 type RabbitMqJsonMultiplexBroker[T any] struct {
-	ProcessJsonMessage func(args AmpqJsonMultiplexBrokerProcessArgs[T])
-	InboundQueues      AmpqJsonMultiplexBrokerInboundQueueMap
+	ProcessJsonMessage func(args AmqpJsonMultiplexBrokerProcessArgs[T])
+	InboundQueues      AmqpJsonMultiplexBrokerInboundQueueMap
 	OutboundQueueName  string
 	PickInboundQueue   func(
 		currentQueueName string,
-		queueMetadata AmpqJsonMultiplexBrokerSelectQueueMetadataMap[T],
+		queueMetadata AmqpJsonMultiplexBrokerSelectQueueMetadataMap[T],
 	) *string
+	PickQueueTimeout     *time.Duration
+	processedCount       map[string]int
+	deltaProcessedCount  map[string]int
+	currentQueueName     *string
+	currentConnection    *rabbitMqConnection
+	inboundConnectionMap map[string]*rabbitMqConnection
+}
+
+func NewRabbitMqJsonMultiplexBroker[T any](
+	processJsonMessage func(args AmqpJsonMultiplexBrokerProcessArgs[T]),
+	inboundQueues AmqpJsonMultiplexBrokerInboundQueueMap,
+	outboundQueueName string,
+	pickInboundQueue func(
+		currentQueueName string,
+		queueMetadata AmqpJsonMultiplexBrokerSelectQueueMetadataMap[T],
+	) *string,
+	PickQueueTimeout *time.Duration,
+) *RabbitMqJsonMultiplexBroker[T] {
+	return &RabbitMqJsonMultiplexBroker[T]{
+		ProcessJsonMessage:   processJsonMessage,
+		InboundQueues:        inboundQueues,
+		OutboundQueueName:    outboundQueueName,
+		PickInboundQueue:     pickInboundQueue,
+		PickQueueTimeout:     PickQueueTimeout,
+		processedCount:       make(map[string]int),
+		deltaProcessedCount:  make(map[string]int),
+		currentQueueName:     nil,
+		currentConnection:    nil,
+		inboundConnectionMap: make(map[string]*rabbitMqConnection),
+	}
 }
 
 type rabbitMqConnection struct {
@@ -69,17 +101,19 @@ type rabbitMqConnection struct {
 	connErr *helpers.Error
 }
 
+type connectionMapType = map[string]*rabbitMqConnection
+
 // openMultipleRabbitMQConnections /**
-//   - @param {map[string]AmpqJsonMultiplexBrokerInboundQueueMetadata} queues The queues to open connections for.
+//   - @param {map[string]AmqpJsonMultiplexBrokerInboundQueueMetadata} queues The queues to open connections for.
 //     It's a map between their names and data about them
 //   - @returns {map[string]rabbitMqConnection, func()} The connections
 //     and a cleanup function to close the connections
 //
 // */
 func openMultipleRabbitMqConnections(
-	queues map[string]AmpqJsonMultiplexBrokerInboundQueueMetadata,
-) (map[string]rabbitMqConnection, func()) {
-	connections := make(map[string]rabbitMqConnection)
+	queues map[string]AmqpJsonMultiplexBrokerInboundQueueMetadata,
+) (connectionMapType, func()) {
+	connections := make(connectionMapType)
 	cleanup := func() {
 		for _, connection := range connections {
 			helpers.SafeClose(connection.conn)
@@ -95,7 +129,7 @@ func openMultipleRabbitMqConnections(
 			helpers.PanicOnError(connErr, connErr.Reason)
 		}
 
-		connections[queueData.QueueName] = rabbitMqConnection{
+		connections[queueData.QueueName] = &rabbitMqConnection{
 			conn:    conn,
 			ch:      ch,
 			q:       q,
@@ -106,12 +140,11 @@ func openMultipleRabbitMqConnections(
 	return connections, cleanup
 }
 
-type connectionMapType = map[string]rabbitMqConnection
-
-func (broker RabbitMqJsonMultiplexBroker[T]) ListenAndHandleRequests(
+func (broker *RabbitMqJsonMultiplexBroker[T]) ListenAndHandleRequests(
 	ctx context.Context,
 ) {
 	inboundConnections, cleanupInboundConnections := openMultipleRabbitMqConnections(broker.InboundQueues)
+	broker.inboundConnectionMap = inboundConnections
 	defer cleanupInboundConnections()
 
 	var outConn, outCh, outQ, outConnErr = network.GetRabbitMQConnection(broker.OutboundQueueName)
@@ -124,7 +157,7 @@ func (broker RabbitMqJsonMultiplexBroker[T]) ListenAndHandleRequests(
 
 	var forever chan struct{}
 
-	go broker.processMessages(inboundConnections, broker.InboundQueues, outCh, outQ)
+	go broker.listenForMessages(outCh, outQ)
 
 	select {
 	case <-ctx.Done():
@@ -145,9 +178,9 @@ func (broker RabbitMqJsonMultiplexBroker[T]) ListenAndHandleRequests(
 //   - @param {amqp.Channel} outCh The channel to use for publishing
 //   - @param {amqp.Queue} outQ The queue to use for publishing
 //   - @returns {T} The parsed message
-// Parse the message from the AMPQ body and process it using the provided function on the broker
+// Parse the message from the Amqp body and process it using the provided function on the broker
 
-func (broker RabbitMqJsonMultiplexBroker[T]) parseMessageAndProcess(
+func (broker *RabbitMqJsonMultiplexBroker[T]) parseMessageAndProcess(
 	msg amqp.Delivery,
 	queueName string,
 	timeout *time.Duration,
@@ -173,7 +206,7 @@ func (broker RabbitMqJsonMultiplexBroker[T]) parseMessageAndProcess(
 	}
 
 	broker.ProcessJsonMessage(
-		AmpqJsonMultiplexBrokerProcessArgs[T]{
+		AmqpJsonMultiplexBrokerProcessArgs[T]{
 			msgBody,
 			queueName,
 			outCh,
@@ -190,10 +223,10 @@ func createSelectQueueMetadataMap[T any](
 	currentQueueMessage T,
 	processedCountMap map[string]int,
 	deltaProcessedMap map[string]int,
-) AmpqJsonMultiplexBrokerSelectQueueMetadataMap[T] {
-	metadataMap := make(AmpqJsonMultiplexBrokerSelectQueueMetadataMap[T])
+) AmqpJsonMultiplexBrokerSelectQueueMetadataMap[T] {
+	metadataMap := make(AmqpJsonMultiplexBrokerSelectQueueMetadataMap[T])
 	for queueName, connection := range connectionMap {
-		metadata := AmpqJsonMultiplexBrokerSelectQueueMetadata[T]{
+		metadata := AmqpJsonMultiplexBrokerSelectQueueMetadata[T]{
 			ProcessedCount:      processedCountMap[queueName],
 			DeltaProcessedCount: deltaProcessedMap[queueName],
 			QueueName:           queueName,
@@ -210,23 +243,60 @@ func createSelectQueueMetadataMap[T any](
 	return metadataMap
 }
 
-func (broker RabbitMqJsonMultiplexBroker[T]) processMessages(
-	inboundConnectionMap connectionMapType,
-	inboundQueueData map[string]AmpqJsonMultiplexBrokerInboundQueueMetadata,
+func (broker *RabbitMqJsonMultiplexBroker[T]) onMessageReceived(
+	msg amqp.Delivery,
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
 ) {
-	currentQueueName := broker.PickInboundQueue("", map[string]AmpqJsonMultiplexBrokerSelectQueueMetadata[T]{})
+	msgBody := broker.parseMessageAndProcess(
+		msg,
+		*broker.currentQueueName,
+		broker.InboundQueues[*broker.currentQueueName].ProcessTimeout,
+		outCh,
+		outQ,
+	)
+
+	// Get the next queue
+	broker.processedCount[*broker.currentQueueName]++
+	broker.deltaProcessedCount[*broker.currentQueueName]++
+
+	nextQueueName := broker.PickInboundQueue(
+		*broker.currentQueueName,
+		createSelectQueueMetadataMap[T](
+			broker.inboundConnectionMap,
+			*broker.currentQueueName,
+			msgBody,
+			broker.processedCount,
+			broker.deltaProcessedCount,
+		),
+	)
+
+	if nextQueueName != nil {
+		broker.currentQueueName = nextQueueName
+		broker.currentConnection = broker.inboundConnectionMap[*broker.currentQueueName]
+		broker.deltaProcessedCount[*broker.currentQueueName] = 0
+	}
+}
+
+func (broker *RabbitMqJsonMultiplexBroker[T]) listenForMessages(
+	outCh *amqp.Channel,
+	outQ *amqp.Queue,
+) {
+	currentQueueName := broker.PickInboundQueue("", map[string]AmqpJsonMultiplexBrokerSelectQueueMetadata[T]{})
 
 	if currentQueueName == nil {
 		panic("PickInboundQueue returned nil for the first call")
 	}
 
-	processingCount := make(map[string]int)
-	deltaProcessingCount := make(map[string]int)
-	currentConnexion := inboundConnectionMap[*currentQueueName]
+	broker.currentConnection = broker.inboundConnectionMap[*currentQueueName]
+	//var recheckTicker *time.Ticker = nil
+	//
+	//if broker.PickQueueTimeout != nil {
+	//	recheckTicker = time.NewTicker(*broker.PickQueueTimeout)
+	//}
+
 	for {
-		messages, err := currentConnexion.ch.Consume(
+		messages, err := broker.currentConnection.ch.Consume(
 			*currentQueueName,
 			"",
 			true,
@@ -240,36 +310,7 @@ func (broker RabbitMqJsonMultiplexBroker[T]) processMessages(
 			helpers.PanicOnError(err, "Failed to register a consumer")
 		}
 
-		for msg := range messages {
-			msgBody := broker.parseMessageAndProcess(
-				msg,
-				*currentQueueName,
-				inboundQueueData[*currentQueueName].ProcessTimeout,
-				outCh,
-				outQ,
-			)
-
-			processingCount[*currentQueueName]++
-			deltaProcessingCount[*currentQueueName]++
-
-			nextQueueName := broker.PickInboundQueue(
-				*currentQueueName,
-				createSelectQueueMetadataMap[T](
-					inboundConnectionMap,
-					*currentQueueName,
-					msgBody,
-					processingCount,
-					deltaProcessingCount,
-				),
-			)
-
-			if nextQueueName != nil {
-				currentQueueName = nextQueueName
-				currentConnexion = inboundConnectionMap[*currentQueueName]
-				deltaProcessingCount[*currentQueueName] = 0
-				// Break from the inner for to start processing the new current queue
-				break
-			}
-		}
+		msg := <-messages
+		broker.onMessageReceived(msg, outCh, outQ)
 	}
 }

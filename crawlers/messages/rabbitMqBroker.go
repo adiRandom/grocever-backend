@@ -9,7 +9,7 @@ import (
 
 var rabbitMqBroker *messages.RabbitMqJsonMultiplexBroker[dto.SearchProductDto]
 var messageProcessingTimeout = 1 * time.Minute
-var inboundQueues = map[string]messages.AmpqJsonMultiplexBrokerInboundQueueMetadata{
+var inboundQueues = map[string]messages.AmqpJsonMultiplexBrokerInboundQueueMetadata{
 	network.PriorityCrawlQueue: {
 		QueueName:      network.PriorityCrawlQueue,
 		ProcessTimeout: &messageProcessingTimeout,
@@ -22,7 +22,7 @@ var inboundQueues = map[string]messages.AmpqJsonMultiplexBrokerInboundQueueMetad
 
 const queueSwitchInterval = 10
 
-func PickInboundQueue(currentQueueName string, queueMetadata messages.AmpqJsonMultiplexBrokerSelectQueueMetadataMap[dto.SearchProductDto]) string {
+func PickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMultiplexBrokerSelectQueueMetadataMap[dto.SearchProductDto]) string {
 	if currentQueueName == "" {
 		return network.CrawlQueue
 	}

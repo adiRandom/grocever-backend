@@ -53,7 +53,7 @@ func (broker RabbitMqJsonBroker[T]) ListenAndHandleRequests(
 
 	var forever chan struct{}
 
-	go broker.processMessages(msgs, outCh, outQ)
+	go broker.listenForMessages(msgs, outCh, outQ)
 
 	select {
 	case <-ctx.Done():
@@ -67,7 +67,7 @@ func (broker RabbitMqJsonBroker[T]) ListenAndHandleRequests(
 	}
 }
 
-func (broker RabbitMqJsonBroker[T]) processMessages(
+func (broker RabbitMqJsonBroker[T]) listenForMessages(
 	msgs <-chan amqp.Delivery,
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
