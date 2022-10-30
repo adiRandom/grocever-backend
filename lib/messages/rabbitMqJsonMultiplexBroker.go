@@ -2,6 +2,7 @@ package messages
 
 import (
 	"context"
+	"dealScraper/lib/functional"
 	"dealScraper/lib/helpers"
 	"dealScraper/lib/network"
 	"encoding/json"
@@ -97,10 +98,9 @@ func NewRabbitMqJsonMultiplexBroker[T any](
 }
 
 type rabbitMqConnection struct {
-	conn    *amqp.Connection
-	ch      *amqp.Channel
-	q       *amqp.Queue
-	connErr *helpers.Error
+	conn *amqp.Connection
+	ch   *amqp.Channel
+	q    *amqp.Queue
 }
 
 type connectionMapType = map[string]*rabbitMqConnection
@@ -113,29 +113,22 @@ type connectionMapType = map[string]*rabbitMqConnection
 //
 // */
 func openMultipleRabbitMqConnections(
-	queues map[string]AmqpJsonMultiplexBrokerInboundQueueMetadata,
+	queueMap map[string]AmqpJsonMultiplexBrokerInboundQueueMetadata,
 ) (connectionMapType, func()) {
 	connections := make(connectionMapType)
-	cleanup := func() {
-		for _, connection := range connections {
-			helpers.SafeClose(connection.conn)
-			helpers.SafeClose(connection.ch)
-		}
+	queueNames := functional.Keys(queueMap)
+
+	conn, channels, queues, cleanup, err := network.GetRabbitMQConnectionWithMultipleChannels(queueNames)
+	if err != nil {
+		helpers.PanicOnError(err, err.Reason)
 	}
 
-	for _, queueData := range queues {
-		var conn, ch, q, connErr = network.GetRabbitMQConnection(queueData.QueueName)
-
-		if connErr != nil {
-			cleanup()
-			helpers.PanicOnError(connErr, connErr.Reason)
-		}
-
-		connections[queueData.QueueName] = &rabbitMqConnection{
-			conn:    conn,
-			ch:      ch,
-			q:       q,
-			connErr: connErr,
+	for i := range queueNames {
+		var queueName = queueNames[i]
+		connections[queueName] = &rabbitMqConnection{
+			conn: conn,
+			ch:   channels[i],
+			q:    queues[i],
 		}
 	}
 
