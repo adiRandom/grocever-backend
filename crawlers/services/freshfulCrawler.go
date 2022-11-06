@@ -47,7 +47,7 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan models.Crawler
 		return
 	}
 
-	res := models.CrawlerResult{}
+	res := models.CrawlerResult{CrawlUrl: url}
 	res.ProductName = apiRes.Name
 	res.ProductPrice = apiRes.Price
 	res.StoreId = constants.FreshfulStoreId

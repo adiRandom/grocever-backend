@@ -22,7 +22,7 @@ func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan models.Crawl
 	collyClient.OnHTML(coraContentElementQuerySelector.
 		String(),
 		func(body *colly.HTMLElement) {
-			res := models.CrawlerResult{}
+			res := models.CrawlerResult{CrawlUrl: url}
 			res.ProductName = body.ChildText(coraTitleElementQuerySelector.String())
 			price, err := strconv.ParseFloat(body.ChildAttr(coraPriceElementQuerySelector.String(), corePriceAttrib), 64)
 

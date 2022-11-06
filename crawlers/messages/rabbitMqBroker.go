@@ -1,9 +1,13 @@
 package messages
 
 import (
+	crawlers "dealScraper/crawlers/services"
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/messages"
 	"dealScraper/lib/network"
+	"encoding/json"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"log"
 	"time"
 )
 
@@ -59,10 +63,32 @@ func pickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMu
 }
 
 func processJsonMessage(args messages.AmqpJsonMultiplexBrokerProcessArgs[dto.SearchProductDto]) {
-	// TODO: Implement
+	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
+	body := dto.ProductProcessDto{OcrProductDto: args.Msg.OcrProduct, CrawlResults: crawlRes}
 
-	println(args.Msg.OcrProduct.ProductName)
-	println(args.From)
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		log.Fatalf("Failed to marshal process product dto for product %s from store %d. Error: %s",
+			err.Error(),
+			body.OcrProductDto.ProductName,
+			body.OcrProductDto.ProductName)
+	}
+
+	err = args.OutCh.PublishWithContext(args.Ctx,
+		"",             // exchange
+		args.OutQ.Name, // routing key
+		false,          // mandatory
+		false,          // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        bodyBytes,
+		})
+
+	if err != nil {
+		log.Fatalf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",
+			body.String(),
+			err.Error())
+	}
 }
 
 func GetRabbitMqBroker() *messages.RabbitMqJsonMultiplexBroker[dto.SearchProductDto] {

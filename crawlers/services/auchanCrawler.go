@@ -22,7 +22,7 @@ func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan models.Cra
 	collyClient.OnHTML(auchanContentElementQuerySelector.
 		String(),
 		func(body *colly.HTMLElement) {
-			res := models.CrawlerResult{}
+			res := models.CrawlerResult{CrawlUrl: url}
 			res.ProductName = body.ChildText(auchanTitleElementQuerySelector.String())
 			price, err := strconv.ParseFloat(body.ChildAttr(auchanPriceElementQuerySelector.String(), auchanPriceAttrib), 64)
 

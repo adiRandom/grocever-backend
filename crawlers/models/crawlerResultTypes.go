@@ -6,6 +6,7 @@ type CrawlerResult struct {
 	ProductName  string
 	ProductPrice float64
 	StoreId      int32
+	CrawlUrl     string
 	// TODO: Add
 	// UnitPrice float64
 	// Unit string
