@@ -43,10 +43,14 @@ func pickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMu
 		}
 
 		if queueMetadata[network.CrawlQueue].MessageCount == 0 {
+			println("Reason: No messages in queue")
 			return network.PriorityCrawlQueue
 		}
 
+		println("Delta processed count: ", queueMetadata[network.CrawlQueue].DeltaProcessedCount)
+
 		if queueMetadata[network.CrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
+			println("Reason: Switch interval reached")
 			return network.PriorityCrawlQueue
 		}
 	}
@@ -57,7 +61,7 @@ func pickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMu
 func processJsonMessage(args messages.AmqpJsonMultiplexBrokerProcessArgs[dto.SearchProductDto]) {
 	// TODO: Implement
 
-	println(args.Msg)
+	println(args.Msg.OcrProduct.ProductName)
 	println(args.From)
 }
 

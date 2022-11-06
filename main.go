@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"dealScraper/lib/data/dto"
-	"dealScraper/ocr"
-	"dealScraper/search/services"
+	"dealScraper/crawlers/messages"
+	"dealScraper/crawlers/test"
 )
 
 func main() {
@@ -17,8 +16,9 @@ func main() {
 	//	panic(err)
 	//}
 
-	go ocr.SendOcrProductToQueue()
-	services.ListenForSearchRequests(context.Background(), func(ocrProduct dto.OcrProductDto) {
-		println(ocrProduct.ProductName)
-	})
+	test.ProduceCrawlMessages()
+	ctx := context.Background()
+	go messages.GetRabbitMqBroker().ListenAndHandleRequests(ctx)
+
+	select {}
 }

@@ -63,7 +63,7 @@ func GetRabbitMQConnectionWithMultipleChannels(
 		helpers.SafeClose(conn)
 	}
 
-	for _, queueName := range queueNames {
+	for i, queueName := range queueNames {
 		ch, err := conn.Channel()
 		if err != nil {
 			cleanup()
@@ -91,8 +91,8 @@ func GetRabbitMQConnectionWithMultipleChannels(
 				&helpers.Error{Msg: "Failed to declare a queue", Reason: err.Error()}
 		}
 
-		channels = append(channels, ch)
-		queues = append(queues, &q)
+		channels[i] = ch
+		queues[i] = &q
 	}
 
 	return conn, channels, queues, cleanup, nil

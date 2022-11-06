@@ -34,7 +34,7 @@ type AmqpJsonMultiplexBrokerInboundQueueMetadata struct {
 
 type AmqpJsonMultiplexBrokerSelectQueueMetadata[T any] struct {
 	QueueName           string
-	LastMessage         T
+	LastMessage         *T
 	ProcessedCount      int
 	DeltaProcessedCount int
 	MessageCount        int
@@ -82,14 +82,22 @@ func NewRabbitMqJsonMultiplexBroker[T any](
 	) string,
 	pickQueueTimeout *time.Duration,
 ) *RabbitMqJsonMultiplexBroker[T] {
+	processCount := make(map[string]int)
+	deltaProcessCount := make(map[string]int)
+
+	for queueName := range inboundQueues {
+		processCount[queueName] = 0
+		deltaProcessCount[queueName] = 0
+	}
+
 	return &RabbitMqJsonMultiplexBroker[T]{
 		ProcessJsonMessage:   processJsonMessage,
 		InboundQueues:        inboundQueues,
 		OutboundQueueName:    outboundQueueName,
 		PickInboundQueue:     pickInboundQueue,
 		PickQueueTimeout:     pickQueueTimeout,
-		processedCount:       make(map[string]int),
-		deltaProcessedCount:  make(map[string]int),
+		processedCount:       processCount,
+		deltaProcessedCount:  deltaProcessCount,
 		currentQueueName:     "",
 		currentConnection:    nil,
 		inboundConnectionMap: make(map[string]*rabbitMqConnection),
@@ -215,7 +223,7 @@ func (broker *RabbitMqJsonMultiplexBroker[T]) parseMessageAndProcess(
 func createSelectQueueMetadataMap[T any](
 	connectionMap connectionMapType,
 	currentQueueName string,
-	currentQueueMessage T,
+	currentQueueMessage *T,
 	processedCountMap map[string]int,
 	deltaProcessedMap map[string]int,
 ) AmqpJsonMultiplexBrokerSelectQueueMetadataMap[T] {
@@ -244,11 +252,15 @@ func (broker *RabbitMqJsonMultiplexBroker[T]) pickNextInboundQueue() {
 		createSelectQueueMetadataMap[T](
 			broker.inboundConnectionMap,
 			broker.currentQueueName,
-			*broker.lastMessage,
+			broker.lastMessage,
 			broker.processedCount,
 			broker.deltaProcessedCount,
 		),
 	)
+
+	if nextQueueName == broker.currentQueueName {
+		return
+	}
 
 	broker.currentQueueName = nextQueueName
 	broker.currentConnection = broker.inboundConnectionMap[broker.currentQueueName]
@@ -274,24 +286,13 @@ func (broker *RabbitMqJsonMultiplexBroker[T]) onMessageReceived(
 	broker.pickNextInboundQueue()
 }
 
-func (broker *RabbitMqJsonMultiplexBroker[T]) listenForMessages(
-	outCh *amqp.Channel,
-	outQ *amqp.Queue,
-) {
-	currentQueueName := broker.PickInboundQueue("", map[string]AmqpJsonMultiplexBrokerSelectQueueMetadata[T]{})
-
-	broker.currentConnection = broker.inboundConnectionMap[currentQueueName]
-	var recheckTicker *time.Ticker = nil
-
-	if broker.PickQueueTimeout != nil {
-		recheckTicker = time.NewTicker(*broker.PickQueueTimeout)
-	}
-
-	for {
-		messages, err := broker.currentConnection.ch.Consume(
-			currentQueueName,
+func (broker *RabbitMqJsonMultiplexBroker[T]) getMessagesToQueueNameMap() map[string]<-chan amqp.Delivery {
+	result := make(map[string]<-chan amqp.Delivery)
+	for queueName, connection := range broker.inboundConnectionMap {
+		messages, err := connection.ch.Consume(
+			queueName,
 			"",
-			true,
+			false,
 			false,
 			false,
 			false,
@@ -302,15 +303,43 @@ func (broker *RabbitMqJsonMultiplexBroker[T]) listenForMessages(
 			helpers.PanicOnError(err, "Failed to register a consumer")
 		}
 
-		select {
-		case msg := <-messages:
-			{
-				broker.onMessageReceived(msg, outCh, outQ)
+		result[queueName] = messages
+	}
+	return result
+}
+
+func (broker *RabbitMqJsonMultiplexBroker[T]) listenForMessages(
+	outCh *amqp.Channel,
+	outQ *amqp.Queue,
+) {
+	msgChannels := broker.getMessagesToQueueNameMap()
+	broker.pickNextInboundQueue()
+
+	broker.currentConnection = broker.inboundConnectionMap[broker.currentQueueName]
+	var recheckTicker *time.Ticker = nil
+
+	if broker.PickQueueTimeout != nil {
+		recheckTicker = time.NewTicker(*broker.PickQueueTimeout)
+	}
+
+	for {
+		msgCh := msgChannels[broker.currentQueueName]
+
+		if recheckTicker != nil {
+			select {
+			case msg := <-msgCh:
+				{
+					broker.onMessageReceived(msg, outCh, outQ)
+				}
+			case <-recheckTicker.C:
+				{
+					broker.pickNextInboundQueue()
+				}
 			}
-		case <-recheckTicker.C:
-			{
-				broker.pickNextInboundQueue()
-			}
+		} else {
+			println("Waiting for messages")
+			msg := <-msgCh
+			broker.onMessageReceived(msg, outCh, outQ)
 		}
 	}
 }
