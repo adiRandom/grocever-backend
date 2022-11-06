@@ -1,4 +1,4 @@
-package network
+package amqp
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -10,7 +10,7 @@ const CrawlQueue = "crawl"
 const PriorityCrawlQueue = "priorityCrawl"
 const ProductProcessQueue = "productProcess"
 
-func GetRabbitMQConnection(queueName string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
+func GetConnection(queueName string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, nil, nil, &helpers.Error{Msg: "Failed to connect to RabbitMQ", Reason: err.Error()}
@@ -36,7 +36,7 @@ func GetRabbitMQConnection(queueName string) (*amqp.Connection, *amqp.Channel, *
 	return conn, ch, &q, nil
 }
 
-func GetRabbitMQConnectionWithMultipleChannels(
+func GetConnectionWithMultipleChannels(
 	queueNames []string,
 ) (*amqp.Connection,
 	[]*amqp.Channel,

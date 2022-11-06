@@ -5,7 +5,7 @@ import (
 	"crawlers/models"
 	"dealScraper/lib/data/constants"
 	"dealScraper/lib/helpers"
-	"dealScraper/lib/network"
+	"dealScraper/lib/network/http"
 	"fmt"
 	url2 "net/url"
 	"strings"
@@ -42,7 +42,7 @@ func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan models.
 		return
 	}
 
-	apiRes, err := network.GetSync[types.MegaImageDto](*correctUrl)
+	apiRes, err := http.GetSync[types.MegaImageDto](*correctUrl)
 	if err != nil {
 		return
 	}

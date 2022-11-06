@@ -3,7 +3,7 @@ package services
 import (
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/functional"
-	httpClient "dealScraper/lib/network"
+	"dealScraper/lib/network/http"
 	"fmt"
 	"net/url"
 	"os"
@@ -25,7 +25,7 @@ func queryGoogle(searchTerm string) (*dtoTypes.GoogleSearchDto, error) {
 		encodedSearchTerm)
 
 	// Get the response
-	res, err := httpClient.GetSync[dtoTypes.GoogleSearchDto](requestUrl)
+	res, err := http.GetSync[dtoTypes.GoogleSearchDto](requestUrl)
 
 	if err != nil {
 		return nil, err

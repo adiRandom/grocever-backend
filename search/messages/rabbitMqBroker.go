@@ -3,8 +3,8 @@ package messages
 import (
 	"context"
 	"dealScraper/lib/data/dto"
-	"dealScraper/lib/messages"
-	"dealScraper/lib/network"
+	"dealScraper/lib/messages/rabbitmq"
+	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var rabbitMqBroker *messages.RabbitMqJsonBroker[dto.OcrProductDto]
+var rabbitMqBroker *rabbitmq.JsonBroker[dto.OcrProductDto]
 var searchRequestTimeout = 1 * time.Minute
 
 func processJsonMessage(msg dto.OcrProductDto,
@@ -57,16 +57,16 @@ func processJsonMessage(msg dto.OcrProductDto,
 	}
 }
 
-func GetRabbitMqBroker() *messages.RabbitMqJsonBroker[dto.OcrProductDto] {
+func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.OcrProductDto] {
 	if rabbitMqBroker != nil {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = &messages.RabbitMqJsonBroker[dto.OcrProductDto]{
-		ProcessJsonMessage: processJsonMessage,
-		InboundQueueName:   network.SearchQueue,
-		OutboundQueueName:  network.PriorityCrawlQueue,
-		ProcessTimeout:     &searchRequestTimeout,
-	}
+	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.OcrProductDto](
+		processJsonMessage,
+		amqpLib.SearchQueue,
+		amqpLib.PriorityCrawlQueue,
+		&searchRequestTimeout,
+	)
 	return rabbitMqBroker
 }

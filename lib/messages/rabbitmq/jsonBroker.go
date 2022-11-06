@@ -1,30 +1,49 @@
-package messages
+package rabbitmq
 
 import (
 	"context"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/helpers"
-	"lib/network"
+	amqpLib "lib/network/amqp"
 	"log"
 	"time"
 )
 
-type RabbitMqJsonBroker[T any] struct {
-	ProcessJsonMessage func(msg T,
+type JsonBroker[T any] struct {
+	onMsg func(msg T,
 		outCh *amqp.Channel,
 		outQ *amqp.Queue,
 		ctx context.Context,
 	)
-	InboundQueueName  string
-	OutboundQueueName string
-	ProcessTimeout    *time.Duration
+	inQueueName    string
+	outQueueName   string
+	processTimeout *time.Duration
 }
 
-func (broker RabbitMqJsonBroker[T]) ListenAndHandleRequests(
+func NewJsonBroker[T any](
+	onMsg func(msg T,
+		outCh *amqp.Channel,
+		outQ *amqp.Queue,
+		ctx context.Context,
+	),
+	inQueueName string,
+	outQueueName string,
+	processTimeout *time.Duration,
+) *JsonBroker[T] {
+	return &JsonBroker[T]{
+		onMsg:          onMsg,
+		inQueueName:    inQueueName,
+		outQueueName:   outQueueName,
+		processTimeout: processTimeout,
+	}
+}
+
+// Start Listen for incoming messages and process them
+func (broker JsonBroker[T]) Start(
 	ctx context.Context,
 ) {
-	conn, ch, q, connErr := network.GetRabbitMQConnection(broker.InboundQueueName)
+	conn, ch, q, connErr := amqpLib.GetConnection(broker.inQueueName)
 
 	if connErr != nil {
 		helpers.PanicOnError(connErr, connErr.Reason)
@@ -32,7 +51,7 @@ func (broker RabbitMqJsonBroker[T]) ListenAndHandleRequests(
 	defer helpers.SafeClose(conn)
 	defer helpers.SafeClose(ch)
 
-	var outConn, outCh, outQ, outConnErr = network.GetRabbitMQConnection(broker.OutboundQueueName)
+	var outConn, outCh, outQ, outConnErr = amqpLib.GetConnection(broker.outQueueName)
 
 	if outConnErr != nil {
 		helpers.PanicOnError(outConnErr, outConnErr.Reason)
@@ -67,7 +86,7 @@ func (broker RabbitMqJsonBroker[T]) ListenAndHandleRequests(
 	}
 }
 
-func (broker RabbitMqJsonBroker[T]) listenForMessages(
+func (broker JsonBroker[T]) listenForMessages(
 	msgs <-chan amqp.Delivery,
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
@@ -82,15 +101,15 @@ func (broker RabbitMqJsonBroker[T]) listenForMessages(
 		}
 
 		var ctx context.Context
-		if broker.ProcessTimeout != nil {
+		if broker.processTimeout != nil {
 			ctx, _ = context.WithTimeout(
 				context.Background(),
-				*broker.ProcessTimeout,
+				*broker.processTimeout,
 			)
 		} else {
 			ctx = context.Background()
 		}
 
-		broker.ProcessJsonMessage(msgBody, outCh, outQ, ctx)
+		broker.onMsg(msgBody, outCh, outQ, ctx)
 	}
 }

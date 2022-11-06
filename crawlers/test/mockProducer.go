@@ -3,18 +3,18 @@ package test
 import (
 	"context"
 	"dealScraper/lib/data/dto"
-	"dealScraper/lib/network"
+	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func ProduceCrawlMessages() {
-	_, ch, q, err := network.GetRabbitMQConnection(network.CrawlQueue)
+	_, ch, q, err := amqpLib.GetConnection(amqpLib.CrawlQueue)
 	if err != nil {
 		panic(err)
 	}
 
-	_, pCh, pQ, err := network.GetRabbitMQConnection(network.PriorityCrawlQueue)
+	_, pCh, pQ, err := amqpLib.GetConnection(amqpLib.PriorityCrawlQueue)
 	if err != nil {
 		panic(err)
 	}

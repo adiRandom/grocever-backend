@@ -4,7 +4,7 @@ import (
 	"context"
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/helpers"
-	"dealScraper/lib/network"
+	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	"log"
 	"time"
@@ -23,7 +23,7 @@ func SendOcrProductToQueue() {
 	defer helpers.SafeClose(ch)
 
 	q, err := ch.QueueDeclare(
-		network.SearchQueue,
+		amqpLib.SearchQueue,
 		false,
 		false,
 		false,

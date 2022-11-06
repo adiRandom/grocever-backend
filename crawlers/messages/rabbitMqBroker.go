@@ -3,66 +3,68 @@ package messages
 import (
 	crawlers "crawlers/services"
 	"dealScraper/lib/data/dto"
-	"dealScraper/lib/messages"
-	"dealScraper/lib/network"
+	"dealScraper/lib/messages/rabbitmq/multiplex"
+	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"time"
 )
 
-var rabbitMqBroker *messages.RabbitMqJsonMultiplexBroker[dto.SearchProductDto]
+var rabbitMqBroker *multiplex.JsonBroker[dto.SearchProductDto]
 var messageProcessingTimeout = 1 * time.Minute
-var inboundQueues = map[string]messages.AmqpJsonMultiplexBrokerInboundQueueMetadata{
-	network.PriorityCrawlQueue: {
-		QueueName:      network.PriorityCrawlQueue,
-		ProcessTimeout: &messageProcessingTimeout,
-	},
-	network.CrawlQueue: {
-		QueueName:      network.CrawlQueue,
-		ProcessTimeout: &messageProcessingTimeout,
-	},
+var inboundQueues = multiplex.InQueues{
+	amqpLib.PriorityCrawlQueue: *multiplex.NewInQueueMetadata(
+		amqpLib.PriorityCrawlQueue,
+		&messageProcessingTimeout,
+	),
+	amqpLib.CrawlQueue: *multiplex.NewInQueueMetadata(
+		amqpLib.CrawlQueue,
+		&messageProcessingTimeout,
+	),
 }
 
 const queueSwitchInterval = 10
 
-func pickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMultiplexBrokerSelectQueueMetadataMap[dto.SearchProductDto]) string {
+func pickInboundQueue(currentQueueName string,
+	queueMetadata multiplex.OnSelectQueueCtx[dto.SearchProductDto],
+) string {
 	if currentQueueName == "" {
-		return network.CrawlQueue
+		return amqpLib.CrawlQueue
 	}
 
-	if currentQueueName == network.PriorityCrawlQueue {
-		if queueMetadata[network.PriorityCrawlQueue].MessageCount == 0 {
-			return network.CrawlQueue
+	if currentQueueName == amqpLib.PriorityCrawlQueue {
+		if queueMetadata[amqpLib.PriorityCrawlQueue].MessageCount == 0 {
+			return amqpLib.CrawlQueue
 		}
 
-		if queueMetadata[network.PriorityCrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
-			return network.CrawlQueue
+		if queueMetadata[amqpLib.PriorityCrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
+			return amqpLib.CrawlQueue
 		}
 	}
 
-	if currentQueueName == network.CrawlQueue {
-		if queueMetadata[network.PriorityCrawlQueue].MessageCount == 0 {
-			return network.CrawlQueue
+	if currentQueueName == amqpLib.CrawlQueue {
+		if queueMetadata[amqpLib.PriorityCrawlQueue].MessageCount == 0 {
+			return amqpLib.CrawlQueue
 		}
 
-		if queueMetadata[network.CrawlQueue].MessageCount == 0 {
+		if queueMetadata[amqpLib.CrawlQueue].MessageCount == 0 {
 			println("Reason: No messages in queue")
-			return network.PriorityCrawlQueue
+			return amqpLib.PriorityCrawlQueue
 		}
 
-		println("Delta processed count: ", queueMetadata[network.CrawlQueue].DeltaProcessedCount)
+		println("Delta processed count: ", queueMetadata[amqpLib.CrawlQueue].DeltaProcessedCount)
 
-		if queueMetadata[network.CrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
+		if queueMetadata[amqpLib.CrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
 			println("Reason: Switch interval reached")
-			return network.PriorityCrawlQueue
+			return amqpLib.PriorityCrawlQueue
 		}
 	}
 
 	return currentQueueName
 }
 
-func processJsonMessage(args messages.AmqpJsonMultiplexBrokerProcessArgs[dto.SearchProductDto]) {
+func processJsonMessage(args multiplex.OnMessageArgs[dto.SearchProductDto]) {
 	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
 	body := dto.ProductProcessDto{OcrProductDto: args.Msg.OcrProduct, CrawlResults: crawlRes}
 
@@ -91,15 +93,15 @@ func processJsonMessage(args messages.AmqpJsonMultiplexBrokerProcessArgs[dto.Sea
 	}
 }
 
-func GetRabbitMqBroker() *messages.RabbitMqJsonMultiplexBroker[dto.SearchProductDto] {
+func GetRabbitMqBroker() *multiplex.JsonBroker[dto.SearchProductDto] {
 	if rabbitMqBroker != nil {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = messages.NewRabbitMqJsonMultiplexBroker[dto.SearchProductDto](
+	rabbitMqBroker = multiplex.NewJsonBroker[dto.SearchProductDto](
 		processJsonMessage,
 		inboundQueues,
-		network.ProductProcessQueue,
+		amqpLib.ProductProcessQueue,
 		pickInboundQueue,
 		nil,
 	)

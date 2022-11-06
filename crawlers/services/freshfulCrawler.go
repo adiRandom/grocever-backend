@@ -5,7 +5,7 @@ import (
 	"crawlers/models"
 	"dealScraper/lib/data/constants"
 	"dealScraper/lib/helpers"
-	"dealScraper/lib/network"
+	"dealScraper/lib/network/http"
 	"fmt"
 	url2 "net/url"
 	"strings"
@@ -42,7 +42,7 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan models.Crawler
 		return
 	}
 
-	apiRes, err := network.GetSync[types.FreshfulDto](*correctUrl)
+	apiRes, err := http.GetSync[types.FreshfulDto](*correctUrl)
 	if err != nil {
 		return
 	}
