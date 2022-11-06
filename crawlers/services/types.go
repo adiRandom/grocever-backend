@@ -1,6 +1,6 @@
-package crawlers
+package services
 
-import "dealScraper/crawlers/models"
+import "crawlers/models"
 
 type Crawler interface {
 	ScrapeProductPage(url string, resCh chan models.CrawlerResult)

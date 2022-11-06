@@ -1,8 +1,8 @@
 package network
 
 import (
-	"dealScraper/lib/helpers"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"lib/helpers"
 )
 
 const SearchQueue = "search"

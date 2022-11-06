@@ -1,7 +1,7 @@
-package crawlers
+package services
 
 import (
-	"dealScraper/crawlers/models"
+	"crawlers/models"
 	"dealScraper/lib/data/constants"
 	"dealScraper/lib/data/dto"
 )

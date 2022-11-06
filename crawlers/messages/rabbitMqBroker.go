@@ -1,7 +1,7 @@
 package messages
 
 import (
-	crawlers "dealScraper/crawlers/services"
+	crawlers "crawlers/services"
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/messages"
 	"dealScraper/lib/network"

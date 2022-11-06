@@ -1,7 +1,7 @@
 package functional
 
 import (
-	types "dealScraper/lib/helpers"
+	types "lib/helpers"
 )
 
 type ReduceCb[T, R any] func(acc R, current T) R

@@ -4,11 +4,11 @@ import (
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/functional"
 	httpClient "dealScraper/lib/network"
-	dtoTypes "dealScraper/search/data/dto"
-	urlUtils "dealScraper/search/utils"
 	"fmt"
 	"net/url"
 	"os"
+	dtoTypes "search/data/dto"
+	urlUtils "search/utils"
 )
 
 type GoogleSearchService struct{}

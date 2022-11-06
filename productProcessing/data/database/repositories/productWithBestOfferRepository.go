@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	"dealScraper/data/database"
-	"dealScraper/data/database/entities"
 	"gorm.io/gorm"
+	"productProcessing/data/database"
+	"productProcessing/data/database/entities"
 )
 
 type ProductWithBestOfferRepository struct {

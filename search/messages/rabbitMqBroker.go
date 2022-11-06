@@ -5,10 +5,10 @@ import (
 	"dealScraper/lib/data/dto"
 	"dealScraper/lib/messages"
 	"dealScraper/lib/network"
-	"dealScraper/search/services"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
+	"search/services"
 	"time"
 )
 

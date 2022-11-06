@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"dealScraper/lib/data/interfaces"
 	"fmt"
+	"lib/data/interfaces"
 	"log"
 )
 

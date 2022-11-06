@@ -2,10 +2,10 @@ package messages
 
 import (
 	"context"
-	"dealScraper/lib/helpers"
-	"dealScraper/lib/network"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"lib/helpers"
+	"lib/network"
 	"log"
 	"time"
 )

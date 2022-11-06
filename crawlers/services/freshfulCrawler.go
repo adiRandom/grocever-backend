@@ -1,8 +1,8 @@
-package crawlers
+package services
 
 import (
-	types "dealScraper/crawlers/data/dto"
-	"dealScraper/crawlers/models"
+	types "crawlers/data/dto"
+	"crawlers/models"
 	"dealScraper/lib/data/constants"
 	"dealScraper/lib/helpers"
 	"dealScraper/lib/network"
