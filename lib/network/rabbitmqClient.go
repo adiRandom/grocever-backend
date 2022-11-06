@@ -8,6 +8,7 @@ import (
 const SearchQueue = "search"
 const CrawlQueue = "crawl"
 const PriorityCrawlQueue = "priorityCrawl"
+const ProductProcessQueue = "productProcess"
 
 func GetRabbitMQConnection(queueName string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")

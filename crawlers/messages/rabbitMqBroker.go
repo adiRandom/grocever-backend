@@ -22,7 +22,7 @@ var inboundQueues = map[string]messages.AmqpJsonMultiplexBrokerInboundQueueMetad
 
 const queueSwitchInterval = 10
 
-func PickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMultiplexBrokerSelectQueueMetadataMap[dto.SearchProductDto]) string {
+func pickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMultiplexBrokerSelectQueueMetadataMap[dto.SearchProductDto]) string {
 	if currentQueueName == "" {
 		return network.CrawlQueue
 	}
@@ -52,4 +52,26 @@ func PickInboundQueue(currentQueueName string, queueMetadata messages.AmqpJsonMu
 	}
 
 	return currentQueueName
+}
+
+func processJsonMessage(args messages.AmqpJsonMultiplexBrokerProcessArgs[dto.SearchProductDto]) {
+	// TODO: Implement
+
+	println(args.Msg)
+	println(args.From)
+}
+
+func GetRabbitMqBroker() *messages.RabbitMqJsonMultiplexBroker[dto.SearchProductDto] {
+	if rabbitMqBroker != nil {
+		return rabbitMqBroker
+	}
+
+	rabbitMqBroker = messages.NewRabbitMqJsonMultiplexBroker[dto.SearchProductDto](
+		processJsonMessage,
+		inboundQueues,
+		network.ProductProcessQueue,
+		pickInboundQueue,
+		nil,
+	)
+	return rabbitMqBroker
 }
