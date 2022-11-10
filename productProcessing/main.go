@@ -1,12 +1,18 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	"productProcessing/data/database"
 	"productProcessing/data/database/entities"
 	"productProcessing/data/database/repositories"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+
 	database.InitDatabase(&entities.ProductEntity{}, &entities.CrawlLinkEntity{}, &entities.OcrProductEntity{})
 	repositories.GetProductRepository().Save(
 		entities.ProductEntity{
@@ -21,9 +27,9 @@ func main() {
 		},
 	)
 
-	x, err := repositories.GetProductRepository().GetAll()
+	x, err := repositories.GetProductRepository().GetAllWithCrawlLink()
 	if err != nil {
 		panic(err)
 	}
-	println(x)
+	println(x[0].CrawlLink.Url)
 }

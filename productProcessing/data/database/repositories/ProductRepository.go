@@ -1,6 +1,9 @@
 package repositories
 
-import "productProcessing/data/database/entities"
+import (
+	"productProcessing/data/database"
+	"productProcessing/data/database/entities"
+)
 
 type ProductRepository struct {
 	Repository[entities.ProductEntity]
@@ -11,6 +14,11 @@ var pr *ProductRepository = nil
 func GetProductRepository() *ProductRepository {
 	if pr == nil {
 		pr = &ProductRepository{}
+		db, err := database.GetDb()
+		if err != nil {
+			panic(err)
+		}
+		pr.db = db
 	}
 	return pr
 }
@@ -18,6 +26,12 @@ func GetProductRepository() *ProductRepository {
 func (r *ProductRepository) GetAll() ([]entities.ProductEntity, error) {
 	var products []entities.ProductEntity
 	err := r.db.Find(&products).Error
+	return products, err
+}
+
+func (r *ProductRepository) GetAllWithCrawlLink() ([]entities.ProductEntity, error) {
+	var products []entities.ProductEntity
+	err := r.db.Preload("CrawlLink").Find(&products).Error
 	return products, err
 }
 
