@@ -1,10 +1,10 @@
 package database
 
 import (
-	"dealScraper/lib/helpers"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"lib/helpers"
 	"os"
 )
 

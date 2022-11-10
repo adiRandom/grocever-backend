@@ -2,11 +2,11 @@ package messages
 
 import (
 	crawlers "crawlers/services"
-	"dealScraper/lib/data/dto"
-	"dealScraper/lib/messages/rabbitmq/multiplex"
-	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"lib/data/dto"
+	"lib/messages/rabbitmq/multiplex"
+	amqpLib "lib/network/amqp"
 	"log"
 	"time"
 )

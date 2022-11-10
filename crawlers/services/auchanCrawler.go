@@ -2,9 +2,9 @@ package services
 
 import (
 	"crawlers/utils"
-	"dealScraper/lib/data/constants"
-	"dealScraper/lib/data/models"
 	"github.com/gocolly/colly"
+	"lib/data/constants"
+	"lib/data/models"
 	"strconv"
 )
 

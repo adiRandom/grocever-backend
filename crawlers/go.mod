@@ -3,7 +3,7 @@ module crawlers
 go 1.19
 
 require (
-	dealScraper/lib v0.0.0-00010101000000-000000000000
+	lib v0.0.0-00010101000000-000000000000
 	github.com/gocolly/colly v1.2.0
 	github.com/rabbitmq/amqp091-go v1.5.0
 )
@@ -25,4 +25,4 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 )
 
-replace dealScraper/lib => ../lib
+replace lib => ../lib

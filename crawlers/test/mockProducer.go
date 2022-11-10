@@ -2,10 +2,10 @@ package test
 
 import (
 	"context"
-	"dealScraper/lib/data/dto"
-	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"lib/data/dto"
+	amqpLib "lib/network/amqp"
 )
 
 func ProduceCrawlMessages() {

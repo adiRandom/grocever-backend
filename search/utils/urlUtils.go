@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"dealScraper/lib/data/constants"
+	"lib/data/constants"
 	"net/url"
 )
 

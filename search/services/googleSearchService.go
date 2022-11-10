@@ -1,10 +1,10 @@
 package services
 
 import (
-	"dealScraper/lib/data/dto"
-	"dealScraper/lib/functional"
-	"dealScraper/lib/network/http"
 	"fmt"
+	"lib/data/dto"
+	"lib/functional"
+	"lib/network/http"
 	"net/url"
 	"os"
 	dtoTypes "search/data/dto"

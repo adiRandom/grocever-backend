@@ -2,10 +2,10 @@ package ocr
 
 import (
 	"context"
-	"dealScraper/lib/data/dto"
-	"dealScraper/lib/helpers"
-	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
+	"lib/data/dto"
+	"lib/helpers"
+	amqpLib "lib/network/amqp"
 	"log"
 	"time"
 )

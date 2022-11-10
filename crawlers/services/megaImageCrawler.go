@@ -2,11 +2,11 @@ package services
 
 import (
 	types "crawlers/data/dto"
-	"dealScraper/lib/data/constants"
-	"dealScraper/lib/data/models"
-	"dealScraper/lib/helpers"
-	"dealScraper/lib/network/http"
 	"fmt"
+	"lib/data/constants"
+	"lib/data/models"
+	"lib/helpers"
+	"lib/network/http"
 	url2 "net/url"
 	"strings"
 )

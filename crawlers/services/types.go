@@ -1,7 +1,7 @@
 package services
 
 import (
-	"dealScraper/lib/data/models"
+	"lib/data/models"
 )
 
 type Crawler interface {

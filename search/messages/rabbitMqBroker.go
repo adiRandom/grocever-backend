@@ -2,11 +2,11 @@ package messages
 
 import (
 	"context"
-	"dealScraper/lib/data/dto"
-	"dealScraper/lib/messages/rabbitmq"
-	amqpLib "dealScraper/lib/network/amqp"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"lib/data/dto"
+	"lib/messages/rabbitmq"
+	amqpLib "lib/network/amqp"
 	"log"
 	"search/services"
 	"time"
