@@ -1,9 +1,9 @@
 package dto
 
 import (
-	"dealScraper/crawlers/models"
-	"dealScraper/lib/functional"
 	"fmt"
+	"lib/data/models"
+	"lib/functional"
 )
 
 type ProductProcessDto struct {

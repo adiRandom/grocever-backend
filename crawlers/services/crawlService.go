@@ -1,9 +1,9 @@
 package services
 
 import (
-	"crawlers/models"
 	"dealScraper/lib/data/constants"
 	"dealScraper/lib/data/dto"
+	"dealScraper/lib/data/models"
 )
 
 func getCrawler(storeId int) Crawler {

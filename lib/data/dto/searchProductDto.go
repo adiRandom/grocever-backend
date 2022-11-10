@@ -1,6 +1,6 @@
 package dto
 
-import "dealScraper/lib/functional"
+import "lib/functional"
 
 type SearchProductDto struct {
 	OcrProduct   OcrProductDto    `json:"ocrProduct"`
