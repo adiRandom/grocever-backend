@@ -54,3 +54,44 @@ func (r *ProductRepository) GetProductByNameAndStoreId(name string, storeId int)
 	err := r.db.Where("name = ? AND store_id = ?", name, storeId).First(&product).Error
 	return &product, err
 }
+
+func (r *ProductRepository) addOcrProductToProduct(product *entities.ProductEntity,
+	ocrProduct *entities.OcrProductEntity,
+) error {
+	return r.db.Model(product).Association("OcrProduct").Append(ocrProduct)
+}
+
+func (r *ProductRepository) updateCrawLinkUrl(product *entities.ProductEntity, url string) error {
+	return r.db.
+		Model(&entities.CrawlLinkEntity{}).
+		Where("product_id = ?", product.ID).
+		Updates(entities.CrawlLinkEntity{
+			Url: url,
+		}).
+		Error
+}
+
+// CreateOrAddAssociation Either create a new product or add a new ocr product to an existing product
+func (r *ProductRepository) CreateOrUpdateExisting(
+	product *entities.ProductEntity,
+	ocrProduct *entities.OcrProductEntity,
+) error {
+	existingProduct, err := r.GetProductByNameAndStoreId(product.Name, product.StoreId)
+	if err != nil {
+		return err
+	}
+
+	if existingProduct.ID == 0 {
+		err = r.Save(*product)
+		if err != nil {
+			return err
+		}
+	} else {
+		// TODO :
+		// Check if the ocr product is already associated with the product
+		// If not, add it
+		// Update the crawl link url
+		// Update the price
+	}
+	return nil
+}
