@@ -14,22 +14,60 @@ func main() {
 	}
 
 	database.InitDatabase(&entities.ProductEntity{}, &entities.CrawlLinkEntity{}, &entities.OcrProductEntity{})
-	repositories.GetProductRepository().Save(
-		entities.ProductEntity{
+	ocrProductEntities := [1]*entities.OcrProductEntity{
+		&entities.OcrProductEntity{
+			OcrProductName: "test",
+		},
+	}
+	repositories.GetProductRepository().Create(
+		&entities.ProductEntity{
 			Name:    "test",
 			StoreId: 1,
-			Price:   1,
+			Price:   1.5,
 			CrawlLink: entities.CrawlLinkEntity{
 				Url:     "test",
 				StoreId: 1,
 			},
-			OcrProduct: make([]*entities.OcrProductEntity, 0),
+			OcrProducts: ocrProductEntities[:],
 		},
 	)
 
-	x, err := repositories.GetProductRepository().GetAllWithCrawlLink()
+	repositories.GetProductRepository().Create(
+		&entities.ProductEntity{
+			Name:    "test2",
+			StoreId: 2,
+			Price:   2.7,
+			CrawlLink: entities.CrawlLinkEntity{
+				Url:     "test",
+				StoreId: 2,
+			},
+			OcrProducts: ocrProductEntities[:],
+		},
+	)
+
+	ocrProductEntities = [1]*entities.OcrProductEntity{
+		&entities.OcrProductEntity{
+			OcrProductName: "tes",
+		},
+	}
+
+	repositories.GetProductRepository().Create(
+		&entities.ProductEntity{
+			Name:    "test",
+			StoreId: 1,
+			Price:   1.1,
+			CrawlLink: entities.CrawlLinkEntity{
+				Url:     "test",
+				StoreId: 1,
+			},
+			OcrProducts: ocrProductEntities[:],
+		},
+	)
+
+	bestPrice, err := repositories.GetOcrProductRepository().GetBestPrice("test")
 	if err != nil {
 		panic(err)
 	}
-	println(x[0].CrawlLink.Url)
+	print(bestPrice)
+
 }

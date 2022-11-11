@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"productProcessing/data/database"
 	"productProcessing/data/database/entities"
 )
@@ -32,6 +34,10 @@ func (r *OcrProductRepository) GetAll() ([]entities.OcrProductEntity, error) {
 func (r *OcrProductRepository) GetById(id uint) (*entities.OcrProductEntity, error) {
 	var ocrProduct entities.OcrProductEntity
 	err := r.db.First(&ocrProduct, id).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	return &ocrProduct, err
 }
 
@@ -43,6 +49,10 @@ func (r *OcrProductRepository) Delete(entity entities.OcrProductEntity) error {
 	return r.db.Delete(&entity).Error
 }
 
+func (r *OcrProductRepository) Create(entity entities.OcrProductEntity) error {
+	return r.db.Create(&entity).Error
+}
+
 func (r *OcrProductRepository) AddOcrProductToProduct(
 	ocrProduct entities.OcrProductEntity,
 	product entities.ProductEntity,
@@ -50,7 +60,7 @@ func (r *OcrProductRepository) AddOcrProductToProduct(
 	var existingOcrProducts []entities.OcrProductEntity
 	err := r.db.Model(&product).Association("OcrProducts").Find(&existingOcrProducts)
 
-	err = r.db.Model(&product).Association("OcrProduct").Append(&ocrProduct)
+	err = r.db.Model(&product).Association("OcrProducts").Append(&ocrProduct)
 	if err != nil {
 		return err
 	}
@@ -72,8 +82,14 @@ func (r *OcrProductRepository) AddOcrProductToProduct(
 }
 
 func (r *OcrProductRepository) GetBestPrice(ocrName string) (*float32, error) {
+	var ocrProduct entities.OcrProductEntity
+	err := r.db.First(&ocrProduct, "ocr_product_name = ?", ocrName).Error
+	if err != nil {
+		return nil, err
+	}
+
 	var relatedOcrProducts []entities.OcrProductEntity
-	err := r.db.Where("name = ?", ocrName).Find(&relatedOcrProducts).Error
+	err = r.db.Model(&ocrProduct).Association("Related").Find(&relatedOcrProducts)
 	if err != nil {
 		return nil, err
 	}

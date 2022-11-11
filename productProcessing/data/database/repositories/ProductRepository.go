@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"productProcessing/data/database"
 	"productProcessing/data/database/entities"
 )
@@ -38,6 +40,11 @@ func (r *ProductRepository) GetAllWithCrawlLink() ([]entities.ProductEntity, err
 func (r *ProductRepository) GetById(id uint) (*entities.ProductEntity, error) {
 	var product entities.ProductEntity
 	err := r.db.First(&product, id).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
 	return &product, err
 }
 
@@ -58,9 +65,14 @@ func (r *ProductRepository) GetProductByNameAndStoreId(
 	var query = r.db.Where("name = ? AND store_id = ?", name, storeId)
 
 	if joinOcrProduct {
-		query = query.Preload("OcrProduct")
+		query = query.Preload("OcrProducts")
 	}
+
 	err := query.First(&product).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	return &product, err
 }
 
@@ -75,12 +87,13 @@ func (r *ProductRepository) updateCrawLinkUrl(product *entities.ProductEntity, u
 }
 
 // TODO: Test
-func (r *ProductRepository) hasOcrProduct(productId uint, ocrName string) (bool, error) {
+func (r *ProductRepository) hasOcrProduct(product *entities.ProductEntity, ocrName string) (bool, error) {
 	var ocrProduct *entities.OcrProductEntity
 
 	err := r.db.
-		Where("OcrProductName = ? AND id = ?", ocrName, productId).
-		Association("OcrProduct").
+		Model(product).
+		Where(&entities.OcrProductEntity{OcrProductName: ocrName}).
+		Association("OcrProducts").
 		Find(&ocrProduct)
 	if err != nil {
 		return false, err
@@ -98,11 +111,11 @@ func (r *ProductRepository) updateProductPrice(
 	}).Error
 }
 
-// AddProduct Either create a new product or add a new ocr product to an existing product
-func (r *ProductRepository) AddProduct(
+// Create Either create a new product or add a new ocr product to an existing product
+func (r *ProductRepository) Create(
 	product *entities.ProductEntity,
-	ocrProduct *entities.OcrProductEntity,
 ) error {
+	ocrProduct := product.OcrProducts[0]
 	ocrProductRepository := GetOcrProductRepository()
 	existingProduct, err := r.GetProductByNameAndStoreId(
 		product.Name,
@@ -113,13 +126,13 @@ func (r *ProductRepository) AddProduct(
 		return err
 	}
 
-	if existingProduct.ID == 0 {
-		err = r.Save(*product)
+	if existingProduct == nil {
+		err = r.db.Create(product).Error
 		if err != nil {
 			return err
 		}
 	} else {
-		hasOcrProduct, err := r.hasOcrProduct(existingProduct.ID, ocrProduct.OcrProductName)
+		hasOcrProduct, err := r.hasOcrProduct(existingProduct, ocrProduct.OcrProductName)
 		if err != nil {
 			return err
 		}

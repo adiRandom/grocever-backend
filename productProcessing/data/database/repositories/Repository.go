@@ -7,6 +7,7 @@ type repository[T any] interface {
 	GetById(id uint) (*T, error)
 	Save(entity T) error
 	Delete(entity T) error
+	Create(entity T) error
 }
 
 type Repository[T any] struct {

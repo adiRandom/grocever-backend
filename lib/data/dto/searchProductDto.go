@@ -12,7 +12,7 @@ func (dto SearchProductDto) String() string {
 		func(acc string, crawlSource CrawlSourceDto) string {
 			return acc + crawlSource.String() + " "
 		}, "")
-	return "SearchProductDto: (OcrProduct: " +
+	return "SearchProductDto: (OcrProducts: " +
 		dto.OcrProduct.String() +
 		" CrawlSources: " + crawlSourcesString +
 		")"
