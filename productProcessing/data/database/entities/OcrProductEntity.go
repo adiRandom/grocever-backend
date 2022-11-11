@@ -1,10 +1,16 @@
 package entities
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 // OcrProductEntity Link between products and ocr names
 type OcrProductEntity struct {
-	gorm.Model
-	OcrProductName string
-	Product        []*ProductEntity `gorm:"many2many:ocr-product_product;"`
+	OcrProductName string `gorm:"primaryKey"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	DeletedAt      gorm.DeletedAt      `gorm:"index"`
+	Product        []*ProductEntity    `gorm:"many2many:ocr-product_product;"`
+	Related        []*OcrProductEntity `gorm:"many2many:ocr-product_related;"`
 }
