@@ -86,7 +86,6 @@ func (r *ProductRepository) updateCrawLinkUrl(product *entities.ProductEntity, u
 		Error
 }
 
-// TODO: Test
 func (r *ProductRepository) hasOcrProduct(product *entities.ProductEntity, ocrName string) (bool, error) {
 	var ocrProduct *entities.OcrProductEntity
 
@@ -99,7 +98,7 @@ func (r *ProductRepository) hasOcrProduct(product *entities.ProductEntity, ocrNa
 		return false, err
 	}
 
-	return ocrProduct != nil, nil
+	return ocrProduct != nil && ocrProduct.OcrProductName != "", nil
 }
 
 func (r *ProductRepository) updateProductPrice(

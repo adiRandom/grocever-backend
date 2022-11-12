@@ -68,6 +68,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	print(bestPrice)
+	print(*bestPrice)
 
 }
