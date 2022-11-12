@@ -4,7 +4,7 @@ import "fmt"
 
 type OcrProductDto struct {
 	ProductName  string  `json:"productName"`
-	ProductPrice float64 `json:"productPrice"`
+	ProductPrice float32 `json:"productPrice"`
 	StoreId      int32   `json:"storeId"`
 }
 

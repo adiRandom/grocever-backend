@@ -24,12 +24,12 @@ func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan models.Crawl
 		func(body *colly.HTMLElement) {
 			res := models.CrawlerResult{CrawlUrl: url}
 			res.ProductName = body.ChildText(coraTitleElementQuerySelector.String())
-			price, err := strconv.ParseFloat(body.ChildAttr(coraPriceElementQuerySelector.String(), corePriceAttrib), 64)
+			price, err := strconv.ParseFloat(body.ChildAttr(coraPriceElementQuerySelector.String(), corePriceAttrib), 32)
 
 			if err != nil {
 				return
 			}
-			res.ProductPrice = price
+			res.ProductPrice = float32(price)
 			res.StoreId = constants.CoraStoreId
 
 			resCh <- res

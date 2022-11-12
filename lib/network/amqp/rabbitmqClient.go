@@ -7,10 +7,16 @@ import (
 
 const SearchQueue = "search"
 const CrawlQueue = "crawl"
-const PriorityCrawlQueue = "priorityCrawl"
+
+var PriorityCrawlQueue = "priorityCrawl"
+
 const ProductProcessQueue = "productProcess"
 
-func GetConnection(queueName string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
+func GetConnection(queueName *string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
+	if queueName == nil {
+		return nil, nil, nil, nil
+	}
+
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, nil, nil, &helpers.Error{Msg: "Failed to connect to RabbitMQ", Reason: err.Error()}
@@ -22,7 +28,7 @@ func GetConnection(queueName string) (*amqp.Connection, *amqp.Channel, *amqp.Que
 	}
 
 	q, err := ch.QueueDeclare(
-		queueName,
+		*queueName,
 		false,
 		false,
 		false,

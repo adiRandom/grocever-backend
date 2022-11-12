@@ -11,6 +11,6 @@ type OcrProductEntity struct {
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	DeletedAt      gorm.DeletedAt      `gorm:"index"`
-	Product        []*ProductEntity    `gorm:"many2many:ocr-product_product;"`
+	Products       []*ProductEntity    `gorm:"many2many:ocr-product_product;"`
 	Related        []*OcrProductEntity `gorm:"many2many:ocr-product_related;"`
 }

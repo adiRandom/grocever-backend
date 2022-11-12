@@ -58,7 +58,7 @@ func (r *ProductRepository) Delete(entity entities.ProductEntity) error {
 
 func (r *ProductRepository) GetProductByNameAndStoreId(
 	name string,
-	storeId int,
+	storeId int32,
 	joinOcrProduct bool,
 ) (*entities.ProductEntity, error) {
 	var product entities.ProductEntity

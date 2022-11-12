@@ -4,7 +4,7 @@ import "fmt"
 
 type CrawlerResult struct {
 	ProductName  string
-	ProductPrice float64
+	ProductPrice float32
 	StoreId      int32
 	CrawlUrl     string
 	// TODO: Add

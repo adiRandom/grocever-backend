@@ -1,11 +1,11 @@
-package messages
+package events
 
 import (
 	"context"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
-	"lib/messages/rabbitmq"
+	"lib/events/rabbitmq"
 	amqpLib "lib/network/amqp"
 	"log"
 	"search/services"
@@ -65,7 +65,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.OcrProductDto] {
 	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.OcrProductDto](
 		processJsonMessage,
 		amqpLib.SearchQueue,
-		amqpLib.PriorityCrawlQueue,
+		&amqpLib.PriorityCrawlQueue,
 		&searchRequestTimeout,
 	)
 	return rabbitMqBroker

@@ -1,11 +1,11 @@
-package messages
+package events
 
 import (
 	crawlers "crawlers/services"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
-	"lib/messages/rabbitmq/multiplex"
+	"lib/events/rabbitmq/multiplex"
 	amqpLib "lib/network/amqp"
 	"log"
 	"time"

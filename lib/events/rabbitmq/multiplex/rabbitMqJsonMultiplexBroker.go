@@ -49,7 +49,7 @@ func (broker *JsonBroker[T]) Start(
 	broker.inboundConnectionMap = inboundConnections
 	defer cleanupInboundConnections()
 
-	var outConn, outCh, outQ, outConnErr = amqpLib.GetConnection(broker.outQueueName)
+	var outConn, outCh, outQ, outConnErr = amqpLib.GetConnection(&broker.outQueueName)
 
 	if outConnErr != nil {
 		helpers.PanicOnError(outConnErr, outConnErr.Reason)

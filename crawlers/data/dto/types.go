@@ -2,7 +2,7 @@ package dto
 
 type FreshfulDto struct {
 	Name  string  `json:"name"`
-	Price float64 `json:"price"`
+	Price float32 `json:"price"`
 }
 
 type MegaImageDto struct {
@@ -10,7 +10,7 @@ type MegaImageDto struct {
 		ProductDetails struct {
 			Name  string `json:"name"`
 			Price struct {
-				Value float64 `json:"value"`
+				Value float32 `json:"value"`
 			} `json:"price"`
 		} `json:"productDetails"`
 	} `json:"data"`

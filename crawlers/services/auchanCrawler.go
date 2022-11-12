@@ -24,12 +24,12 @@ func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan models.Cra
 		func(body *colly.HTMLElement) {
 			res := models.CrawlerResult{CrawlUrl: url}
 			res.ProductName = body.ChildText(auchanTitleElementQuerySelector.String())
-			price, err := strconv.ParseFloat(body.ChildAttr(auchanPriceElementQuerySelector.String(), auchanPriceAttrib), 64)
+			price, err := strconv.ParseFloat(body.ChildAttr(auchanPriceElementQuerySelector.String(), auchanPriceAttrib), 32)
 
 			if err != nil {
 				return
 			}
-			res.ProductPrice = price
+			res.ProductPrice = float32(price)
 			res.StoreId = constants.AuchanStoreId
 
 			resCh <- res

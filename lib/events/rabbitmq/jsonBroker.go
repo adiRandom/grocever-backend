@@ -17,7 +17,7 @@ type JsonBroker[T any] struct {
 		ctx context.Context,
 	)
 	inQueueName    string
-	outQueueName   string
+	outQueueName   *string
 	processTimeout *time.Duration
 }
 
@@ -28,7 +28,7 @@ func NewJsonBroker[T any](
 		ctx context.Context,
 	),
 	inQueueName string,
-	outQueueName string,
+	outQueueName *string,
 	processTimeout *time.Duration,
 ) *JsonBroker[T] {
 	return &JsonBroker[T]{
@@ -43,7 +43,7 @@ func NewJsonBroker[T any](
 func (broker JsonBroker[T]) Start(
 	ctx context.Context,
 ) {
-	conn, ch, q, connErr := amqpLib.GetConnection(broker.inQueueName)
+	conn, ch, q, connErr := amqpLib.GetConnection(&broker.inQueueName)
 
 	if connErr != nil {
 		helpers.PanicOnError(connErr, connErr.Reason)
@@ -51,7 +51,7 @@ func (broker JsonBroker[T]) Start(
 	defer helpers.SafeClose(conn)
 	defer helpers.SafeClose(ch)
 
-	var outConn, outCh, outQ, outConnErr = amqpLib.GetConnection(broker.outQueueName)
+	outConn, outCh, outQ, outConnErr := amqpLib.GetConnection(broker.outQueueName)
 
 	if outConnErr != nil {
 		helpers.PanicOnError(outConnErr, outConnErr.Reason)
