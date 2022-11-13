@@ -6,9 +6,9 @@ import (
 )
 
 func GetQueueForPriority(priority string) string {
-	if priority == scheduling.NORMAL {
+	if priority == scheduling.Normal {
 		return amqp.CrawlQueue
-	} else if priority == scheduling.PRIORITIZED {
+	} else if priority == scheduling.Prioritized {
 		return amqp.PriorityCrawlQueue
 	}
 	return ""

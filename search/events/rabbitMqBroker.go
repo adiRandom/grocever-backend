@@ -33,7 +33,7 @@ func processJsonMessage(msg dto.OcrProductDto,
 			OcrProduct:   msg,
 			CrawlSources: searchRes,
 		},
-		Type: scheduling.PRIORITIZED,
+		Type: scheduling.Prioritized,
 	}
 
 	bodyBytes, err := json.Marshal(body)

@@ -57,6 +57,11 @@ func (s *Scheduler) Close() {
 }
 
 func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
+	if dto.Type == scheduling.Requeue {
+		// TODO: Requeue:
+		return
+	}
+
 	queueName := crawl.GetQueueForPriority(dto.Type)
 	if queueName == "" {
 		fmt.Printf("Invalid crawl type: %s", dto.Type)

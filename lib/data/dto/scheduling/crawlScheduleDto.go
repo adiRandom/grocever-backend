@@ -18,5 +18,6 @@ func (dto CrawlDto) String() string {
 	)
 }
 
-const NORMAL = "normal"
-const PRIORITIZED = "prioritized"
+const Normal = "normal"
+const Prioritized = "prioritized"
+const Requeue = "requeue"
