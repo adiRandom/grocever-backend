@@ -2,17 +2,17 @@ package dto
 
 import "lib/functional"
 
-type SearchProductDto struct {
+type CrawlProductDto struct {
 	OcrProduct   OcrProductDto    `json:"ocrProduct"`
 	CrawlSources []CrawlSourceDto `json:"crawlSources"`
 }
 
-func (dto SearchProductDto) String() string {
+func (dto CrawlProductDto) String() string {
 	crawlSourcesString := functional.Reduce(dto.CrawlSources,
 		func(acc string, crawlSource CrawlSourceDto) string {
 			return acc + crawlSource.String() + " "
 		}, "")
-	return "SearchProductDto: (OcrProducts: " +
+	return "CrawlProductDto: (OcrProducts: " +
 		dto.OcrProduct.String() +
 		" CrawlSources: " + crawlSourcesString +
 		")"

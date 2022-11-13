@@ -9,19 +9,19 @@ import (
 )
 
 func ProduceCrawlMessages() {
-	_, ch, q, err := amqpLib.GetConnection(amqpLib.CrawlQueue)
+	_, ch, q, err := amqpLib.GetConnection(&amqpLib.CrawlQueue)
 	if err != nil {
 		panic(err)
 	}
 
-	_, pCh, pQ, err := amqpLib.GetConnection(amqpLib.PriorityCrawlQueue)
+	_, pCh, pQ, err := amqpLib.GetConnection(&amqpLib.PriorityCrawlQueue)
 	if err != nil {
 		panic(err)
 	}
 
 	ctx := context.Background()
 	for i := 0; i < 30; i++ {
-		product := dto.SearchProductDto{
+		product := dto.CrawlProductDto{
 			OcrProduct: dto.OcrProductDto{
 				ProductName: "test" + string(i),
 			},
@@ -38,7 +38,7 @@ func ProduceCrawlMessages() {
 	}
 
 	for i := 0; i < 30; i++ {
-		product := dto.SearchProductDto{
+		product := dto.CrawlProductDto{
 			OcrProduct: dto.OcrProductDto{
 				ProductName: "Prio" + string(i),
 			},

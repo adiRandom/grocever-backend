@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var rabbitMqBroker *multiplex.JsonBroker[dto.SearchProductDto]
+var rabbitMqBroker *multiplex.JsonBroker[dto.CrawlProductDto]
 var messageProcessingTimeout = 1 * time.Minute
 var inboundQueues = multiplex.InQueues{
 	amqpLib.PriorityCrawlQueue: *multiplex.NewInQueueMetadata(
@@ -27,7 +27,7 @@ var inboundQueues = multiplex.InQueues{
 const queueSwitchInterval = 10
 
 func pickInboundQueue(currentQueueName string,
-	queueMetadata multiplex.OnSelectQueueCtx[dto.SearchProductDto],
+	queueMetadata multiplex.OnSelectQueueCtx[dto.CrawlProductDto],
 ) string {
 	if currentQueueName == "" {
 		return amqpLib.CrawlQueue
@@ -64,7 +64,7 @@ func pickInboundQueue(currentQueueName string,
 	return currentQueueName
 }
 
-func processJsonMessage(args multiplex.OnMessageArgs[dto.SearchProductDto]) {
+func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
 	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
 	body := dto.ProductProcessDto{OcrProductDto: args.Msg.OcrProduct, CrawlResults: crawlRes}
 
@@ -93,12 +93,12 @@ func processJsonMessage(args multiplex.OnMessageArgs[dto.SearchProductDto]) {
 	}
 }
 
-func GetRabbitMqBroker() *multiplex.JsonBroker[dto.SearchProductDto] {
+func GetRabbitMqBroker() *multiplex.JsonBroker[dto.CrawlProductDto] {
 	if rabbitMqBroker != nil {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = multiplex.NewJsonBroker[dto.SearchProductDto](
+	rabbitMqBroker = multiplex.NewJsonBroker[dto.CrawlProductDto](
 		processJsonMessage,
 		inboundQueues,
 		amqpLib.ProductProcessQueue,

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
+	"lib/data/dto/scheduling"
 	"lib/events/rabbitmq"
 	amqpLib "lib/network/amqp"
 	"log"
@@ -27,9 +28,12 @@ func processJsonMessage(msg dto.OcrProductDto,
 		log.Fatalf("Failed to query google for %s from store %d. Error: %s", msg.ProductName, msg.StoreId, err.Error())
 	}
 
-	body := dto.SearchProductDto{
-		OcrProduct:   msg,
-		CrawlSources: searchRes,
+	body := scheduling.CrawlDto{
+		Product: dto.CrawlProductDto{
+			OcrProduct:   msg,
+			CrawlSources: searchRes,
+		},
+		Type: scheduling.PRIORITIZED,
 	}
 
 	bodyBytes, err := json.Marshal(body)
@@ -65,7 +69,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.OcrProductDto] {
 	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.OcrProductDto](
 		processJsonMessage,
 		amqpLib.SearchQueue,
-		&amqpLib.PriorityCrawlQueue,
+		&amqpLib.ScheduleQueue,
 		&searchRequestTimeout,
 	)
 	return rabbitMqBroker

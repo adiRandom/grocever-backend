@@ -19,7 +19,7 @@ type Scheduler struct {
 
 var scheduler *Scheduler
 
-const TIMEOUT = 1 // seconds
+const timeout = 1 // seconds
 
 func newScheduler() *Scheduler {
 	queueNames := []string{amqp.CrawlQueue, amqp.PriorityCrawlQueue}
@@ -66,7 +66,7 @@ func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
 	ch := s.chs[queueName]
 	q := s.queues[queueName]
 
-	body := dto.CrawlSource
+	body := dto.Product
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		fmt.Printf("Failed to marshal crawl source: %s. Error: %s", body.String(), err.Error())
@@ -74,7 +74,7 @@ func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
 	}
 
 	ctx := context.Background()
-	ctx, _ = context.WithTimeout(ctx, TIMEOUT)
+	ctx, _ = context.WithTimeout(ctx, timeout)
 
 	err = ch.PublishWithContext(ctx,
 		"",

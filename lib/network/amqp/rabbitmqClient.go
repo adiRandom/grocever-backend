@@ -5,12 +5,13 @@ import (
 	"lib/helpers"
 )
 
-const SearchQueue = "search"
-const CrawlQueue = "crawl"
-
+var SearchQueue = "search"
+var CrawlQueue = "crawl"
 var PriorityCrawlQueue = "priorityCrawl"
 
 const ProductProcessQueue = "productProcess"
+
+var ScheduleQueue = "schedule"
 
 func GetConnection(queueName *string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
 	if queueName == nil {
