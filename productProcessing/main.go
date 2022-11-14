@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"productProcessing/data/database"
+	"lib/data/database"
 	"productProcessing/data/database/entities"
 	"productProcessing/data/database/repositories"
 )

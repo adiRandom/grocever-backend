@@ -3,12 +3,13 @@ package repositories
 import (
 	"errors"
 	"gorm.io/gorm"
-	"productProcessing/data/database"
+	"lib/data/database"
+	"lib/data/database/repositories"
 	"productProcessing/data/database/entities"
 )
 
 type ProductRepository struct {
-	Repository[entities.ProductEntity]
+	repositories.Repository[entities.ProductEntity]
 }
 
 var pr *ProductRepository = nil
@@ -20,26 +21,26 @@ func GetProductRepository() *ProductRepository {
 		if err != nil {
 			panic(err)
 		}
-		pr.db = db
+		pr.Db = db
 	}
 	return pr
 }
 
 func (r *ProductRepository) GetAll() ([]entities.ProductEntity, error) {
 	var products []entities.ProductEntity
-	err := r.db.Find(&products).Error
+	err := r.Db.Find(&products).Error
 	return products, err
 }
 
 func (r *ProductRepository) GetAllWithCrawlLink() ([]entities.ProductEntity, error) {
 	var products []entities.ProductEntity
-	err := r.db.Preload("CrawlLink").Find(&products).Error
+	err := r.Db.Preload("CrawlLink").Find(&products).Error
 	return products, err
 }
 
 func (r *ProductRepository) GetById(id uint) (*entities.ProductEntity, error) {
 	var product entities.ProductEntity
-	err := r.db.First(&product, id).Error
+	err := r.Db.First(&product, id).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -49,11 +50,11 @@ func (r *ProductRepository) GetById(id uint) (*entities.ProductEntity, error) {
 }
 
 func (r *ProductRepository) Save(entity entities.ProductEntity) error {
-	return r.db.Save(&entity).Error
+	return r.Db.Save(&entity).Error
 }
 
 func (r *ProductRepository) Delete(entity entities.ProductEntity) error {
-	return r.db.Delete(&entity).Error
+	return r.Db.Delete(&entity).Error
 }
 
 func (r *ProductRepository) GetProductByNameAndStoreId(
@@ -62,7 +63,7 @@ func (r *ProductRepository) GetProductByNameAndStoreId(
 	joinOcrProduct bool,
 ) (*entities.ProductEntity, error) {
 	var product entities.ProductEntity
-	var query = r.db.Where("name = ? AND store_id = ?", name, storeId)
+	var query = r.Db.Where("name = ? AND store_id = ?", name, storeId)
 
 	if joinOcrProduct {
 		query = query.Preload("OcrProducts")
@@ -77,7 +78,7 @@ func (r *ProductRepository) GetProductByNameAndStoreId(
 }
 
 func (r *ProductRepository) updateCrawLinkUrl(product *entities.ProductEntity, url string) error {
-	return r.db.
+	return r.Db.
 		Model(&entities.CrawlLinkEntity{}).
 		Where("product_id = ?", product.ID).
 		Updates(entities.CrawlLinkEntity{
@@ -89,7 +90,7 @@ func (r *ProductRepository) updateCrawLinkUrl(product *entities.ProductEntity, u
 func (r *ProductRepository) hasOcrProduct(product *entities.ProductEntity, ocrName string) (bool, error) {
 	var ocrProduct *entities.OcrProductEntity
 
-	err := r.db.
+	err := r.Db.
 		Model(product).
 		Where(&entities.OcrProductEntity{OcrProductName: ocrName}).
 		Association("OcrProducts").
@@ -105,7 +106,7 @@ func (r *ProductRepository) updateProductPrice(
 	product *entities.ProductEntity,
 	price float32,
 ) error {
-	return r.db.Model(product).Updates(entities.ProductEntity{
+	return r.Db.Model(product).Updates(entities.ProductEntity{
 		Price: price,
 	}).Error
 }
@@ -126,7 +127,7 @@ func (r *ProductRepository) Create(
 	}
 
 	if existingProduct == nil {
-		err = r.db.Create(product).Error
+		err = r.Db.Create(product).Error
 		if err != nil {
 			return err
 		}
