@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"lib/data/constants"
 	"lib/data/dto"
 	"lib/data/models"
@@ -49,6 +50,7 @@ func CrawlProductPages(srcs []dto.CrawlSourceDto) []models.CrawlerResult {
 	var res []models.CrawlerResult
 	for range srcs {
 		res = append(res, <-resCh)
+		fmt.Printf("Got result: %+v\n", res)
 	}
 	return res
 }

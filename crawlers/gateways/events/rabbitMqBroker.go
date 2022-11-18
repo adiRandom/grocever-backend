@@ -65,6 +65,8 @@ func pickInboundQueue(currentQueueName string,
 }
 
 func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
+	println("Processing message from queue: ", args.From)
+
 	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
 	body := dto.ProductProcessDto{OcrProductDto: args.Msg.OcrProduct, CrawlResults: crawlRes}
 

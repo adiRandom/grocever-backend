@@ -25,10 +25,12 @@ func GetRequeueService() *RequeueService {
 
 func (s *RequeueService) Requeue(product dto.CrawlProductDto) error {
 	repository := repositories.GetRepository()
-	entity := entities.NewProductRequeueEntity(product)
-	err := repository.Create(*entity)
-	if err != nil {
-		return err
+	requeueEntities := entities.NewProductRequeueEntities(product)
+	for _, entity := range requeueEntities {
+		err := repository.Create(entity)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -49,7 +51,11 @@ func (s *RequeueService) requeue() {
 	}
 
 	for _, product := range products {
-		crawlDto := scheduling.CrawlDto{Type: scheduling.Normal, Product: product.Product}
+		crawlDto := scheduling.NewCrawlDto(
+			product.Product,
+			product.CrawlSource,
+			scheduling.Requeue,
+		)
 		scheduler.ScheduleCrawl(crawlDto)
 	}
 }
