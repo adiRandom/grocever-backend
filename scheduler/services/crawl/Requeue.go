@@ -1,1 +1,55 @@
 package crawl
+
+import (
+	"fmt"
+	"github.com/go-co-op/gocron"
+	"lib/data/dto"
+	"lib/data/dto/scheduling"
+	"log"
+	"scheduler/data/database/entities"
+	repositories "scheduler/data/database/repositories/productRequeue"
+	"time"
+)
+
+type RequeueService struct {
+}
+
+var requeueService *RequeueService = nil
+
+func GetRequeueService() *RequeueService {
+	if requeueService == nil {
+		requeueService = &RequeueService{}
+	}
+	return requeueService
+}
+
+func (s *RequeueService) Requeue(product dto.CrawlProductDto) error {
+	repository := repositories.GetRepository()
+	entity := entities.NewProductRequeueEntity(product)
+	err := repository.Create(*entity)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *RequeueService) StartCronRequeue() {
+	cron := gocron.NewScheduler(time.UTC)
+	_, err := cron.Every(1).Day().At("00:00").Do(s.requeue)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Could not start crawl requeue cron: %s", err))
+	}
+}
+
+func (s *RequeueService) requeue() {
+	repository := repositories.GetRepository()
+	products, err := repository.GetProductsForRequeue()
+	if err != nil {
+		return
+	}
+
+	for _, product := range products {
+		crawlDto := scheduling.CrawlDto{Type: scheduling.Normal, Product: product.Product}
+		scheduler.ScheduleCrawl(crawlDto)
+	}
+}

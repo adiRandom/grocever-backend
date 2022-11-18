@@ -58,8 +58,10 @@ func (s *Scheduler) Close() {
 
 func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
 	if dto.Type == scheduling.Requeue {
-		// TODO: Requeue:
-		return
+		err := requeueService.Requeue(dto.Product)
+		if err != nil {
+			return
+		}
 	}
 
 	queueName := crawl.GetQueueForPriority(dto.Type)
