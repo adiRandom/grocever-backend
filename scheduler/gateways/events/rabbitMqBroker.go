@@ -27,7 +27,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[scheduling.CrawlDto] {
 
 	broker = rabbitmq.NewJsonBroker[scheduling.CrawlDto](
 		processJsonMessage,
-		amqpLib.SearchQueue,
+		amqpLib.ScheduleQueue,
 		nil,
 		nil,
 	)

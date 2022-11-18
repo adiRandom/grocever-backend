@@ -62,6 +62,7 @@ func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
 		if err != nil {
 			return
 		}
+		return
 	}
 
 	queueName := crawl.GetQueueForPriority(dto.Type)

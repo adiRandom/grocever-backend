@@ -23,7 +23,7 @@ func ProduceRequeueMessages() {
 				OcrProduct: dto.OcrProductDto{
 					ProductName: "test" + string(i),
 				},
-				CrawlSources: make([]dto.CrawlSourceDto, 0),
+				CrawlSources: []dto.CrawlSourceDto{{Url: "test" + string(i)}},
 			},
 		}
 		bodyBytes, err := json.Marshal(product)

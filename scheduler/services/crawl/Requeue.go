@@ -37,10 +37,13 @@ func (s *RequeueService) Requeue(product dto.CrawlProductDto) error {
 
 func (s *RequeueService) StartCronRequeue() {
 	cron := gocron.NewScheduler(time.UTC)
-	_, err := cron.Every(1).Day().At("00:00").Do(s.requeue)
+	//_, err := cron.Every(1).Day().At("00:00").Do(s.requeue)
+	_, err := cron.Every(10).Seconds().Do(s.requeue)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Could not start crawl requeue cron: %s", err))
 	}
+
+	cron.StartAsync()
 }
 
 func (s *RequeueService) requeue() {
@@ -54,7 +57,7 @@ func (s *RequeueService) requeue() {
 		crawlDto := scheduling.NewCrawlDto(
 			product.Product,
 			product.CrawlSource,
-			scheduling.Requeue,
+			scheduling.Normal,
 		)
 		scheduler.ScheduleCrawl(crawlDto)
 	}
