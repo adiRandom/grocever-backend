@@ -41,4 +41,5 @@ func (s *ProductService) ProcessCrawlProduct(product dto.ProductProcessDto) []er
 
 	return errors
 	// schedule notifications for best price
+	// scheduele requeue
 }
