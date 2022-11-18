@@ -8,16 +8,18 @@ import (
 	amqpLib "lib/network/amqp"
 	"log"
 	"productProcessing/services"
+	"time"
 )
 
 var rabbitMqBroker *rabbitmq.JsonBroker[dto.ProductProcessDto]
+var requeueTimeout = 5 * time.Minute
 
 func processJsonMessage(msg dto.ProductProcessDto,
-	_ *amqp.Channel,
-	_ *amqp.Queue,
+	scheduleCh *amqp.Channel,
+	scheduleQueue *amqp.Queue,
 	_ context.Context,
 ) {
-	service := services.ProductService{}
+	service := services.NewProductService(*scheduleQueue, scheduleCh, &requeueTimeout)
 	errs := service.ProcessCrawlProduct(msg)
 
 	for _, err := range errs {
@@ -33,7 +35,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.ProductProcessDto](
 		processJsonMessage,
 		amqpLib.SearchQueue,
-		nil,
+		&amqpLib.ScheduleQueue,
 		nil,
 	)
 	return rabbitMqBroker
