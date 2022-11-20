@@ -1,4 +1,4 @@
-package ocr
+package main
 
 import (
 	"context"
@@ -36,9 +36,9 @@ func SendOcrProductToQueue() {
 	defer cancel()
 
 	body := dto.OcrProductDto{
-		ProductName:  "test",
-		ProductPrice: 1.0,
-		StoreId:      1,
+		ProductName:  "Lapte zuzu",
+		ProductPrice: 10,
+		StoreId:      nil,
 	}
 
 	bodyBytes, err := json.Marshal(body)

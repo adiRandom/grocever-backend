@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
 	"lib/data/dto/scheduling"
@@ -53,6 +54,8 @@ func processJsonMessage(msg dto.OcrProductDto,
 			ContentType: "application/json",
 			Body:        bodyBytes,
 		})
+
+	fmt.Printf(" [x] Sent %+v\n", body)
 
 	if err != nil {
 		log.Fatalf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",

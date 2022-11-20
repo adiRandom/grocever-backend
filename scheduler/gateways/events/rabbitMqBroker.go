@@ -16,7 +16,7 @@ func processJsonMessage(msg scheduling.CrawlDto,
 	_ *amqp.Queue,
 	_ context.Context,
 ) {
-	scheduler := crawl.Scheduler{}
+	scheduler := crawl.GetScheduler()
 	scheduler.ScheduleCrawl(msg)
 }
 

@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
 	"lib/events/rabbitmq"
@@ -20,6 +21,7 @@ func processJsonMessage(msg dto.ProductProcessDto,
 	_ context.Context,
 ) {
 	service := services.NewProductService(*scheduleQueue, scheduleCh, &requeueTimeout)
+	fmt.Printf("Processing message: %+v \n", msg)
 	errs := service.ProcessCrawlProduct(msg)
 
 	for _, err := range errs {
@@ -34,7 +36,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 
 	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.ProductProcessDto](
 		processJsonMessage,
-		amqpLib.SearchQueue,
+		amqpLib.ProductProcessQueue,
 		&amqpLib.ScheduleQueue,
 		nil,
 	)

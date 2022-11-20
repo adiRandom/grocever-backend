@@ -14,7 +14,11 @@ func main() {
 		panic(err)
 	}
 
-	database.InitDatabase(&entities.ProductEntity{}, &entities.CrawlLinkEntity{}, &entities.OcrProductEntity{})
+	err = database.InitDatabase(&entities.ProductEntity{}, &entities.CrawlLinkEntity{}, &entities.OcrProductEntity{})
+	if err != nil {
+		return
+	}
 
+	println("Started")
 	events.GetRabbitMqBroker().Start(context.Background())
 }

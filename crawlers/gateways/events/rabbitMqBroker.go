@@ -13,6 +13,7 @@ import (
 
 var rabbitMqBroker *multiplex.JsonBroker[dto.CrawlProductDto]
 var messageProcessingTimeout = 1 * time.Minute
+var deadlockTimeout = 5 * time.Minute
 var inboundQueues = multiplex.InQueues{
 	amqpLib.PriorityCrawlQueue: *multiplex.NewInQueueMetadata(
 		amqpLib.PriorityCrawlQueue,
@@ -105,7 +106,7 @@ func GetRabbitMqBroker() *multiplex.JsonBroker[dto.CrawlProductDto] {
 		inboundQueues,
 		amqpLib.ProductProcessQueue,
 		pickInboundQueue,
-		nil,
+		&deadlockTimeout,
 	)
 	return rabbitMqBroker
 }

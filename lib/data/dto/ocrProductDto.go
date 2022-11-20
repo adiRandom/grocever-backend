@@ -5,7 +5,7 @@ import "fmt"
 type OcrProductDto struct {
 	ProductName  string  `json:"productName"`
 	ProductPrice float32 `json:"productPrice"`
-	StoreId      int32   `json:"storeId"`
+	StoreId      *int32  `json:"storeId"`
 }
 
 func (dto OcrProductDto) String() string {

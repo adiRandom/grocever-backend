@@ -7,7 +7,6 @@ import (
 	"scheduler/data/database/entities"
 	"scheduler/gateways/events"
 	"scheduler/services/crawl"
-	"scheduler/test"
 )
 
 func main() {
@@ -29,8 +28,6 @@ func main() {
 
 	service := crawl.GetRequeueService()
 	service.StartCronRequeue()
-
-	test.ProduceRequeueMessages()
 
 	select {}
 }
