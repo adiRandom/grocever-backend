@@ -2,3 +2,5 @@
 build/
 
 .env
+
+google-service-account.json
