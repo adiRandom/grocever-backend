@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var priceLineRegex = regexp.MustCompile(`((\d+)|(\d+(\.|,)\d{1,3})) * ((BUC)|(KG)) *(X|x) *\d+(\.|,)\d{2}`)
+var priceLineRegex = regexp.MustCompile(`((\d+)|(\d+(\.|,)\d{1,3})) * ((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
 var qtyRegex = regexp.MustCompile(`^((\d+)|(\d+\.\d{1,3}))`)
 var unitRegex = regexp.MustCompile(`(BUC)|(KG)`)
 var unitPriceRegex = regexp.MustCompile(`\d+(\.|,)\d{2}$`)
@@ -129,14 +129,16 @@ func (s *ParseService) zipProductAndPrice(tokens []string) []helpers.Pair[string
 	}
 
 	pairs := make([]helpers.Pair[string, string], productCount)
+	pairsIndex := 0
 	i := 0
-	for i < productCount {
+	for pairsIndex < productCount {
 		if isFirstLinePrice {
-			pairs[i] = helpers.Pair[string, string]{tokens[i+1], tokens[i]}
+			pairs[pairsIndex] = helpers.Pair[string, string]{tokens[i+1], tokens[i]}
 		} else {
-			pairs[i] = helpers.Pair[string, string]{tokens[i], tokens[i+1]}
+			pairs[pairsIndex] = helpers.Pair[string, string]{tokens[i], tokens[i+1]}
 		}
-		i++
+		i += 2
+		pairsIndex++
 	}
 
 	return pairs

@@ -34,7 +34,7 @@ func GetOcrService() *OcrService {
 	return ocrService
 }
 
-func (s *OcrService) ProcessImage(file io.Reader) (*string, error) {
+func (s *OcrService) ProcessImage(file io.Reader) (string, error) {
 	ctx := context.Background()
 	image, err := vision.NewImageFromReader(file)
 	if err != nil {
@@ -43,8 +43,8 @@ func (s *OcrService) ProcessImage(file io.Reader) (*string, error) {
 
 	annotations, err := s.client.DetectDocumentText(ctx, image, nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &annotations.Text, nil
+	return annotations.Text, nil
 }
