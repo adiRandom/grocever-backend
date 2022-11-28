@@ -2,9 +2,6 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"log"
-	"ocr/services"
-	"os"
 )
 
 func main() {
@@ -12,19 +9,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s := services.GetOcrService()
+	//s := services.GetOcrService()
+	//
+	//// Open a file from desktop as Reader
+	//homeDir, err := os.UserHomeDir()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//file, err := os.Open(homeDir + "/Desktop/Reciepts/3.jpeg")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer file.Close()
+	//
+	//s.ProcessImage(file)
 
-	// Open a file from desktop as Reader
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-	file, err := os.Open(homeDir + "/Desktop/Reciepts/3.jpeg")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	s.ProcessImage(file)
+	Get
 
 }

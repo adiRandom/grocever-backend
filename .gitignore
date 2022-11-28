@@ -4,3 +4,6 @@ build/
 .env
 
 google-service-account.json
+
+response.json
+response-*.json
