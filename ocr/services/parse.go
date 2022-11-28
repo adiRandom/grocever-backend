@@ -87,6 +87,7 @@ func (s *ParseService) getOcrProductsFromPairs(productAndPrice []helpers.Pair[st
 }
 
 func (s *ParseService) getStore(ocrText string) (string, error) {
+	allCapsOcrText := strings.ToUpper(ocrText)
 	storeNames := api.GetAllStoreNames()
 
 	storeNameRegexStr := ""
@@ -103,7 +104,7 @@ func (s *ParseService) getStore(ocrText string) (string, error) {
 		return "", err
 	}
 
-	match := regex.FindString(ocrText)
+	match := regex.FindString(allCapsOcrText)
 	if match == "" {
 		return "", helpers.Error{Msg: "No store name found in ocr text"}
 	}
@@ -146,6 +147,7 @@ func (s *ParseService) zipProductAndPrice(tokens []string) []helpers.Pair[string
 
 func (s *ParseService) getQty(priceLine string) (float64, error) {
 	match := qtyRegex.FindString(priceLine)
+	match = strings.ReplaceAll(match, ",", ".")
 	return strconv.ParseFloat(match, 32)
 }
 
@@ -156,5 +158,6 @@ func (s *ParseService) getUnit(priceLine string) string {
 func (s *ParseService) getUnitPrice(priceLine string) (float64, error) {
 	trimmedLine := strings.Trim(priceLine, " ")
 	match := unitPriceRegex.FindString(trimmedLine)
+	match = strings.ReplaceAll(match, ",", ".")
 	return strconv.ParseFloat(match, 32)
 }

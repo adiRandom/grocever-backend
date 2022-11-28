@@ -9,5 +9,5 @@ func GetStoreMetadataForName(name string) (dto.StoreMetadata, error) {
 
 func GetAllStoreNames() []string {
 	// TODO: implement
-	return []string{"Auchan", "Carrefour", "Kaufland", "MEGA IMAGE"}
+	return []string{"AUCHAN", "CARREFOUR", "KAUFLAND", "MEGA IMAGE"}
 }
