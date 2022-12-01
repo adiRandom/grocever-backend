@@ -17,13 +17,16 @@ var unitRegex = regexp.MustCompile(`(BUC)|(KG)`)
 var unitPriceRegex = regexp.MustCompile(`\d+(\.|,)\d{2}$`)
 
 type ParseService struct {
+	storeApi *api.Store
 }
 
 var parseService *ParseService = nil
 
 func GetParseService() ParseService {
 	if parseService == nil {
-		parseService = &ParseService{}
+		parseService = &ParseService{
+			storeApi: api.GetClient(),
+		}
 	}
 	return *parseService
 }
@@ -34,7 +37,7 @@ func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, erro
 		return nil, err
 	}
 
-	storeMetadata, err := api.GetStoreMetadataForName(storeName)
+	storeMetadata, err := s.storeApi.GetStoreMetadataForName(storeName)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +91,7 @@ func (s *ParseService) getOcrProductsFromPairs(productAndPrice []helpers.Pair[st
 
 func (s *ParseService) getStore(ocrText string) (string, error) {
 	allCapsOcrText := strings.ToUpper(ocrText)
-	storeNames := api.GetAllStoreNames()
+	storeNames := s.storeApi.GetAllStoreNames()
 
 	storeNameRegexStr := ""
 	for i, name := range storeNames {
