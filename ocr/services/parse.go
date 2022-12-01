@@ -6,6 +6,7 @@ import (
 	"lib/helpers"
 	"ocr/api"
 	"ocr/models"
+	"ocr/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -68,7 +69,6 @@ func (s *ParseService) getOcrProductsFromPairs(productAndPrice []helpers.Pair[st
 				Reason: err.Error(),
 			}
 		}
-		qty32 := float32(qty)
 		unit := s.getUnit(priceLine)
 		unitPrice, err := s.getUnitPrice(priceLine)
 		if err != nil {
@@ -77,13 +77,12 @@ func (s *ParseService) getOcrProductsFromPairs(productAndPrice []helpers.Pair[st
 				Reason: err.Error(),
 			}
 		}
-		unitPrice32 := float32(unitPrice)
 
 		products[i] = models.NewOcrProduct(
-			product,     // name
-			unit,        // unitName
-			qty32,       // qty
-			unitPrice32, // unitPrice
+			product,                              // name
+			unit,                                 // unitName
+			float32(utils.TruncateFloat(qty, 3)), // qty
+			float32(utils.TruncateFloat(unitPrice, 3)), // unitPrice
 		)
 	}
 	return products, nil
