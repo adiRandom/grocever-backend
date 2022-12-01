@@ -3,6 +3,7 @@ package multiplex
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/functional"
 	"lib/helpers"
@@ -94,7 +95,7 @@ func (broker *JsonBroker[T]) parseMessageAndProcess(
 	var msgBody T
 	err := json.Unmarshal(msg.Body, &msgBody)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal message. Error: %s", err.Error())
+		fmt.Printf("Failed to unmarshal message. Error: %s", err.Error())
 	}
 
 	var ctx context.Context

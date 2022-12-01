@@ -3,11 +3,11 @@ package events
 import (
 	crawlers "crawlers/services"
 	"encoding/json"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
 	"lib/events/rabbitmq/multiplex"
 	amqpLib "lib/network/amqp"
-	"log"
 	"time"
 )
 
@@ -73,7 +73,7 @@ func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		log.Fatalf("Failed to marshal process product dto for product %s from store %d. Error: %s",
+		fmt.Printf("Failed to marshal process product dto for product %s from store %d. Error: %s",
 			err.Error(),
 			body.OcrProductDto.ProductName,
 			body.OcrProductDto.ProductName)
@@ -90,7 +90,7 @@ func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
 		})
 
 	if err != nil {
-		log.Fatalf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",
+		fmt.Printf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",
 			body.String(),
 			err.Error())
 	}

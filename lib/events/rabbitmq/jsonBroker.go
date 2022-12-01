@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/helpers"
 	amqpLib "lib/network/amqp"
@@ -97,7 +98,7 @@ func (broker JsonBroker[T]) listenForMessages(
 		var msgBody T
 		err := json.Unmarshal(msg.Body, &msgBody)
 		if err != nil {
-			log.Fatalf("Failed to unmarshal message. Error: %s", err.Error())
+			fmt.Printf("Failed to unmarshal message. Error: %s", err.Error())
 		}
 
 		var ctx context.Context

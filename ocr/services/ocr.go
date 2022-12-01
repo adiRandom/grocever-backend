@@ -3,8 +3,8 @@ package services
 import (
 	vision "cloud.google.com/go/vision/apiv1"
 	"context"
+	"fmt"
 	"io"
-	"log"
 )
 
 type OcrService struct {
@@ -25,7 +25,7 @@ func GetOcrService() *OcrService {
 	// Creates a client.
 	client, err := vision.NewImageAnnotatorClient(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
+		fmt.Printf("Failed to create client: %v", err)
 	}
 	ocrService.client = client
 	ocrService.close = func() {
@@ -38,7 +38,7 @@ func (s *OcrService) ProcessImage(file io.Reader) (string, error) {
 	ctx := context.Background()
 	image, err := vision.NewImageFromReader(file)
 	if err != nil {
-		log.Fatalf("Failed to create image: %v", err)
+		fmt.Printf("Failed to create image: %v", err)
 	}
 
 	annotations, err := s.client.DetectDocumentText(ctx, image, nil)

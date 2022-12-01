@@ -8,6 +8,7 @@ import (
 var SearchQueue = "search"
 var CrawlQueue = "crawl"
 var PriorityCrawlQueue = "priorityCrawl"
+var OcrQueue = "ocr"
 
 const ProductProcessQueue = "productProcess"
 

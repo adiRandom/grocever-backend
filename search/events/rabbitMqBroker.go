@@ -9,7 +9,6 @@ import (
 	"lib/data/dto/scheduling"
 	"lib/events/rabbitmq"
 	amqpLib "lib/network/amqp"
-	"log"
 	"search/services"
 	"time"
 )
@@ -26,7 +25,7 @@ func processJsonMessage(msg dto.OcrProductDto,
 
 	searchRes, err := searchService.SearchCrawlSources(msg.ProductName)
 	if err != nil {
-		log.Fatalf("Failed to query google for %s from store %d. Error: %s", msg.ProductName, msg.StoreId, err.Error())
+		fmt.Printf("Failed to query google for %s from store %d. Error: %s", msg.ProductName, msg.StoreId, err.Error())
 	}
 
 	body := scheduling.CrawlDto{
@@ -39,7 +38,7 @@ func processJsonMessage(msg dto.OcrProductDto,
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		log.Fatalf("Failed to marshal search product dto for product %s from store %d. Error: %s",
+		fmt.Printf("Failed to marshal search product dto for product %s from store %d. Error: %s",
 			err.Error(),
 			msg.ProductName,
 			msg.StoreId)
@@ -58,7 +57,7 @@ func processJsonMessage(msg dto.OcrProductDto,
 	fmt.Printf(" [x] Sent %+v\n", body)
 
 	if err != nil {
-		log.Fatalf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",
+		fmt.Printf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",
 			body.String(),
 			err.Error())
 	}
