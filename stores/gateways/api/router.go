@@ -8,31 +8,31 @@ import (
 	"stores/data/database/repository"
 )
 
-type Client struct {
+type Router struct {
 	engine *gin.Engine
 	repo   *repository.StoreMetadata
 }
 
-var client *Client = nil
+var router *Router = nil
 
-func GetClient() *Client {
-	if client == nil {
-		client = &Client{
+func GetRouter() *Router {
+	if router == nil {
+		router = &Router{
 			engine: gin.Default(),
 			repo:   repository.GetStoreMetadataRepository(),
 		}
 
-		client.initEndpoints()
+		router.initEndpoints()
 	}
-	return client
+	return router
 }
 
-func (c *Client) initEndpoints() {
+func (c *Router) initEndpoints() {
 	c.engine.GET("/store/list", c.getAllStores)
 	c.engine.GET("/store/:name", c.getStoreByName)
 }
 
-func (c *Client) getAllStores(ctx *gin.Context) {
+func (c *Router) getAllStores(ctx *gin.Context) {
 	stores, err := c.repo.GetAll()
 	if err != nil {
 		ctx.JSON(500,
@@ -53,7 +53,7 @@ func (c *Client) getAllStores(ctx *gin.Context) {
 	)
 }
 
-func (c *Client) getStoreByName(ctx *gin.Context) {
+func (c *Router) getStoreByName(ctx *gin.Context) {
 	name := ctx.Param("name")
 	store, err := c.repo.GetByName(name)
 	if err != nil {
@@ -75,7 +75,7 @@ func (c *Client) getStoreByName(ctx *gin.Context) {
 	)
 }
 
-func (c *Client) Start() {
+func (c *Router) Start() {
 	err := c.engine.Run()
 	if err != nil {
 		panic(err)

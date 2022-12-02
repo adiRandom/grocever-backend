@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	c := api.GetClient()
+	c := api.GetRouter()
 	c.Start()
 	println("Started")
 }

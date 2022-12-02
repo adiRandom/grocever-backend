@@ -2,5 +2,5 @@ package ocr
 
 type UploadDto struct {
 	Bytes []byte
-	Size  int
+	Size  int64
 }

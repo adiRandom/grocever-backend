@@ -17,7 +17,9 @@ type JsonBroker[T any] struct {
 		outQ *amqp.Queue,
 		ctx context.Context,
 	)
-	inQueueName    string
+	inConn         *amqp.Connection
+	inCh           *amqp.Channel
+	inQ            *amqp.Queue
 	outQueueName   *string
 	processTimeout *time.Duration
 }
@@ -32,9 +34,15 @@ func NewJsonBroker[T any](
 	outQueueName *string,
 	processTimeout *time.Duration,
 ) *JsonBroker[T] {
+	conn, ch, q, connErr := amqpLib.GetConnection(&inQueueName)
+	if connErr != nil {
+		helpers.PanicOnError(connErr, connErr.Reason)
+	}
 	return &JsonBroker[T]{
 		onMsg:          onMsg,
-		inQueueName:    inQueueName,
+		inConn:         conn,
+		inCh:           ch,
+		inQ:            q,
 		outQueueName:   outQueueName,
 		processTimeout: processTimeout,
 	}
@@ -44,13 +52,8 @@ func NewJsonBroker[T any](
 func (broker JsonBroker[T]) Start(
 	ctx context.Context,
 ) {
-	conn, ch, q, connErr := amqpLib.GetConnection(&broker.inQueueName)
-
-	if connErr != nil {
-		helpers.PanicOnError(connErr, connErr.Reason)
-	}
-	defer helpers.SafeClose(conn)
-	defer helpers.SafeClose(ch)
+	defer helpers.SafeClose(broker.inConn)
+	defer helpers.SafeClose(broker.inCh)
 
 	outConn, outCh, outQ, outConnErr := amqpLib.GetConnection(broker.outQueueName)
 
@@ -60,8 +63,8 @@ func (broker JsonBroker[T]) Start(
 	defer helpers.SafeClose(outConn)
 	defer helpers.SafeClose(outCh)
 
-	msgs, err := ch.Consume(
-		q.Name,
+	msgs, err := broker.inCh.Consume(
+		broker.inQ.Name,
 		"",
 		true,
 		false,
@@ -113,4 +116,27 @@ func (broker JsonBroker[T]) listenForMessages(
 
 		broker.onMsg(msgBody, outCh, outQ, ctx)
 	}
+}
+
+func (broker JsonBroker[T]) SendInput(body T) {
+	ctx := context.Background()
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, *broker.processTimeout)
+	defer cancel()
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		fmt.Printf("Failed to marshal message. Error: %s", err.Error())
+	}
+
+	err = broker.inCh.PublishWithContext(
+		ctxWithTimeout,
+		"",
+		broker.inQ.Name,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        bodyBytes,
+		},
+	)
 }
