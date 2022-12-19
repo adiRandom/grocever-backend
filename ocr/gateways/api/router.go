@@ -89,8 +89,8 @@ func (c *Router) processImage(ctx *gin.Context) {
 	})
 }
 
-func (c *Router) Run() {
-	err := c.engine.Run()
+func (c *Router) Run(port string) {
+	err := c.engine.Run(port)
 	if err != nil {
 		panic(err)
 	}

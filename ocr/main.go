@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"ocr/gateways/api"
 	"ocr/gateways/events"
+	"os"
 )
 
 func main() {
@@ -34,10 +35,11 @@ func main() {
 	//	panic(err)
 	//}
 	//fmt.Printf("%v", products)
+	println(os.Getenv("API_PORT"))
 
 	router := api.GetRouter()
 	broker := events.GetRabbitMqBroker()
 	ctx := context.Background()
-	broker.Start(ctx)
-	router.Run()
+	go broker.Start(ctx)
+	router.Run(os.Getenv("API_PORT"))
 }
