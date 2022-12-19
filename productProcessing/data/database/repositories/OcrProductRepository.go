@@ -111,3 +111,32 @@ func (r *OcrProductRepository) GetBestPrice(ocrName string) (*float32, error) {
 
 	return &bestProduct.Price, nil
 }
+
+func (r *OcrProductRepository) Exists(ocrName string) (bool, error) {
+	var ocrProduct entities.OcrProductEntity
+	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrName).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// Function that gets an array of ocr names and returns a bool array to represent which ocr names exist in the database
+func (r *OcrProductRepository) ExistsMultiple(ocrNames []string) ([]bool, error) {
+	var ocrProducts []entities.OcrProductEntity
+	err := r.Db.Where("ocr_product_name IN (?)", ocrNames).Find(&ocrProducts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var exists = make([]bool, len(ocrNames))
+	for _, ocrProduct := range ocrProducts {
+		for i, ocrName := range ocrNames {
+			if ocrProduct.OcrProductName == ocrName {
+				exists[i] = true
+			}
+		}
+	}
+
+	return exists, nil
+}

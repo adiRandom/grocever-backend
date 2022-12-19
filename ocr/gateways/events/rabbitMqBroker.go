@@ -11,6 +11,7 @@ import (
 	"lib/events/rabbitmq"
 	"lib/functional"
 	amqpLib "lib/network/amqp"
+	"ocr/api/product_processing"
 	"ocr/models"
 	"ocr/services"
 	"time"
@@ -34,12 +35,34 @@ func processJsonMessage(msg ocr.UploadDto,
 
 	parseService := services.GetParseService()
 	products, err := parseService.GetOcrProducts(text)
-
 	if err != nil {
 		fmt.Printf("Failed to parse products. Error: %s", err.Error())
 	}
 
-	dtoProducts := functional.Map(products, func(product models.OcrProduct) dto.OcrProductDto {
+	productNames := functional.Map[models.OcrProduct, string](
+		products,
+		func(product models.OcrProduct) string {
+			return product.Name
+		},
+	)
+
+	productProcessingApiClient := product_processing.GetClient()
+	exists, err := productProcessingApiClient.OcrProductsExists(productNames)
+
+	var newProducts []models.OcrProduct
+	if err != nil {
+		fmt.Printf("Failed to check if products exist. Error: %s", err.Error())
+		newProducts = products
+	} else {
+		newProducts = functional.IndexedFilter[models.OcrProduct, bool](
+			products,
+			func(index int, _ models.OcrProduct) bool {
+				return !exists[index]
+			},
+		)
+	}
+
+	dtoProducts := functional.Map(newProducts, func(product models.OcrProduct) dto.OcrProductDto {
 		return product.ToDto()
 	})
 	body, err := json.Marshal(dtoProducts)

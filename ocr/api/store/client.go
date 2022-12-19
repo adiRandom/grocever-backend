@@ -1,4 +1,4 @@
-package api
+package store
 
 import (
 	"lib/data/dto"
@@ -7,22 +7,22 @@ import (
 	"os"
 )
 
-type Store struct {
+type Client struct {
 	baseUrl string
 }
 
-var client *Store
+var client *Client
 
-func GetClient() *Store {
+func GetClient() *Client {
 	if client == nil {
-		client = &Store{
+		client = &Client{
 			baseUrl: os.Getenv("STORES_API_BASE_URL"),
 		}
 	}
 	return client
 }
 
-func (s *Store) GetStoreMetadataForName(name string) (dto.StoreMetadata, error) {
+func (s *Client) GetStoreMetadataForName(name string) (dto.StoreMetadata, error) {
 	res, err := http.GetSync[dto.StoreMetadata](s.baseUrl + "/store/" + name)
 	if err != nil {
 		return dto.StoreMetadata{}, err
@@ -31,7 +31,7 @@ func (s *Store) GetStoreMetadataForName(name string) (dto.StoreMetadata, error) 
 	return *res, nil
 }
 
-func (s *Store) GetAllStoreNames() []string {
+func (s *Client) GetAllStoreNames() []string {
 	res, err := http.GetSync[[]dto.StoreMetadata](s.baseUrl + "/store/list")
 	if err != nil {
 		return nil

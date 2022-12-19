@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"lib/functional"
 	"lib/helpers"
-	"ocr/api"
+	"ocr/api/store"
 	"ocr/models"
 	"ocr/utils"
 	"regexp"
@@ -18,7 +18,7 @@ var unitRegex = regexp.MustCompile(`(BUC)|(KG)`)
 var unitPriceRegex = regexp.MustCompile(`\d+(\.|,)\d{2}$`)
 
 type ParseService struct {
-	storeApi *api.Store
+	storeApi *store.Client
 }
 
 var parseService *ParseService = nil
@@ -26,7 +26,7 @@ var parseService *ParseService = nil
 func GetParseService() ParseService {
 	if parseService == nil {
 		parseService = &ParseService{
-			storeApi: api.GetClient(),
+			storeApi: store.GetClient(),
 		}
 	}
 	return *parseService

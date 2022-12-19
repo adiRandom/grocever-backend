@@ -51,6 +51,17 @@ func Filter[T any](s []T, fn func(T) bool) []T {
 	return filtered
 }
 
+func IndexedFilter[T any](s []T, fn func(int, T) bool) []T {
+	var filtered []T
+	for i, el := range s {
+		if fn(i, el) {
+			filtered = append(filtered, el)
+		}
+	}
+
+	return filtered
+}
+
 func Keys[K comparable, V any](m map[K]V) []K {
 	var keys []K
 	for k := range m {
