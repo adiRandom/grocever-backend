@@ -1,7 +1,7 @@
 package product_processing
 
 import (
-	dto "lib/data/dto/product_processing"
+	dto "lib/data/dto/product_processing/ocr"
 	"lib/network/http"
 	"os"
 )

@@ -1,4 +1,4 @@
-package product_processing
+package ocr
 
 type OcrProductExists struct {
 	OcrNames []string `json:"ocrNames" binding:"required"`

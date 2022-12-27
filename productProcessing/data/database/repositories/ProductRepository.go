@@ -26,35 +26,10 @@ func GetProductRepository() *ProductRepository {
 	return pr
 }
 
-func (r *ProductRepository) GetAll() ([]entities.ProductEntity, error) {
-	var products []entities.ProductEntity
-	err := r.Db.Find(&products).Error
-	return products, err
-}
-
 func (r *ProductRepository) GetAllWithCrawlLink() ([]entities.ProductEntity, error) {
 	var products []entities.ProductEntity
 	err := r.Db.Preload("CrawlLink").Find(&products).Error
 	return products, err
-}
-
-func (r *ProductRepository) GetById(id uint) (*entities.ProductEntity, error) {
-	var product entities.ProductEntity
-	err := r.Db.First(&product, id).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
-
-	return &product, err
-}
-
-func (r *ProductRepository) Save(entity entities.ProductEntity) error {
-	return r.Db.Save(&entity).Error
-}
-
-func (r *ProductRepository) Delete(entity entities.ProductEntity) error {
-	return r.Db.Delete(&entity).Error
 }
 
 func (r *ProductRepository) GetProductByNameAndStoreId(
