@@ -11,3 +11,15 @@ func (r *Router) Group(path string, g RouterGroup) *Router {
 	g.GetRoutes(routerGroup)
 	return r
 }
+
+func (r *Router) Run(port string) {
+	println("Starting API on port: " + port)
+	err := r.engine.Run(port)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (r *Router) Init() {
+	r.engine = gin.Default()
+}

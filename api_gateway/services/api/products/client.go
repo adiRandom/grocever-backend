@@ -1,4 +1,4 @@
-package store
+package products
 
 import (
 	"lib/data/dto/product_processing"
@@ -21,10 +21,12 @@ func GetClient() *Client {
 	return client
 }
 
-func (s *Client) GetProductList() []product_processing.UserProductDto {
-	res, err := http.GetSync[http.Response[product_processing.UserProductListDto]](s.baseUrl + "/product/list")
+func (s *Client) GetProductList() ([]product_processing.UserProductDto, *http.Error) {
+	res, err := http.ParseHttpResponse(
+		http.GetSync[http.Response[product_processing.UserProductListDto]](s.baseUrl + "/product/list"),
+	)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return res.Body.Products
+	return res.Products, nil
 }
