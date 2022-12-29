@@ -19,3 +19,13 @@ func PanicOnError(err error, msg string) {
 		log.Panicf("%s: %s", msg, err)
 	}
 }
+
+type HttpError struct {
+	Msg    string
+	Reason string
+	Code   int
+}
+
+func (e HttpError) Error() string {
+	return fmt.Sprintf("Error: %s, reason: %s, code: %d", e.Msg, e.Reason, e.Code)
+}

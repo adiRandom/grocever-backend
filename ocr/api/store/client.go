@@ -23,7 +23,7 @@ func GetClient() *Client {
 }
 
 func (s *Client) GetStoreMetadataForName(name string) (dto.StoreMetadata, error) {
-	res, err := http.GetSync[dto.StoreMetadata](s.baseUrl + "/store/" + name)
+	res, err := http.ParseHttpResponse(http.GetSync[http.Response[dto.StoreMetadata]](s.baseUrl + "/store/" + name))
 	if err != nil {
 		return dto.StoreMetadata{}, err
 	}
@@ -32,7 +32,7 @@ func (s *Client) GetStoreMetadataForName(name string) (dto.StoreMetadata, error)
 }
 
 func (s *Client) GetAllStoreNames() []string {
-	res, err := http.GetSync[[]dto.StoreMetadata](s.baseUrl + "/store/list")
+	res, err := http.ParseHttpResponse(http.GetSync[http.Response[[]dto.StoreMetadata]](s.baseUrl + "/store/list"))
 	if err != nil {
 		return nil
 	}

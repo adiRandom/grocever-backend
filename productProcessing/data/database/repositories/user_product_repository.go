@@ -5,8 +5,8 @@ import (
 	"lib/data/database/repositories"
 	"lib/data/models/user_product"
 	"lib/helpers"
-	"productProcessing/api/store"
 	"productProcessing/data/database/entities"
+	"productProcessing/services/api/store"
 )
 
 type UserProductRepository struct {

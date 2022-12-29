@@ -22,12 +22,12 @@ func GetClient() *Client {
 }
 
 func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
-	res, err := http.PostSync[dto.OcrProductExistsResponse](
+	res, err := http.ParseHttpResponse(http.PostSync[http.Response[dto.OcrProductExistsResponse]](
 		s.baseUrl+"/product/exists",
 		dto.OcrProductExists{
 			OcrNames: ocrNames,
 		},
-	)
+	))
 
 	if err != nil {
 		return nil, err

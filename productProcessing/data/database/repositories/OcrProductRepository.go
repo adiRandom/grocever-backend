@@ -66,8 +66,8 @@ func (r *OcrProductRepository) AddOcrProductToProduct(
 		return err
 	}
 
-	// Link this ocr product to the eixsting ocr products
-	// Then link the existing ocr products to this ocr product
+	// Link this ocr product to the eixsting ocr product
+	// Then link the existing ocr product to this ocr product
 	for _, existingOcrProduct := range existingOcrProducts {
 		err = r.Db.Model(&ocrProduct).Association("Related").Append(&existingOcrProduct)
 		if err != nil {

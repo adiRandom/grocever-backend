@@ -36,7 +36,7 @@ func processJsonMessage(msg ocr.UploadDto,
 	parseService := services.GetParseService()
 	products, err := parseService.GetOcrProducts(text)
 	if err != nil {
-		fmt.Printf("Failed to parse products. Error: %s", err.Error())
+		fmt.Printf("Failed to parse product. Error: %s", err.Error())
 	}
 
 	productNames := functional.Map[models.OcrProduct, string](
@@ -51,7 +51,7 @@ func processJsonMessage(msg ocr.UploadDto,
 
 	var newProducts []models.OcrProduct
 	if err != nil {
-		fmt.Printf("Failed to check if products exist. Error: %s", err.Error())
+		fmt.Printf("Failed to check if product exist. Error: %s", err.Error())
 		newProducts = products
 	} else {
 		newProducts = functional.IndexedFilter[models.OcrProduct, bool](

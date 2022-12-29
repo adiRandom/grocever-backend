@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// OcrProductEntity Link between products and ocr names
+// OcrProductEntity Link between product and ocr names
 type OcrProductEntity struct {
 	OcrProductName string `gorm:"primaryKey"`
 	CreatedAt      time.Time
