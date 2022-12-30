@@ -10,7 +10,7 @@ type Client struct {
 	baseUrl string
 }
 
-var client *Client
+var client *Client = nil
 
 func GetClient() *Client {
 	if client == nil {

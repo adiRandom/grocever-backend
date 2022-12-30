@@ -14,17 +14,25 @@ func (r *RepositoryWithModel[TEntity, TModel]) GetAll() ([]TModel, error) {
 		return nil, err
 	}
 
+	var firstError error = nil
+
 	models := functional.Map(res, func(entity TEntity) *TModel {
 		model, err := r.ToModel(entity)
 		if err != nil {
+			if firstError == nil {
+				firstError = err
+			}
+
 			return nil
 		}
 		return &model
 	})
-	filteredModelsPointers := functional.Filter(models, func(model *TModel) bool {
-		return model != nil
-	})
-	filteredModels := functional.Map(filteredModelsPointers, func(model *TModel) TModel {
+
+	if firstError != nil {
+		return nil, firstError
+	}
+
+	filteredModels := functional.Map(models, func(model *TModel) TModel {
 		return *model
 	})
 

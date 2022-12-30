@@ -9,7 +9,7 @@ func main() {
 	ms := microservice.Microservice{
 		HasEnv:     true,
 		ApiPortEnv: "API_PORT",
-		Router:     &api.GetRouter().Router,
+		GetRouter:  api.GetBaseRouter,
 	}
 	ms.Start()
 }

@@ -32,7 +32,11 @@ func GetUserProductRepository() *UserProductRepository {
 
 func (r *UserProductRepository) getStoreNameForId(id int) (string, error) {
 	apiClient := store.GetClient()
-	stores := apiClient.GetAllStores()
+	stores, err := apiClient.GetAllStores()
+	if err != nil {
+		return "", err
+	}
+
 	for _, storeMetadata := range stores {
 		if storeMetadata.StoreId == id {
 			return storeMetadata.Name, nil

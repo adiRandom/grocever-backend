@@ -15,18 +15,18 @@ var client *Client
 func GetClient() *Client {
 	if client == nil {
 		client = &Client{
-			baseUrl: os.Getenv("STORES_API_BASE_URL"),
+			baseUrl: os.Getenv("STORE_API_BASE_URL"),
 		}
 	}
 	return client
 }
 
-func (s *Client) GetAllStores() []dto.StoreMetadata {
+func (s *Client) GetAllStores() ([]dto.StoreMetadata, error) {
 	res, err := http.ParseHttpResponse(
 		http.GetSync[http.Response[[]dto.StoreMetadata]](s.baseUrl + "/store/list"),
 	)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return *res
+	return *res, nil
 }

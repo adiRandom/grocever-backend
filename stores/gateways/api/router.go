@@ -44,9 +44,9 @@ func (c *Router) getAllStores(ctx *gin.Context) {
 		)
 		return
 	}
+
 	ctx.JSON(200,
 		(http.Response[[]entity.StoreMetadata]{
-			Err:        err.Error(),
 			StatusCode: 200,
 			Body:       stores,
 		}).GetH(),

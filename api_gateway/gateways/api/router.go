@@ -24,3 +24,7 @@ func GetRouter() *Router {
 func (c *Router) initEndpoints() {
 	c.Group("/product", product.NewProductRouter(productApi.GetClient()))
 }
+
+func GetBaseRouter() *api.Router {
+	return &GetRouter().Router
+}

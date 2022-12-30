@@ -8,7 +8,7 @@ import (
 
 type Microservice struct {
 	HasEnv     bool
-	Router     *api.Router
+	GetRouter  func() *api.Router
 	ApiPort    string
 	ApiPortEnv string
 }
@@ -23,7 +23,9 @@ func (m *Microservice) Start() {
 		}
 	}
 
-	if m.Router != nil {
+	router := m.GetRouter()
+
+	if router != nil {
 		port := m.ApiPort
 		apiPortEnv := os.Getenv(m.ApiPortEnv)
 		if port == "" {
@@ -33,7 +35,7 @@ func (m *Microservice) Start() {
 				port = defaultPort
 			}
 		}
-		m.Router.Run(port)
+		router.Run(port)
 	}
 
 	println("Started")
