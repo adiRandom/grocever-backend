@@ -3,6 +3,7 @@ package microservice
 import (
 	"github.com/joho/godotenv"
 	"lib/api"
+	"lib/data/database"
 	"os"
 )
 
@@ -11,6 +12,7 @@ type Microservice struct {
 	GetRouter  func() *api.Router
 	ApiPort    string
 	ApiPortEnv string
+	DbEntities []interface{}
 }
 
 const defaultPort = ":8080"
@@ -36,6 +38,13 @@ func (m *Microservice) Start() {
 			}
 		}
 		router.Run(port)
+	}
+
+	if m.DbEntities != nil {
+		err := database.InitDatabase(m.DbEntities...)
+		if err != nil {
+			return
+		}
 	}
 
 	println("Started")
