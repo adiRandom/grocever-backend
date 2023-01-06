@@ -1,6 +1,8 @@
 package models
 
-import "auth/data/dto"
+import (
+	"lib/data/dto/auth"
+)
 
 type Register struct {
 	Username string `json:"username"`
@@ -8,7 +10,7 @@ type Register struct {
 	Email    string `json:"email"`
 }
 
-func NewRegisterFromDto(register dto.RegisterRequest) Register {
+func NewRegisterFromDto(register auth.RegisterRequest) Register {
 	return Register{
 		Username: register.Username,
 		Password: register.Password,

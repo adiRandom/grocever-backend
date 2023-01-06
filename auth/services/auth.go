@@ -1,21 +1,21 @@
 package services
 
 import (
-	"auth/data/dto"
 	"auth/data/models"
 	"auth/data/repository"
 	"auth/services/crypto/jwt"
+	auth2 "lib/data/dto/auth"
 	"lib/data/models/auth"
 	"lib/helpers"
 	"lib/network/http"
 )
 
 type LoginDetails struct {
-	body *dto.LoginRequest
+	body *auth2.LoginRequest
 	user *auth.User
 }
 
-func NewLoginDetails(body *dto.LoginRequest, user *auth.User) LoginDetails {
+func NewLoginDetails(body *auth2.LoginRequest, user *auth.User) LoginDetails {
 	return LoginDetails{
 		body: body,
 		user: user,
@@ -68,15 +68,15 @@ func HandleLogin(details LoginDetails, userRepository *repository.User) http.Res
 
 	return http.Response[any]{
 		StatusCode: 200,
-		Body: dto.AuthResponse{
+		Body: auth2.AuthResponse{
 			AccessToken:  token,
 			RefreshToken: refreshToken,
-			User:         dto.NewUserFromModel(*user),
+			User:         auth2.NewUserFromModel(*user),
 		},
 	}
 }
 
-func HandleRegister(body dto.RegisterRequest, userRepository *repository.User) http.Response[any] {
+func HandleRegister(body auth2.RegisterRequest, userRepository *repository.User) http.Response[any] {
 	user, err := userRepository.CreateFromAuth(models.NewRegisterFromDto(body))
 	if err != nil {
 		return http.Response[any]{
@@ -89,7 +89,7 @@ func HandleRegister(body dto.RegisterRequest, userRepository *repository.User) h
 	return HandleLogin(NewLoginDetails(nil, user), userRepository)
 }
 
-func HandleRefresh(body dto.RefreshRequest, userRepository *repository.User) http.Response[any] {
+func HandleRefresh(body auth2.RefreshRequest, userRepository *repository.User) http.Response[any] {
 	newAccessToken, err := jwt.RefreshJwtToken(body.LastValidAccessToken, body.RefreshToken, userRepository)
 	if err != nil {
 		return http.Response[any]{
@@ -101,7 +101,7 @@ func HandleRefresh(body dto.RefreshRequest, userRepository *repository.User) htt
 
 	return http.Response[any]{
 		StatusCode: 200,
-		Body: dto.RefreshResponse{
+		Body: auth2.RefreshResponse{
 			AccessToken: newAccessToken,
 		},
 	}

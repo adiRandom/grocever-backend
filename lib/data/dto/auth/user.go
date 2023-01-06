@@ -1,4 +1,4 @@
-package dto
+package auth
 
 import "lib/data/models/auth"
 

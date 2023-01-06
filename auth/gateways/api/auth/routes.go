@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"auth/data/dto"
 	"auth/data/repository"
 	"auth/services"
 	"github.com/gin-gonic/gin"
+	"lib/data/dto/auth"
 	"lib/helpers"
 	"lib/network/http"
 )
@@ -24,7 +24,7 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 }
 
 func (r *Router) login(context *gin.Context) {
-	authDto := dto.LoginRequest{}
+	authDto := auth.LoginRequest{}
 	err := context.BindJSON(&authDto)
 	if err != nil {
 		context.JSON(400, http.Response[helpers.None]{
@@ -40,7 +40,7 @@ func (r *Router) login(context *gin.Context) {
 }
 
 func (r *Router) register(context *gin.Context) {
-	authDto := dto.RegisterRequest{}
+	authDto := auth.RegisterRequest{}
 	err := context.BindJSON(&authDto)
 	if err != nil {
 		context.JSON(400, http.Response[helpers.None]{
@@ -56,7 +56,7 @@ func (r *Router) register(context *gin.Context) {
 }
 
 func (r *Router) refresh(context *gin.Context) {
-	refreshDto := dto.RefreshRequest{}
+	refreshDto := auth.RefreshRequest{}
 	err := context.BindJSON(&refreshDto)
 	if err != nil {
 		context.JSON(400, http.Response[helpers.None]{
