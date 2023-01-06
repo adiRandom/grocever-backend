@@ -1,7 +1,9 @@
 package api
 
 import (
+	"api_gateway/gateways/api/auth"
 	"api_gateway/gateways/api/product"
+	authApi "api_gateway/services/api/auth"
 	productApi "api_gateway/services/api/products"
 	"lib/api"
 )
@@ -23,6 +25,7 @@ func GetRouter() *Router {
 
 func (c *Router) initEndpoints() {
 	c.Group("/product", product.NewProductRouter(productApi.GetClient()))
+	c.Group("/auth", auth.NewAuthRouter(authApi.GetClient()))
 }
 
 func GetBaseRouter() *api.Router {

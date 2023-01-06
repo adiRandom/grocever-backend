@@ -12,7 +12,7 @@ type Router struct {
 	authApiClient *auth.Client
 }
 
-func NewProductRouter(authApiClient *auth.Client) *Router {
+func NewAuthRouter(authApiClient *auth.Client) *Router {
 	return &Router{authApiClient}
 }
 
