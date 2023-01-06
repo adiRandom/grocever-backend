@@ -25,3 +25,11 @@ type RefreshRequest struct {
 type RefreshResponse struct {
 	AccessToken string `json:"access_token"`
 }
+
+type ValidateRequest struct {
+	AccessToken string `json:"access_token"`
+}
+
+type ValidateResponse struct {
+	UserId int `json:"user_id"`
+}

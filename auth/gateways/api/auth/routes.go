@@ -21,6 +21,7 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.POST("/login", r.login)
 	router.POST("/register", r.register)
 	router.POST("/refresh", r.refresh)
+	router.POST("/validate", r.validate)
 }
 
 func (r *Router) login(context *gin.Context) {
@@ -68,5 +69,21 @@ func (r *Router) refresh(context *gin.Context) {
 	}
 
 	response := services.HandleRefresh(refreshDto, r.userRepository)
+	context.JSON(response.StatusCode, response.GetH())
+}
+
+func (r *Router) validate(context *gin.Context) {
+	validateDto := auth.ValidateRequest{}
+	err := context.BindJSON(&validateDto)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			StatusCode: 400,
+			Err:        err.Error(),
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	response := services.HandleValidate(validateDto)
 	context.JSON(response.StatusCode, response.GetH())
 }

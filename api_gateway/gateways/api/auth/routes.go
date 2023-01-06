@@ -18,14 +18,13 @@ func NewAuthRouter(authApiClient *auth.Client) *Router {
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.POST("/login", r.login)
-	router.POST("/login", r.register)
-	router.POST("/login", r.refresh)
-
+	router.POST("/register", r.register)
+	router.POST("/refresh", r.refresh)
 }
 
 func (r *Router) login(c *gin.Context) {
 	var body dto.LoginRequest
-	err := c.BindJSON(body)
+	err := c.BindJSON(&body)
 	if err != nil {
 		c.JSON(400, http.Response[helpers.None]{
 			StatusCode: 400,
@@ -35,7 +34,7 @@ func (r *Router) login(c *gin.Context) {
 	}
 
 	res, apiErr := r.authApiClient.Login(body)
-	if err != nil {
+	if apiErr != nil {
 		c.JSON(apiErr.Code, http.Response[helpers.None]{
 			StatusCode: apiErr.Code,
 			Err:        apiErr.Error(),

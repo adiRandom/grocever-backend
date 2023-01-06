@@ -6,6 +6,7 @@ import (
 	authApi "api_gateway/services/api/auth"
 	productApi "api_gateway/services/api/products"
 	"lib/api"
+	dto "lib/data/dto/auth"
 )
 
 type Router struct {
@@ -17,15 +18,25 @@ var router *Router = nil
 func GetRouter() *Router {
 	if router == nil {
 		router = &Router{}
-		router.Init()
+		router.
+			Init().
+			WithAuth(handleAuthVerification)
 		router.initEndpoints()
 	}
 	return router
 }
 
 func (c *Router) initEndpoints() {
-	c.Group("/product", product.NewProductRouter(productApi.GetClient()))
+	c.GroupWithAuth("/product", product.NewProductRouter(productApi.GetClient()))
 	c.Group("/auth", auth.NewAuthRouter(authApi.GetClient()))
+}
+
+func handleAuthVerification(access string) (int, error) {
+	res, err := authApi.GetClient().Validate(dto.ValidateRequest{AccessToken: access})
+	if err != nil {
+		return -1, err
+	}
+	return res.UserId, nil
 }
 
 func GetBaseRouter() *api.Router {
