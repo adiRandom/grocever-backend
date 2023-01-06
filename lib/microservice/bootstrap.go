@@ -25,6 +25,13 @@ func (m *Microservice) Start() {
 		}
 	}
 
+	if m.DbEntities != nil {
+		err := database.InitDatabase(m.DbEntities...)
+		if err != nil {
+			return
+		}
+	}
+
 	router := m.GetRouter()
 
 	if router != nil {
@@ -38,13 +45,6 @@ func (m *Microservice) Start() {
 			}
 		}
 		router.Run(port)
-	}
-
-	if m.DbEntities != nil {
-		err := database.InitDatabase(m.DbEntities...)
-		if err != nil {
-			return
-		}
 	}
 
 	println("Started")
