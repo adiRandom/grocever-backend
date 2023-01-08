@@ -4,7 +4,7 @@ import (
 	types "crawlers/data/dto"
 	"fmt"
 	"lib/data/constants"
-	"lib/data/models"
+	"lib/data/models/crawl"
 	"lib/helpers"
 	"lib/network/http"
 	url2 "net/url"
@@ -36,7 +36,7 @@ func getMegaImageProductUrl(url string) (*string, error) {
 	return &correctUrl, nil
 }
 
-func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan models.CrawlerResult) {
+func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerResult) {
 	correctUrl, err := getMegaImageProductUrl(url)
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan models.
 		return
 	}
 
-	res := models.CrawlerResult{CrawlUrl: url}
+	res := crawl.CrawlerResult{CrawlUrl: url}
 	res.ProductName = apiRes.Data.ProductDetails.Name
 	res.ProductPrice = apiRes.Data.ProductDetails.Price.Value
 	res.StoreId = constants.MegaImageStoreId

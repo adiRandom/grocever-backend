@@ -16,7 +16,8 @@ type Router struct {
 	broker *rabbitmq.JsonBroker[ocr.UploadDto]
 }
 
-const IMAGE_PARAM = "image"
+const imageParam = "image"
+const userIdParam = "userId"
 
 var router *Router = nil
 
@@ -37,11 +38,21 @@ func (c *Router) initEndpoints() {
 }
 
 func (c *Router) processImage(ctx *gin.Context) {
-	image, err := ctx.FormFile(IMAGE_PARAM)
+	image, err := ctx.FormFile(imageParam)
 	if err != nil {
 		ctx.JSON(500, http.Response[helpers.None]{
 			Err:        err.Error(),
 			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	userId, exists := ctx.GetPostForm(userIdParam)
+	if !exists {
+		ctx.JSON(400, http.Response[helpers.None]{
+			Err:        "userId is required",
+			StatusCode: 400,
 			Body:       helpers.None{},
 		}.GetH())
 		return
@@ -78,8 +89,9 @@ func (c *Router) processImage(ctx *gin.Context) {
 
 	// Send the image to the OCR service
 	c.broker.SendInput(ocr.UploadDto{
-		Bytes: imageBytes,
-		Size:  image.Size,
+		Bytes:  imageBytes,
+		Size:   image.Size,
+		UserId: userId,
 	})
 
 	ctx.JSON(200, http.Response[helpers.None]{

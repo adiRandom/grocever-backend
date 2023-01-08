@@ -4,7 +4,7 @@ import (
 	types "crawlers/data/dto"
 	"fmt"
 	"lib/data/constants"
-	"lib/data/models"
+	"lib/data/models/crawl"
 	"lib/helpers"
 	"lib/network/http"
 	url2 "net/url"
@@ -36,7 +36,7 @@ func getFreshfulProductUrl(url string) (*string, error) {
 	return &correctUrl, nil
 }
 
-func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan models.CrawlerResult) {
+func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerResult) {
 	correctUrl, err := getFreshfulProductUrl(url)
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan models.Crawler
 		return
 	}
 
-	res := models.CrawlerResult{CrawlUrl: url}
+	res := crawl.CrawlerResult{CrawlUrl: url}
 	res.ProductName = apiRes.Name
 	res.ProductPrice = apiRes.Price
 	res.StoreId = constants.FreshfulStoreId

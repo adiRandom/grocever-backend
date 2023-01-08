@@ -1,4 +1,4 @@
-package models
+package crawl
 
 import "fmt"
 
@@ -7,9 +7,6 @@ type CrawlerResult struct {
 	ProductPrice float32
 	StoreId      int32
 	CrawlUrl     string
-	// TODO: Add
-	// UnitPrice float64
-	// Unit string
 	// ImageUrl string
 }
 

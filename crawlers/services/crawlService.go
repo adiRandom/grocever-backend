@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"lib/data/constants"
 	"lib/data/dto"
-	"lib/data/models"
+	"lib/data/models/crawl"
 )
 
 func getCrawler(storeId int) Crawler {
@@ -29,7 +29,7 @@ func getCrawler(storeId int) Crawler {
 	return nil
 }
 
-func crawlProductPage(src dto.CrawlSourceDto, resCh chan models.CrawlerResult) {
+func crawlProductPage(src dto.CrawlSourceDto, resCh chan crawl.CrawlerResult) {
 	crawler := getCrawler(src.StoreId)
 	if crawler == nil {
 		return
@@ -37,17 +37,17 @@ func crawlProductPage(src dto.CrawlSourceDto, resCh chan models.CrawlerResult) {
 	crawler.ScrapeProductPage(src.Url, resCh)
 }
 
-func crawlProductPages(srcs []dto.CrawlSourceDto, resCh chan models.CrawlerResult) {
+func crawlProductPages(srcs []dto.CrawlSourceDto, resCh chan crawl.CrawlerResult) {
 	for _, src := range srcs {
 		go crawlProductPage(src, resCh)
 	}
 }
 
-func CrawlProductPages(srcs []dto.CrawlSourceDto) []models.CrawlerResult {
-	resCh := make(chan models.CrawlerResult)
+func CrawlProductPages(srcs []dto.CrawlSourceDto) []crawl.CrawlerResult {
+	resCh := make(chan crawl.CrawlerResult)
 	crawlProductPages(srcs, resCh)
 
-	var res []models.CrawlerResult
+	var res []crawl.CrawlerResult
 	for range srcs {
 		res = append(res, <-resCh)
 		fmt.Printf("Got result: %+v\n", res)

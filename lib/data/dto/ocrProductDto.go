@@ -1,16 +1,10 @@
 package dto
 
-import "fmt"
-
 type OcrProductDto struct {
-	ProductName  string  `json:"productName"`
-	ProductPrice float32 `json:"productPrice"`
-	StoreId      int     `json:"storeId"`
-}
-
-func (dto OcrProductDto) String() string {
-	return fmt.Sprintf("OcrProductDto: (ProductName: %s ProductPrice: %f StoreId: %d)",
-		dto.ProductName,
-		dto.ProductPrice,
-		dto.StoreId)
+	ProductName string  `json:"productName"`
+	UnitPrice   float32 `json:"unitPrice"`
+	Price       float32 `json:"price"`
+	Qty         int32   `json:"qty"`
+	UnitType    string  `json:"unitType"`
+	StoreId     int     `json:"storeId"`
 }
