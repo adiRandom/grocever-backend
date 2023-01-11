@@ -9,7 +9,7 @@ import (
 type CrawlLinkEntity struct {
 	gorm.Model
 	Url       string
-	StoreId   int32
+	StoreId   int
 	ProductId uint
 }
 
@@ -30,10 +30,14 @@ func (entity CrawlLinkEntity) ToModel() crawl.LinkModel {
 }
 
 func NewCrawlLinkEntityFromModel(model crawl.LinkModel) CrawlLinkEntity {
-	return CrawlLinkEntity{
-		Model:     gorm.Model{ID: model.Id},
+	entity := CrawlLinkEntity{
 		Url:       model.Url,
 		StoreId:   model.StoreId,
 		ProductId: model.ProductId,
 	}
+
+	if model.Id != -1 {
+		entity.ID = uint(model.Id)
+	}
+	return entity
 }

@@ -40,7 +40,7 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 		Body: product_processing.UserProductListDto{
 			Products: functional.Map(
 				products,
-				func(userOcrProductModel product.UserOcrProductModel) product_processing.UserProductDto {
+				func(userOcrProductModel product.UserOcrProductModel) product_processing.UserOcrProductDto {
 					return userOcrProductModel.ToDto()
 				},
 			),

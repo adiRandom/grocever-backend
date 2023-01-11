@@ -8,12 +8,14 @@ import (
 
 type UserOcrProduct struct {
 	gorm.Model
-	UserId         string
+	UserId         uint
 	OcrProductName string
 	OcrProduct     OcrProductEntity `gorm:"foreignKey:OcrProductName"`
-	ProductID      uint
-	Product        ProductEntity `gorm:"foreignKey:ProductID"`
 	Qty            float32
+	UnitPrice      float32
+	Price          float32
+	StoreId        uint
+	UnitType       string
 }
 
 func (entity UserOcrProduct) ToModel(store models.StoreMetadata) product.UserOcrProductModel {
@@ -21,10 +23,11 @@ func (entity UserOcrProduct) ToModel(store models.StoreMetadata) product.UserOcr
 		Id:         entity.ID,
 		UserId:     entity.UserId,
 		OcrProduct: entity.OcrProduct.ToModel(false, false),
-		Product:    entity.Product.ToModel(),
 		Qty:        entity.Qty,
-		Store:      store,
-		Price:      entity.Qty * entity.Product.Price,
+		UnitPrice:  entity.UnitPrice,
+		Price:      entity.Price,
+		StoreId:    entity.StoreId,
+		UnitType:   entity.UnitType,
 	}
 }
 
@@ -33,9 +36,11 @@ func NewUserOcrProductFromModel(model product.UserOcrProductModel) UserOcrProduc
 		Model:          gorm.Model{ID: model.Id},
 		UserId:         model.UserId,
 		OcrProductName: model.OcrProduct.OcrProductName,
-		ProductID:      model.Product.ID,
 		Qty:            model.Qty,
 		OcrProduct:     NewOcrProductEntityFromModel(model.OcrProduct),
-		Product:        NewProductEntityFromModel(model.Product),
+		UnitPrice:      model.UnitPrice,
+		StoreId:        model.StoreId,
+		Price:          model.Price,
+		UnitType:       model.UnitType,
 	}
 }

@@ -26,16 +26,18 @@ func (entity OcrProductEntity) ToModel(withProducts bool, withRelated bool) prod
 
 	if withProducts {
 		ocrProductModel.Products = functional.Map(entity.Products,
-			func(productEntity *ProductEntity) product.Model {
-				return productEntity.ToModel()
+			func(productEntity *ProductEntity) *product.Model {
+				model := productEntity.ToModel()
+				return &model
 			},
 		)
 	}
 
 	if withRelated {
 		ocrProductModel.Related = functional.Map(entity.Related,
-			func(relatedEntity *OcrProductEntity) product.OcrProductModel {
-				return relatedEntity.ToModel(false, false)
+			func(relatedEntity *OcrProductEntity) *product.OcrProductModel {
+				model := relatedEntity.ToModel(false, false)
+				return &model
 			},
 		)
 	}

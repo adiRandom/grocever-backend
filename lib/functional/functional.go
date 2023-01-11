@@ -70,3 +70,13 @@ func Keys[K comparable, V any](m map[K]V) []K {
 
 	return keys
 }
+
+func Exists[T any](s []T, fn func(T) bool) bool {
+	for _, el := range s {
+		if fn(el) {
+			return true
+		}
+	}
+
+	return false
+}

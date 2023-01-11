@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"lib/data/database"
 	"lib/data/database/repositories"
+	"lib/data/models/product"
 	"productProcessing/data/database/entities"
 )
 
@@ -34,7 +35,7 @@ func (r *ProductRepository) GetAllWithCrawlLink() ([]entities.ProductEntity, err
 
 func (r *ProductRepository) GetProductByNameAndStoreId(
 	name string,
-	storeId int32,
+	storeId int,
 	joinOcrProduct bool,
 ) (*entities.ProductEntity, error) {
 	var product entities.ProductEntity
@@ -88,35 +89,30 @@ func (r *ProductRepository) updateProductPrice(
 
 // Create Either create a new product or add a new ocr product to an existing product
 func (r *ProductRepository) Create(
-	product *entities.ProductEntity,
+	product *product.Model,
+	associatedOcrProductName string,
 ) error {
-	ocrProduct := product.OcrProducts[0]
-	ocrProductRepository := GetOcrProductRepository()
-	existingProduct, err := r.GetProductByNameAndStoreId(
-		product.Name,
-		product.StoreId,
-		false,
-	)
+	entity := entities.NewProductEntityFromModel(*product)
+	ocrProductRepo := GetOcrProductRepository()
+	existingProduct, err := r.GetProductByNameAndStoreId(product.Name, product.StoreId, false)
 	if err != nil {
 		return err
 	}
 
 	if existingProduct == nil {
-		err = r.Db.Create(product).Error
-		if err != nil {
-			return err
-		}
-	} else {
-		hasOcrProduct, err := r.hasOcrProduct(existingProduct, ocrProduct.OcrProductName)
+		err = r.Db.Create(entity).Error
 		if err != nil {
 			return err
 		}
 
-		if !hasOcrProduct {
-			err = ocrProductRepository.AddOcrProductToProduct(*ocrProduct, *existingProduct)
-			if err != nil {
-				return err
-			}
+		err := ocrProductRepo.LinkProductAndOcrProduct(associatedOcrProductName, entity)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := ocrProductRepo.LinkProductAndOcrProduct(associatedOcrProductName, *existingProduct)
+		if err != nil {
+			return err
 		}
 
 		err = r.updateCrawLinkUrl(existingProduct, product.CrawlLink.Url)
@@ -129,5 +125,6 @@ func (r *ProductRepository) Create(
 			return err
 		}
 	}
+
 	return nil
 }

@@ -1,15 +1,13 @@
 package crawl
 
-import "fmt"
+import (
+	"lib/data/dto"
+)
 
 type CrawlerResult struct {
 	ProductName  string
 	ProductPrice float32
-	StoreId      int32
+	Store        dto.StoreMetadata
 	CrawlUrl     string
 	// ImageUrl string
-}
-
-func (res CrawlerResult) String() string {
-	return fmt.Sprintf("Product: %s at price: %f from store %d", res.ProductName, res.ProductPrice, res.StoreId)
 }

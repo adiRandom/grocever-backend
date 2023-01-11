@@ -3,8 +3,10 @@ package repositories
 import (
 	"errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"lib/data/database"
 	"lib/data/database/repositories"
+	"lib/data/models/product"
 	"productProcessing/data/database/entities"
 )
 
@@ -32,9 +34,19 @@ func (r *OcrProductRepository) GetAll() ([]entities.OcrProductEntity, error) {
 	return ocrProducts, err
 }
 
-func (r *OcrProductRepository) GetById(id uint) (*entities.OcrProductEntity, error) {
+func (r *OcrProductRepository) GetById(id string) (*entities.OcrProductEntity, error) {
 	var ocrProduct entities.OcrProductEntity
 	err := r.Db.First(&ocrProduct, id).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &ocrProduct, err
+}
+
+func (r *OcrProductRepository) GetByIdWithJoins(name string) (*entities.OcrProductEntity, error) {
+	var ocrProduct entities.OcrProductEntity
+	err := r.Db.Joins("Related").Joins("Products").Find(&ocrProduct, name).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -50,18 +62,34 @@ func (r *OcrProductRepository) Delete(entity entities.OcrProductEntity) error {
 	return r.Db.Delete(&entity).Error
 }
 
-func (r *OcrProductRepository) Create(entity entities.OcrProductEntity) error {
-	return r.Db.Create(&entity).Error
+func (r *OcrProductRepository) Create(model product.OcrProductModel) error {
+	entity := entities.OcrProductEntity{
+		OcrProductName: model.OcrProductName,
+		BestPrice:      model.BestPrice,
+	}
+	return r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
 }
 
-func (r *OcrProductRepository) AddOcrProductToProduct(
-	ocrProduct entities.OcrProductEntity,
+func (r *OcrProductRepository) LinkProductAndOcrProduct(
+	ocrProductName string,
 	product entities.ProductEntity,
 ) error {
+	var ocrProduct entities.OcrProductEntity
+
+	err := r.Db.First(&ocrProduct, ocrProductName).Error
+	if err != nil {
+		return err
+	}
+
 	var existingOcrProducts []entities.OcrProductEntity
-	err := r.Db.Model(&product).Association("OcrProducts").Find(&existingOcrProducts)
+	err = r.Db.Model(&product).Association("OcrProducts").Find(&existingOcrProducts)
 
 	err = r.Db.Model(&product).Association("OcrProducts").Append(&ocrProduct)
+	if err != nil {
+		return err
+	}
+
+	err = r.Db.Model(&ocrProduct).Association("Products").Append(&product)
 	if err != nil {
 		return err
 	}
@@ -69,13 +97,15 @@ func (r *OcrProductRepository) AddOcrProductToProduct(
 	// Link this ocr product to the eixsting ocr product
 	// Then link the existing ocr product to this ocr product
 	for _, existingOcrProduct := range existingOcrProducts {
-		err = r.Db.Model(&ocrProduct).Association("Related").Append(&existingOcrProduct)
-		if err != nil {
-			return err
-		}
-		err = r.Db.Model(&existingOcrProduct).Association("Related").Append(&ocrProduct)
-		if err != nil {
-			return err
+		if existingOcrProduct.OcrProductName != ocrProductName {
+			err = r.Db.Model(&ocrProduct).Association("Related").Append(&existingOcrProduct)
+			if err != nil {
+				return err
+			}
+			err = r.Db.Model(&existingOcrProduct).Association("Related").Append(&ocrProduct)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -139,4 +169,42 @@ func (r *OcrProductRepository) ExistsMultiple(ocrNames []string) ([]bool, error)
 	}
 
 	return exists, nil
+}
+
+func (r *OcrProductRepository) UpdateBestPrice(ocrName string) []error {
+	ocrProduct, err := r.GetByIdWithJoins(ocrName)
+	if err != nil {
+		return []error{err}
+	}
+
+	// Get best price from products
+	var bestPrice float32
+	for _, productEntity := range ocrProduct.Products {
+		if bestPrice == 0 || productEntity.Price < bestPrice {
+			bestPrice = productEntity.Price
+		}
+	}
+
+	if ocrProduct.BestPrice != bestPrice {
+		err = r.Db.Model(&ocrProduct).Update("best_price", bestPrice).Error
+		if err != nil {
+			return []error{err}
+		}
+
+		errList := make([]error, 0)
+
+		// Update best price for related ocr products
+		for _, relatedOcrProduct := range ocrProduct.Related {
+			err = r.Db.Model(&relatedOcrProduct).Update("best_price", bestPrice).Error
+			if err != nil {
+				errList = append(errList, err)
+			}
+		}
+
+		if len(errList) > 0 {
+			return errList
+		}
+	}
+
+	return nil
 }
