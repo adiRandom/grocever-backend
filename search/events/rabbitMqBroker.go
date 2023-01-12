@@ -58,8 +58,8 @@ func processJsonMessage(msg dto.OcrProductDto,
 	fmt.Printf(" [x] Sent %+v\n", body)
 
 	if err != nil {
-		fmt.Printf("Failed to publish a message to the priority crawl queue. Payload: %s. Error: %s",
-			body.String(),
+		fmt.Printf("Failed to publish a message to the priority crawl queue. Payload: %v. Error: %s",
+			body,
 			err.Error())
 	}
 }
