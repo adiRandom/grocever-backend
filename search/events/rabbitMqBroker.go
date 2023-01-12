@@ -25,7 +25,7 @@ func processJsonMessage(msg dto.OcrProductDto,
 
 	searchRes, err := searchService.SearchCrawlSources(msg.ProductName)
 	if err != nil {
-		fmt.Printf("Failed to query google for %s from store %d. Error: %s", msg.ProductName, msg.StoreId, err.Error())
+		fmt.Printf("Failed to query google for %s from store %d. Error: %s", msg.ProductName, msg.Store.StoreId, err.Error())
 	}
 
 	body := scheduling.CrawlDto{
@@ -41,7 +41,8 @@ func processJsonMessage(msg dto.OcrProductDto,
 		fmt.Printf("Failed to marshal search product dto for product %s from store %d. Error: %s",
 			err.Error(),
 			msg.ProductName,
-			msg.StoreId)
+			msg.Store.StoreId,
+		)
 	}
 
 	err = outCh.PublishWithContext(ctx,

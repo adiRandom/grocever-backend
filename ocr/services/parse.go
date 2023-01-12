@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	libModels "lib/data/models"
 	"lib/functional"
 	"lib/helpers"
 	"ocr/api/store"
@@ -38,7 +39,8 @@ func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, erro
 		return nil, err
 	}
 
-	storeMetadata, err := s.storeApi.GetStoreMetadataForName(storeName)
+	storeMetadataDto, err := s.storeApi.GetStoreMetadataForName(storeName)
+	storeMetadata := libModels.NewStoreMetadataFromDto(storeMetadataDto)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +50,7 @@ func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, erro
 	tokens = tokens[storeMetadata.OcrHeaderLines:]
 	productAndPrice := s.zipProductAndPrice(tokens)
 
-	products, err := s.getOcrProductsFromPairs(productAndPrice, storeMetadata.StoreId)
+	products, err := s.getOcrProductsFromPairs(productAndPrice, storeMetadata)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,7 @@ func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, erro
 
 func (s *ParseService) getOcrProductsFromPairs(
 	productAndPrice []helpers.Pair[string, string],
-	storeId int,
+	store libModels.StoreMetadata,
 ) ([]models.OcrProduct, error) {
 	products := make([]models.OcrProduct, len(productAndPrice))
 	for i, pair := range productAndPrice {
@@ -86,7 +88,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 			unit,                                 // unitName
 			float32(utils.TruncateFloat(qty, 3)), // qty
 			float32(utils.TruncateFloat(unitPrice, 3)), // unitPrice,
-			storeId, // storeId
+			store, // store
 		)
 	}
 	return products, nil

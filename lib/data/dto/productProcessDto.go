@@ -7,5 +7,5 @@ import (
 type ProductProcessDto struct {
 	OcrProductDto OcrProductDto         `json:"ocrProduct"`
 	CrawlResults  []crawl.CrawlerResult `json:"crawlResult"`
-	UserId        uint                  `json:"userId"`
+	UserId        int                   `json:"userId"`
 }

@@ -50,6 +50,7 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 			CrawlSources: functional.Map(products, func(product *productModel.Model) dto.CrawlSourceDto {
 				return product.CrawlLink.ToCrawlSourceDto()
 			}),
+			UserId: -1,
 		},
 	}
 
@@ -84,19 +85,21 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 			return errors
 		}
 
-		userOcrProduct := productModel.NewUserOcrProductModel(
-			-1,                                 // ID
-			productDto.OcrProductDto.Qty,       // Qty
-			productDto.OcrProductDto.Price,     // Price
-			productDto.UserId,                  // UserId
-			*ocrProduct,                        // OcrProduct
-			productDto.OcrProductDto.UnitPrice, // UnitPrice
-			uint(productDto.OcrProductDto.Store.StoreId), // StoreId
-			productDto.OcrProductDto.UnitType,            // UnitType
-		)
-		err = s.userProductRepo.CreateModel(*userOcrProduct)
-		if err != nil {
-			return []error{err}
+		if productDto.UserId != -1 {
+			userOcrProduct := productModel.NewUserOcrProductModel(
+				-1,                                 // ID
+				productDto.OcrProductDto.Qty,       // Qty
+				productDto.OcrProductDto.Price,     // Price
+				uint(productDto.UserId),            // UserId
+				*ocrProduct,                        // OcrProduct
+				productDto.OcrProductDto.UnitPrice, // UnitPrice
+				uint(productDto.OcrProductDto.Store.StoreId), // StoreId
+				productDto.OcrProductDto.UnitType,            // UnitType
+			)
+			err = s.userProductRepo.CreateModel(*userOcrProduct)
+			if err != nil {
+				return []error{err}
+			}
 		}
 
 		errs := s.ocrProductRepo.UpdateBestPrice(ocrProduct.OcrProductName)

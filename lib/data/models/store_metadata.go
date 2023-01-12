@@ -17,3 +17,12 @@ func NewStoreMetadataFromDto(dto dto.StoreMetadata) StoreMetadata {
 		Url:            dto.Url,
 	}
 }
+
+func (s *StoreMetadata) ToDto() dto.StoreMetadata {
+	return dto.StoreMetadata{
+		StoreId:        s.StoreId,
+		Name:           s.Name,
+		OcrHeaderLines: s.OcrHeaderLines,
+		Url:            s.Url,
+	}
+}
