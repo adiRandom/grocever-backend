@@ -2,8 +2,8 @@ package entities
 
 import (
 	"gorm.io/gorm"
-	"lib/data/dto"
 	"lib/data/models/crawl"
+	"lib/helpers"
 )
 
 type CrawlLinkEntity struct {
@@ -13,31 +13,29 @@ type CrawlLinkEntity struct {
 	ProductId uint
 }
 
-func (entity CrawlLinkEntity) ToDto() dto.CrawlSourceDto {
-	return dto.CrawlSourceDto{
-		Url:     entity.Url,
-		StoreId: int(entity.StoreId),
-	}
-}
-
 func (entity CrawlLinkEntity) ToModel() crawl.LinkModel {
 	return crawl.LinkModel{
-		Id:        entity.ID,
+		Id:        int(entity.ID),
 		Url:       entity.Url,
 		StoreId:   entity.StoreId,
-		ProductId: entity.ProductId,
+		ProductId: int(entity.ProductId),
 	}
 }
 
-func NewCrawlLinkEntityFromModel(model crawl.LinkModel) CrawlLinkEntity {
+func NewCrawlLinkEntityFromModel(model crawl.LinkModel) (*CrawlLinkEntity, error) {
+
+	if model.ProductId == -1 {
+		return nil, helpers.Error{Msg: "ProductId cannot be -1"}
+	}
+
 	entity := CrawlLinkEntity{
 		Url:       model.Url,
 		StoreId:   model.StoreId,
-		ProductId: model.ProductId,
+		ProductId: uint(model.ProductId),
 	}
 
 	if model.Id != -1 {
 		entity.ID = uint(model.Id)
 	}
-	return entity
+	return &entity, nil
 }

@@ -1,7 +1,7 @@
 package store
 
 import (
-	"lib/data/dto"
+	"lib/data/dto/store"
 	"lib/functional"
 	"lib/network/http"
 	"os"
@@ -22,22 +22,22 @@ func GetClient() *Client {
 	return client
 }
 
-func (s *Client) GetStoreMetadataForName(name string) (dto.StoreMetadata, error) {
-	res, err := http.ParseHttpResponse(http.GetSync[http.Response[dto.StoreMetadata]](s.baseUrl + "/store/" + name))
+func (s *Client) GetStoreMetadataForName(name string) (store.MetadataDto, error) {
+	res, err := http.ParseHttpResponse(http.GetSync[http.Response[store.MetadataDto]](s.baseUrl + "/store/" + name))
 	if err != nil {
-		return dto.StoreMetadata{}, err
+		return store.MetadataDto{}, err
 	}
 
 	return *res, nil
 }
 
 func (s *Client) GetAllStoreNames() []string {
-	res, err := http.ParseHttpResponse(http.GetSync[http.Response[[]dto.StoreMetadata]](s.baseUrl + "/store/list"))
+	res, err := http.ParseHttpResponse(http.GetSync[http.Response[[]store.MetadataDto]](s.baseUrl + "/store/list"))
 	if err != nil {
 		return nil
 	}
 
-	return functional.Map[dto.StoreMetadata, string](*res, func(store dto.StoreMetadata) string {
+	return functional.Map[store.MetadataDto, string](*res, func(store store.MetadataDto) string {
 		return store.Name
 	})
 }

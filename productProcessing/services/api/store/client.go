@@ -1,7 +1,7 @@
 package store
 
 import (
-	"lib/data/dto"
+	"lib/data/dto/store"
 	"lib/network/http"
 	"os"
 )
@@ -21,9 +21,9 @@ func GetClient() *Client {
 	return client
 }
 
-func (s *Client) GetAllStores() ([]dto.StoreMetadata, error) {
+func (s *Client) GetAllStores() ([]store.MetadataDto, error) {
 	res, err := http.ParseHttpResponse(
-		http.GetSync[http.Response[[]dto.StoreMetadata]](s.baseUrl + "/store/list"),
+		http.GetSync[http.Response[[]store.MetadataDto]](s.baseUrl + "/store/list"),
 	)
 	if err != nil {
 		return nil, err

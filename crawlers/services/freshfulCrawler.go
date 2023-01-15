@@ -3,7 +3,7 @@ package services
 import (
 	types "crawlers/data/dto"
 	"fmt"
-	"lib/data/constants"
+	"lib/data/models"
 	"lib/data/models/crawl"
 	"lib/helpers"
 	"lib/network/http"
@@ -12,6 +12,7 @@ import (
 )
 
 type FreshfulCrawler struct {
+	store models.StoreMetadata
 }
 
 const freshfulApiUrl = "https://www.freshful.ro/api/v2/shop/product-by-slug/%s"
@@ -36,7 +37,7 @@ func getFreshfulProductUrl(url string) (*string, error) {
 	return &correctUrl, nil
 }
 
-func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerResult) {
+func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	correctUrl, err := getFreshfulProductUrl(url)
 	if err != nil {
 		return
@@ -47,10 +48,10 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerR
 		return
 	}
 
-	res := crawl.CrawlerResult{CrawlUrl: url}
+	res := crawl.ResultModel{CrawlUrl: url}
 	res.ProductName = apiRes.Name
 	res.ProductPrice = apiRes.Price
-	res.StoreId = constants.FreshfulStoreId
+	res.Store = c.store
 
 	resCh <- res
 }

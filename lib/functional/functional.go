@@ -80,3 +80,13 @@ func Exists[T any](s []T, fn func(T) bool) bool {
 
 	return false
 }
+
+func Find[T any](s []T, fn func(T) bool) *T {
+	for _, el := range s {
+		if fn(el) {
+			return &el
+		}
+	}
+
+	return nil
+}

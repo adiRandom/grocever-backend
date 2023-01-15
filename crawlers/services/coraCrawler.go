@@ -3,7 +3,7 @@ package services
 import (
 	"crawlers/utils"
 	"github.com/gocolly/colly"
-	"lib/data/constants"
+	"lib/data/models"
 	"lib/data/models/crawl"
 	"strconv"
 )
@@ -14,15 +14,16 @@ const coraPriceElementQuerySelector = utils.CssSelector(".price-wrapper")
 const corePriceAttrib = "data-price-amount"
 
 type CoraCrawler struct {
+	store models.StoreMetadata
 }
 
-func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerResult) {
+func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	collyClient := colly.NewCollector()
 
 	collyClient.OnHTML(coraContentElementQuerySelector.
 		String(),
 		func(body *colly.HTMLElement) {
-			res := crawl.CrawlerResult{CrawlUrl: url}
+			res := crawl.ResultModel{CrawlUrl: url}
 			res.ProductName = body.ChildText(coraTitleElementQuerySelector.String())
 			price, err := strconv.ParseFloat(body.ChildAttr(coraPriceElementQuerySelector.String(), corePriceAttrib), 32)
 
@@ -30,7 +31,7 @@ func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan crawl.Crawle
 				return
 			}
 			res.ProductPrice = float32(price)
-			res.StoreId = constants.CoraStoreId
+			res.Store = crawler.store
 
 			resCh <- res
 		})

@@ -54,7 +54,7 @@ func processJsonMessage(msg ocr.UploadDto,
 		fmt.Printf("Failed to check if product exist. Error: %s", err.Error())
 		newProducts = products
 	} else {
-		newProducts = functional.IndexedFilter[product.UserOcrProductModel, bool](
+		newProducts = functional.IndexedFilter[product.UserOcrProductModel](
 			products,
 			func(index int, _ product.UserOcrProductModel) bool {
 				return !exists[index]

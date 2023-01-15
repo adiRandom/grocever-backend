@@ -3,7 +3,7 @@ package services
 import (
 	types "crawlers/data/dto"
 	"fmt"
-	"lib/data/constants"
+	"lib/data/models"
 	"lib/data/models/crawl"
 	"lib/helpers"
 	"lib/network/http"
@@ -14,6 +14,7 @@ import (
 const megaImageApiUrl = "https://api.mega-image.ro/?operationName=ProductDetails&variables={\"productCode\":\"%s\",\"lang\":\"ro\"}&extensions={\"persistedQuery\":{\"version\":1,\"sha256Hash\":\"c734fc7b27b17d674c66d9ae0c70caf29dbdf2667b0300e50f89fc444418d59b\"}}"
 
 type MegaImageCrawler struct {
+	store models.StoreMetadata
 }
 
 func getMegaImageProductUrl(url string) (*string, error) {
@@ -36,7 +37,7 @@ func getMegaImageProductUrl(url string) (*string, error) {
 	return &correctUrl, nil
 }
 
-func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerResult) {
+func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	correctUrl, err := getMegaImageProductUrl(url)
 	if err != nil {
 		return
@@ -47,10 +48,10 @@ func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.C
 		return
 	}
 
-	res := crawl.CrawlerResult{CrawlUrl: url}
+	res := crawl.ResultModel{CrawlUrl: url}
 	res.ProductName = apiRes.Data.ProductDetails.Name
 	res.ProductPrice = apiRes.Data.ProductDetails.Price.Value
-	res.StoreId = constants.MegaImageStoreId
+	res.Store = crawler.store
 
 	resCh <- res
 }

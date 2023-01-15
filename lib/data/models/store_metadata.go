@@ -1,6 +1,8 @@
 package models
 
-import "lib/data/dto"
+import (
+	"lib/data/dto/store"
+)
 
 type StoreMetadata struct {
 	StoreId        int    `json:"storeId"`
@@ -9,7 +11,7 @@ type StoreMetadata struct {
 	Url            string `json:"url"`
 }
 
-func NewStoreMetadataFromDto(dto dto.StoreMetadata) StoreMetadata {
+func NewStoreMetadataFromDto(dto store.MetadataDto) StoreMetadata {
 	return StoreMetadata{
 		StoreId:        dto.StoreId,
 		Name:           dto.Name,
@@ -18,8 +20,8 @@ func NewStoreMetadataFromDto(dto dto.StoreMetadata) StoreMetadata {
 	}
 }
 
-func (s *StoreMetadata) ToDto() dto.StoreMetadata {
-	return dto.StoreMetadata{
+func (s *StoreMetadata) ToDto() store.MetadataDto {
+	return store.MetadataDto{
 		StoreId:        s.StoreId,
 		Name:           s.Name,
 		OcrHeaderLines: s.OcrHeaderLines,

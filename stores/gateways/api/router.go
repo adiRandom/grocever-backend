@@ -2,6 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	dtos "lib/data/dto/store"
+	"lib/functional"
 	"lib/helpers"
 	"lib/network/http"
 	"stores/data/database/entity"
@@ -45,10 +47,15 @@ func (c *Router) getAllStores(ctx *gin.Context) {
 		return
 	}
 
+	resBody := functional.Map(stores, func(store entity.StoreMetadata) dtos.MetadataDto {
+		model := store.ToModel()
+		return model.ToDto()
+	})
+
 	ctx.JSON(200,
-		(http.Response[[]entity.StoreMetadata]{
+		(http.Response[[]dtos.MetadataDto]{
 			StatusCode: 200,
-			Body:       stores,
+			Body:       resBody,
 		}).GetH(),
 	)
 }
@@ -56,6 +63,7 @@ func (c *Router) getAllStores(ctx *gin.Context) {
 func (c *Router) getStoreByName(ctx *gin.Context) {
 	name := ctx.Param("name")
 	store, err := c.repo.GetByName(name)
+	storeModel := store.ToModel()
 	if err != nil {
 		ctx.JSON(500,
 			(http.Response[helpers.None]{
@@ -67,10 +75,10 @@ func (c *Router) getStoreByName(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(200,
-		(http.Response[entity.StoreMetadata]{
+		(http.Response[dtos.MetadataDto]{
 			Err:        err.Error(),
 			StatusCode: 200,
-			Body:       *store,
+			Body:       storeModel.ToDto(),
 		}).GetH(),
 	)
 }

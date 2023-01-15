@@ -5,5 +5,5 @@ import (
 )
 
 type Crawler interface {
-	ScrapeProductPage(url string, resCh chan crawl.CrawlerResult)
+	ScrapeProductPage(url string, resCh chan crawl.ResultModel)
 }

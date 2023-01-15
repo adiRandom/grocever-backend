@@ -6,7 +6,7 @@ import (
 )
 
 type Model struct {
-	ID          uint
+	ID          int
 	Name        string
 	CrawlLink   crawl.LinkModel
 	StoreId     int
@@ -16,7 +16,7 @@ type Model struct {
 }
 
 func NewProductModel(
-	ID uint,
+	ID int,
 	name string,
 	crawlLink crawl.LinkModel,
 	storeId int,

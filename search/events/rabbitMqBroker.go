@@ -9,6 +9,7 @@ import (
 	"lib/data/dto/scheduling"
 	"lib/events/rabbitmq"
 	amqpLib "lib/network/amqp"
+	"search/data/repositories"
 	"search/services"
 	"time"
 )
@@ -21,7 +22,7 @@ func processJsonMessage(msg product.UserOcrProductDto,
 	outQ *amqp.Queue,
 	ctx context.Context,
 ) {
-	searchService := services.GoogleSearchService{}
+	searchService := services.NewGoogleSearchService(repositories.GetStoreMetadata())
 
 	searchRes, err := searchService.SearchCrawlSources(msg.OcrName)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"lib/network/http"
 	"mime/multipart"
 	"ocr/gateways/events"
+	"strconv"
 )
 
 type Router struct {
@@ -58,6 +59,16 @@ func (c *Router) processImage(ctx *gin.Context) {
 		return
 	}
 
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		ctx.JSON(401, http.Response[helpers.None]{
+			Err:        "Wrong format of userId",
+			StatusCode: 401,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
 	// Read the image into a byte array
 	imageFile, err := image.Open()
 	if err != nil {
@@ -91,7 +102,7 @@ func (c *Router) processImage(ctx *gin.Context) {
 	c.broker.SendInput(ocr.UploadDto{
 		Bytes:  imageBytes,
 		Size:   image.Size,
-		UserId: userId,
+		UserId: userIdInt,
 	})
 
 	ctx.JSON(200, http.Response[helpers.None]{

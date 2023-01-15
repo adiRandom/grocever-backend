@@ -3,7 +3,7 @@ package crawl
 import (
 	"fmt"
 	"github.com/go-co-op/gocron"
-	"lib/data/dto"
+	"lib/data/dto/crawl"
 	"lib/data/dto/scheduling"
 	"log"
 	"scheduler/data/database/entities"
@@ -23,7 +23,7 @@ func GetRequeueService() *RequeueService {
 	return requeueService
 }
 
-func (s *RequeueService) Requeue(product dto.CrawlProductDto) error {
+func (s *RequeueService) Requeue(product crawl.ProductDto) error {
 	repository := repositories.GetRepository()
 	requeueEntities := entities.NewProductRequeueEntities(product)
 	for _, entity := range requeueEntities {
@@ -56,7 +56,7 @@ func (s *RequeueService) requeue() {
 	for _, product := range products {
 		crawlDto := scheduling.NewRequeueCrawlScheduleDto(
 			product.OcrProductName,
-			[]dto.CrawlSourceDto{product.CrawlSource},
+			[]crawl.SourceDto{product.CrawlSource},
 			scheduling.Normal,
 		)
 		scheduler.ScheduleCrawl(crawlDto)

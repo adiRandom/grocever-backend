@@ -34,7 +34,7 @@ func (r *Router) doesOcrProductExist(context *gin.Context) {
 }
 
 func (r *Router) doOcrProductsExist(context *gin.Context) {
-	var ocrNamesDto ocr.OcrProductExists
+	var ocrNamesDto ocr.ProductExists
 	err := context.BindJSON(&ocrNamesDto)
 	if err != nil {
 		context.JSON(500, http.Response[helpers.None]{
@@ -46,7 +46,7 @@ func (r *Router) doOcrProductsExist(context *gin.Context) {
 	}
 
 	exists, _ := r.repository.ExistsMultiple(ocrNamesDto.OcrNames)
-	context.JSON(200, http.Response[ocr.OcrProductExistsResponse]{
-		Body: ocr.OcrProductExistsResponse{Exists: exists},
+	context.JSON(200, http.Response[ocr.ProductExistsResponse]{
+		Body: ocr.ProductExistsResponse{Exists: exists},
 	}.GetH())
 }

@@ -1,6 +1,6 @@
-package dto
+package store
 
-type StoreMetadata struct {
+type MetadataDto struct {
 	StoreId        int    `json:"storeId"`
 	Name           string `json:"name"`
 	OcrHeaderLines int    `json:"ocrHeaderLines"`

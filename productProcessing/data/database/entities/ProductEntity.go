@@ -18,7 +18,7 @@ type ProductEntity struct {
 
 func (entity ProductEntity) ToModel() product.Model {
 	return product.Model{
-		ID:        entity.ID,
+		ID:        int(entity.ID),
 		Name:      entity.Name,
 		StoreId:   entity.StoreId,
 		Price:     entity.Price,
@@ -33,17 +33,22 @@ func (entity ProductEntity) ToModel() product.Model {
 	}
 }
 
-func NewProductEntityFromModel(model product.Model) ProductEntity {
+func NewProductEntityFromModel(model product.Model) (*ProductEntity, error) {
+	crawlLinkEntity, err := NewCrawlLinkEntityFromModel(model.CrawlLink)
+	if err != nil {
+		return nil, err
+	}
+
 	entity := ProductEntity{
 		Name:      model.Name,
 		StoreId:   model.StoreId,
 		Price:     model.Price,
 		UnityType: model.UnityType,
-		CrawlLink: NewCrawlLinkEntityFromModel(model.CrawlLink),
+		CrawlLink: *crawlLinkEntity,
 	}
 
 	if model.ID != -1 {
 		entity.ID = uint(model.ID)
 	}
-	return entity
+	return &entity, nil
 }

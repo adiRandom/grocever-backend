@@ -1,9 +1,9 @@
 package ocr
 
-type OcrProductExists struct {
+type ProductExists struct {
 	OcrNames []string `json:"ocrNames" binding:"required"`
 }
 
-type OcrProductExistsResponse struct {
+type ProductExistsResponse struct {
 	Exists []bool `json:"exists"`
 }

@@ -3,7 +3,7 @@ package services
 import (
 	"crawlers/utils"
 	"github.com/gocolly/colly"
-	"lib/data/constants"
+	"lib/data/models"
 	"lib/data/models/crawl"
 	"strconv"
 )
@@ -14,15 +14,16 @@ const auchanPriceElementQuerySelector = utils.CssSelector(".col-md-6 .productDes
 const auchanPriceAttrib = "data-price"
 
 type AuchanCrawler struct {
+	store models.StoreMetadata
 }
 
-func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan crawl.CrawlerResult) {
+func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	collyClient := colly.NewCollector()
 
 	collyClient.OnHTML(auchanContentElementQuerySelector.
 		String(),
 		func(body *colly.HTMLElement) {
-			res := crawl.CrawlerResult{CrawlUrl: url}
+			res := crawl.ResultModel{CrawlUrl: url}
 			res.ProductName = body.ChildText(auchanTitleElementQuerySelector.String())
 			price, err := strconv.ParseFloat(body.ChildAttr(auchanPriceElementQuerySelector.String(), auchanPriceAttrib), 32)
 
@@ -30,7 +31,7 @@ func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan crawl.Craw
 				return
 			}
 			res.ProductPrice = float32(price)
-			res.StoreId = constants.AuchanStoreId
+			res.Store = crawler.store
 
 			resCh <- res
 		})

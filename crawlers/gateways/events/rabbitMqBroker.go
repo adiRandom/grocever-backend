@@ -6,12 +6,15 @@ import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
+	"lib/data/dto/crawl"
+	crawlModels "lib/data/models/crawl"
 	"lib/events/rabbitmq/multiplex"
+	"lib/functional"
 	amqpLib "lib/network/amqp"
 	"time"
 )
 
-var rabbitMqBroker *multiplex.JsonBroker[dto.CrawlProductDto]
+var rabbitMqBroker *multiplex.JsonBroker[crawl.ProductDto]
 var messageProcessingTimeout = 1 * time.Minute
 var deadlockTimeout = 5 * time.Minute
 var inboundQueues = multiplex.InQueues{
@@ -28,7 +31,7 @@ var inboundQueues = multiplex.InQueues{
 const queueSwitchInterval = 10
 
 func pickInboundQueue(currentQueueName string,
-	queueMetadata multiplex.OnSelectQueueCtx[dto.CrawlProductDto],
+	queueMetadata multiplex.OnSelectQueueCtx[crawl.ProductDto],
 ) string {
 	if currentQueueName == "" {
 		return amqpLib.CrawlQueue
@@ -65,11 +68,16 @@ func pickInboundQueue(currentQueueName string,
 	return currentQueueName
 }
 
-func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
+func processJsonMessage(args multiplex.OnMessageArgs[crawl.ProductDto]) {
 	println("Processing message from queue: ", args.From)
 
 	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
-	body := dto.ProductProcessDto{OcrProduct: args.Msg.OcrProduct, CrawlResults: crawlRes}
+	body := dto.ProductProcessDto{
+		OcrProduct: args.Msg.OcrProduct,
+		CrawlResults: functional.Map(crawlRes, func(res crawlModels.ResultModel) crawl.ResultDto {
+			return res.ToDto()
+		}),
+	}
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
@@ -93,12 +101,12 @@ func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
 	}
 }
 
-func GetRabbitMqBroker() *multiplex.JsonBroker[dto.CrawlProductDto] {
+func GetRabbitMqBroker() *multiplex.JsonBroker[crawl.ProductDto] {
 	if rabbitMqBroker != nil {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = multiplex.NewJsonBroker[dto.CrawlProductDto](
+	rabbitMqBroker = multiplex.NewJsonBroker[crawl.ProductDto](
 		processJsonMessage,
 		inboundQueues,
 		amqpLib.ProductProcessQueue,

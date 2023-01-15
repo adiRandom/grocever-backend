@@ -1,21 +1,12 @@
 package crawl
 
-import "lib/data/dto"
-
 type LinkModel struct {
-	Id        uint
+	Id        int
 	Url       string
 	StoreId   int
-	ProductId uint
+	ProductId int
 }
 
-func NewCrawlLinkModel(id uint, url string, storeId int, productId uint) *LinkModel {
+func NewCrawlLinkModel(id int, url string, storeId int, productId int) *LinkModel {
 	return &LinkModel{Id: id, Url: url, StoreId: storeId, ProductId: productId}
-}
-
-func (model *LinkModel) ToCrawlSourceDto() dto.CrawlSourceDto {
-	return dto.CrawlSourceDto{
-		Url:     model.Url,
-		StoreId: model.StoreId,
-	}
 }

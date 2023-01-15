@@ -3,51 +3,53 @@ package services
 import (
 	"fmt"
 	"lib/data/constants"
-	"lib/data/dto"
+	crawl2 "lib/data/dto/crawl"
+	"lib/data/models"
 	"lib/data/models/crawl"
 )
 
-func getCrawler(storeId int) Crawler {
-	switch storeId {
+func getCrawler(store models.StoreMetadata) Crawler {
+	switch store.StoreId {
 	case constants.AuchanStoreId:
 		{
-			return &AuchanCrawler{}
+			return &AuchanCrawler{store}
 		}
 	case constants.FreshfulStoreId:
 		{
-			return &FreshfulCrawler{}
+			return &FreshfulCrawler{store}
 		}
 	case constants.MegaImageStoreId:
 		{
-			return &MegaImageCrawler{}
+			return &MegaImageCrawler{store}
 		}
 	case constants.CoraStoreId:
 		{
-			return &CoraCrawler{}
+			return &CoraCrawler{store}
 		}
 	}
 	return nil
 }
 
-func crawlProductPage(src dto.CrawlSourceDto, resCh chan crawl.CrawlerResult) {
-	crawler := getCrawler(src.StoreId)
+func crawlProductPage(src crawl2.SourceDto, resCh chan crawl.ResultModel) {
+	store := models.NewStoreMetadataFromDto(src.Store)
+	crawler := getCrawler(store)
 	if crawler == nil {
 		return
 	}
 	crawler.ScrapeProductPage(src.Url, resCh)
 }
 
-func crawlProductPages(srcs []dto.CrawlSourceDto, resCh chan crawl.CrawlerResult) {
+func crawlProductPages(srcs []crawl2.SourceDto, resCh chan crawl.ResultModel) {
 	for _, src := range srcs {
 		go crawlProductPage(src, resCh)
 	}
 }
 
-func CrawlProductPages(srcs []dto.CrawlSourceDto) []crawl.CrawlerResult {
-	resCh := make(chan crawl.CrawlerResult)
+func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
+	resCh := make(chan crawl.ResultModel)
 	crawlProductPages(srcs, resCh)
 
-	var res []crawl.CrawlerResult
+	var res []crawl.ResultModel
 	for range srcs {
 		res = append(res, <-resCh)
 		fmt.Printf("Got result: %+v\n", res)
