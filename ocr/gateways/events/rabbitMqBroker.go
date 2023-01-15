@@ -66,6 +66,11 @@ func processJsonMessage(msg ocr.UploadDto,
 		return product.ToDto()
 	})
 
+	fmt.Printf("Sending new products to product processing.\n")
+	for _, dtoProduct := range dtoProducts {
+		fmt.Printf("Product: %v\n", dtoProduct)
+	}
+
 	for _, dtoProduct := range dtoProducts {
 		body, err := json.Marshal(dtoProduct)
 		if err != nil {

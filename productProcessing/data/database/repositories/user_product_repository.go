@@ -56,5 +56,6 @@ func (r *UserProductRepository) toModel(entity entities.UserOcrProduct) (product
 }
 
 func (r *UserProductRepository) toEntity(model product.UserOcrProductModel) (entities.UserOcrProduct, error) {
-	return entities.NewUserOcrProductFromModel(model), nil
+	entity, err := entities.NewUserOcrProductFromModel(model)
+	return *entity, err
 }

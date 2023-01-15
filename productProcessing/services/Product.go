@@ -2,6 +2,7 @@ package services
 
 import (
 	"lib/data/dto"
+	"lib/data/models"
 	productModel "lib/data/models/product"
 	"productProcessing/data/database/repositories"
 	"time"
@@ -67,8 +68,8 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 				productDto.OcrProduct.UserId,    // UserId
 				*ocrProduct,                     // OcrProduct
 				productDto.OcrProduct.UnitPrice, // UnitPrice
-				productDto.OcrProduct.Store,     // Store
-				productDto.OcrProduct.UnitName,  // UnitType
+				models.NewStoreMetadataFromDto(productDto.OcrProduct.Store), // Store
+				productDto.OcrProduct.UnitName,                              // UnitType
 			)
 			err = s.userProductRepo.CreateModel(*userOcrProduct)
 			if err != nil {

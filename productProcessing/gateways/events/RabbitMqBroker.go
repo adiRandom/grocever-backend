@@ -14,22 +14,14 @@ import (
 
 var rabbitMqBroker *rabbitmq.JsonBroker[dto.ProductProcessDto]
 
-var productService = services.NewProductService(
-	repositories.GetProductRepository(),
-	repositories.GetOcrProductRepository(),
-	repositories.GetUserProductRepository(),
-)
+func getOnMsg(productService *services.ProductService) func(msg dto.ProductProcessDto, outCh *amqp.Channel, outQ *amqp.Queue, ctx context.Context) {
+	return func(msg dto.ProductProcessDto, outCh *amqp.Channel, outQ *amqp.Queue, ctx context.Context) {
+		fmt.Printf("Processing message: %+v \n", msg)
+		errs := productService.ProcessCrawlProduct(msg)
 
-func processJsonMessage(msg dto.ProductProcessDto,
-	_ *amqp.Channel,
-	_ *amqp.Queue,
-	_ context.Context,
-) {
-	fmt.Printf("Processing message: %+v \n", msg)
-	errs := productService.ProcessCrawlProduct(msg)
-
-	for _, err := range errs {
-		log.Fatal(err)
+		for _, err := range errs {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -38,8 +30,14 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 		return rabbitMqBroker
 	}
 
+	productService := services.NewProductService(
+		repositories.GetProductRepository(),
+		repositories.GetOcrProductRepository(),
+		repositories.GetUserProductRepository(),
+	)
+
 	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.ProductProcessDto](
-		processJsonMessage,
+		getOnMsg(productService),
 		amqpLib.ProductProcessQueue,
 		&amqpLib.ScheduleQueue,
 		nil,
