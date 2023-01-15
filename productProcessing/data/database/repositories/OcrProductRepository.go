@@ -11,7 +11,7 @@ import (
 )
 
 type OcrProductRepository struct {
-	repositories.Repository[entities.OcrProductEntity]
+	repositories.DbRepository[entities.OcrProductEntity]
 }
 
 var ocrRepo *OcrProductRepository = nil

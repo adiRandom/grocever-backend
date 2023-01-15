@@ -10,7 +10,7 @@ import (
 )
 
 type ProductRepository struct {
-	repositories.Repository[entities.ProductEntity]
+	repositories.DbRepository[entities.ProductEntity]
 }
 
 var pr *ProductRepository = nil
@@ -92,7 +92,11 @@ func (r *ProductRepository) Create(
 	product *product.Model,
 	associatedOcrProductName string,
 ) error {
-	entity := entities.NewProductEntityFromModel(*product)
+	entity, err := entities.NewProductEntityFromModel(*product)
+	if err != nil {
+		return err
+	}
+
 	ocrProductRepo := GetOcrProductRepository()
 	existingProduct, err := r.GetProductByNameAndStoreId(product.Name, product.StoreId, false)
 	if err != nil {
@@ -105,7 +109,7 @@ func (r *ProductRepository) Create(
 			return err
 		}
 
-		err := ocrProductRepo.LinkProductAndOcrProduct(associatedOcrProductName, entity)
+		err := ocrProductRepo.LinkProductAndOcrProduct(associatedOcrProductName, *entity)
 		if err != nil {
 			return err
 		}

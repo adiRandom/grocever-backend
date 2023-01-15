@@ -12,7 +12,7 @@ import (
 )
 
 type User struct {
-	repositories.RepositoryWithModel[entity.User, auth.User]
+	repositories.DbRepositoryWithModel[entity.User, auth.User]
 }
 
 var userRepository *User

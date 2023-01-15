@@ -2,14 +2,14 @@ package repositories
 
 import "lib/functional"
 
-type RepositoryWithModel[TEntity any, TModel any] struct {
-	Repository[TEntity]
+type DbRepositoryWithModel[TEntity any, TModel any] struct {
+	DbRepository[TEntity]
 	ToModel  func(entity TEntity) (TModel, error)
 	ToEntity func(model TModel) (TEntity, error)
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) GetAll() ([]TModel, error) {
-	res, err := r.Repository.GetAll()
+func (r *DbRepositoryWithModel[TEntity, TModel]) GetAll() ([]TModel, error) {
+	res, err := r.DbRepository.GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +39,8 @@ func (r *RepositoryWithModel[TEntity, TModel]) GetAll() ([]TModel, error) {
 	return filteredModels, nil
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) GetById(id uint) (*TModel, error) {
-	entity, err := r.Repository.GetById(id)
+func (r *DbRepositoryWithModel[TEntity, TModel]) GetById(id uint) (*TModel, error) {
+	entity, err := r.DbRepository.GetById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -56,38 +56,38 @@ func (r *RepositoryWithModel[TEntity, TModel]) GetById(id uint) (*TModel, error)
 	return &model, nil
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) SaveModel(model TModel) error {
+func (r *DbRepositoryWithModel[TEntity, TModel]) SaveModel(model TModel) error {
 	entity, err := r.ToEntity(model)
 	if err != nil {
 		return err
 	}
-	return r.Repository.Save(entity)
+	return r.DbRepository.Save(entity)
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) SaveEntity(entity TEntity) error {
-	return r.Repository.Save(entity)
+func (r *DbRepositoryWithModel[TEntity, TModel]) SaveEntity(entity TEntity) error {
+	return r.DbRepository.Save(entity)
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) DeleteModel(model TModel) error {
+func (r *DbRepositoryWithModel[TEntity, TModel]) DeleteModel(model TModel) error {
 	entity, err := r.ToEntity(model)
 	if err != nil {
 		return err
 	}
-	return r.Repository.Delete(entity)
+	return r.DbRepository.Delete(entity)
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) DeleteEntity(entity TEntity) error {
-	return r.Repository.Delete(entity)
+func (r *DbRepositoryWithModel[TEntity, TModel]) DeleteEntity(entity TEntity) error {
+	return r.DbRepository.Delete(entity)
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) CreateModel(model TModel) error {
+func (r *DbRepositoryWithModel[TEntity, TModel]) CreateModel(model TModel) error {
 	entity, err := r.ToEntity(model)
 	if err != nil {
 		return err
 	}
-	return r.Repository.Create(entity)
+	return r.DbRepository.Create(entity)
 }
 
-func (r *RepositoryWithModel[TEntity, TModel]) CreateEntity(entity TEntity) error {
-	return r.Repository.Create(entity)
+func (r *DbRepositoryWithModel[TEntity, TModel]) CreateEntity(entity TEntity) error {
+	return r.DbRepository.Create(entity)
 }

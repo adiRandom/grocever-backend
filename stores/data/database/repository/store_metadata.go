@@ -9,7 +9,7 @@ import (
 )
 
 type StoreMetadata struct {
-	repositories.Repository[entity.StoreMetadata]
+	repositories.DbRepository[entity.StoreMetadata]
 }
 
 var storeMetadataRepo *StoreMetadata = nil

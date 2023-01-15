@@ -11,7 +11,7 @@ import (
 )
 
 type UserProductRepository struct {
-	repositories.RepositoryWithModel[entities.UserOcrProduct, product.UserOcrProductModel]
+	repositories.DbRepositoryWithModel[entities.UserOcrProduct, product.UserOcrProductModel]
 }
 
 var repo *UserProductRepository = nil
@@ -46,7 +46,7 @@ func (r *UserProductRepository) getStoreMetadataForId(id int) (models.StoreMetad
 }
 
 func (r *UserProductRepository) toModel(entity entities.UserOcrProduct) (product.UserOcrProductModel, error) {
-	storeMetadata, err := r.getStoreMetadataForId(int(entity.Product.StoreId))
+	storeMetadata, err := r.getStoreMetadataForId(int(entity.StoreId))
 
 	if err != nil {
 		return product.UserOcrProductModel{}, err

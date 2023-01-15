@@ -9,7 +9,7 @@ import (
 )
 
 type Repository struct {
-	repositories.Repository[entities.ProductRequeueEntity]
+	repositories.DbRepository[entities.ProductRequeueEntity]
 }
 
 var pr *Repository = nil
