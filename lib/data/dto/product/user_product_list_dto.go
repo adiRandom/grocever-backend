@@ -1,4 +1,4 @@
-package product_processing
+package product
 
 type UserProductListDto struct {
 	Products []UserOcrProductDto `json:"product"`

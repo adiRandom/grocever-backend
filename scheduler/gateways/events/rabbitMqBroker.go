@@ -9,9 +9,9 @@ import (
 	"scheduler/services/crawl"
 )
 
-var broker *rabbitmq.JsonBroker[scheduling.CrawlDto]
+var broker *rabbitmq.JsonBroker[scheduling.CrawlScheduleDto]
 
-func processJsonMessage(msg scheduling.CrawlDto,
+func processJsonMessage(msg scheduling.CrawlScheduleDto,
 	_ *amqp.Channel,
 	_ *amqp.Queue,
 	_ context.Context,
@@ -20,12 +20,12 @@ func processJsonMessage(msg scheduling.CrawlDto,
 	scheduler.ScheduleCrawl(msg)
 }
 
-func GetRabbitMqBroker() *rabbitmq.JsonBroker[scheduling.CrawlDto] {
+func GetRabbitMqBroker() *rabbitmq.JsonBroker[scheduling.CrawlScheduleDto] {
 	if broker != nil {
 		return broker
 	}
 
-	broker = rabbitmq.NewJsonBroker[scheduling.CrawlDto](
+	broker = rabbitmq.NewJsonBroker[scheduling.CrawlScheduleDto](
 		processJsonMessage,
 		amqpLib.ScheduleQueue,
 		nil,

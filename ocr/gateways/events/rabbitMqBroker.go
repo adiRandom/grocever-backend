@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"lib/data/dto"
 	"lib/data/dto/ocr"
+	productDto "lib/data/dto/product"
+	"lib/data/models/product"
 	"lib/events/rabbitmq"
 	"lib/functional"
 	amqpLib "lib/network/amqp"
 	"ocr/api/product_processing"
-	"ocr/models"
 	"ocr/services"
 	"time"
 )
@@ -34,54 +34,57 @@ func processJsonMessage(msg ocr.UploadDto,
 	}
 
 	parseService := services.GetParseService()
-	products, err := parseService.GetOcrProducts(text)
+	products, err := parseService.GetOcrProducts(text, msg.UserId)
 	if err != nil {
 		fmt.Printf("Failed to parse product. Error: %s", err.Error())
 	}
 
-	productNames := functional.Map[models.OcrProduct, string](
+	productNames := functional.Map[product.UserOcrProductModel, string](
 		products,
-		func(product models.OcrProduct) string {
-			return product.Name
+		func(productModel product.UserOcrProductModel) string {
+			return productModel.OcrProduct.OcrProductName
 		},
 	)
 
 	productProcessingApiClient := product_processing.GetClient()
 	exists, err := productProcessingApiClient.OcrProductsExists(productNames)
 
-	var newProducts []models.OcrProduct
+	var newProducts []product.UserOcrProductModel
 	if err != nil {
 		fmt.Printf("Failed to check if product exist. Error: %s", err.Error())
 		newProducts = products
 	} else {
-		newProducts = functional.IndexedFilter[models.OcrProduct, bool](
+		newProducts = functional.IndexedFilter[product.UserOcrProductModel, bool](
 			products,
-			func(index int, _ models.OcrProduct) bool {
+			func(index int, _ product.UserOcrProductModel) bool {
 				return !exists[index]
 			},
 		)
 	}
 
-	dtoProducts := functional.Map(newProducts, func(product models.OcrProduct) dto.OcrProductDto {
+	dtoProducts := functional.Map(newProducts, func(product product.UserOcrProductModel) productDto.UserOcrProductDto {
 		return product.ToDto()
 	})
-	body, err := json.Marshal(dtoProducts)
-	if err != nil {
-		fmt.Printf("Failed to marshal ocr product dto. Error: %s", err.Error())
-	}
 
-	err = outCh.PublishWithContext(ctx,
-		"",        // exchange
-		outQ.Name, // routing key
-		false,     // mandatory
-		false,     // immediate
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        body,
-		},
-	)
-	if err != nil {
-		return
+	for _, dtoProduct := range dtoProducts {
+		body, err := json.Marshal(dtoProduct)
+		if err != nil {
+			fmt.Printf("Failed to marshal ocr product dto. Error: %s", err.Error())
+		}
+
+		err = outCh.PublishWithContext(ctx,
+			"",        // exchange
+			outQ.Name, // routing key
+			false,     // mandatory
+			false,     // immediate
+			amqp.Publishing{
+				ContentType: "application/json",
+				Body:        body,
+			},
+		)
+		if err != nil {
+			return
+		}
 	}
 }
 

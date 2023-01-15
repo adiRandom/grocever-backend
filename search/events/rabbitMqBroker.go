@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"lib/data/dto"
+	"lib/data/dto/product"
 	"lib/data/dto/scheduling"
 	"lib/events/rabbitmq"
 	amqpLib "lib/network/amqp"
@@ -13,34 +13,28 @@ import (
 	"time"
 )
 
-var rabbitMqBroker *rabbitmq.JsonBroker[dto.OcrProductDto]
+var rabbitMqBroker *rabbitmq.JsonBroker[product.UserOcrProductDto]
 var searchRequestTimeout = 1 * time.Minute
 
-func processJsonMessage(msg dto.OcrProductDto,
+func processJsonMessage(msg product.UserOcrProductDto,
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
 	ctx context.Context,
 ) {
 	searchService := services.GoogleSearchService{}
 
-	searchRes, err := searchService.SearchCrawlSources(msg.ProductName)
+	searchRes, err := searchService.SearchCrawlSources(msg.OcrName)
 	if err != nil {
-		fmt.Printf("Failed to query google for %s from store %d. Error: %s", msg.ProductName, msg.Store.StoreId, err.Error())
+		fmt.Printf("Failed to query google for %s from store %d. Error: %s", msg.OcrName, msg.Store.StoreId, err.Error())
 	}
 
-	body := scheduling.CrawlDto{
-		Product: dto.CrawlProductDto{
-			OcrProduct:   msg,
-			CrawlSources: searchRes,
-		},
-		Type: scheduling.Prioritized,
-	}
+	body := scheduling.NewCrawlScheduleDto(msg, searchRes, scheduling.Prioritized)
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		fmt.Printf("Failed to marshal search product dto for product %s from store %d. Error: %s",
 			err.Error(),
-			msg.ProductName,
+			msg.OcrName,
 			msg.Store.StoreId,
 		)
 	}
@@ -64,12 +58,12 @@ func processJsonMessage(msg dto.OcrProductDto,
 	}
 }
 
-func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.OcrProductDto] {
+func GetRabbitMqBroker() *rabbitmq.JsonBroker[product.UserOcrProductDto] {
 	if rabbitMqBroker != nil {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = rabbitmq.NewJsonBroker[dto.OcrProductDto](
+	rabbitMqBroker = rabbitmq.NewJsonBroker[product.UserOcrProductDto](
 		processJsonMessage,
 		amqpLib.SearchQueue,
 		&amqpLib.ScheduleQueue,

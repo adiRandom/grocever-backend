@@ -3,7 +3,7 @@ package product
 import (
 	"api_gateway/services/api/products"
 	"github.com/gin-gonic/gin"
-	"lib/data/dto/product_processing"
+	"lib/data/dto/product"
 	"lib/helpers"
 	"lib/network/http"
 )
@@ -30,9 +30,9 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 		}.GetH())
 		return
 	}
-	context.JSON(200, http.Response[product_processing.UserProductListDto]{
+	context.JSON(200, http.Response[product.UserProductListDto]{
 		StatusCode: 200,
-		Body: product_processing.UserProductListDto{
+		Body: product.UserProductListDto{
 			Products: productList,
 		},
 	}.GetH())

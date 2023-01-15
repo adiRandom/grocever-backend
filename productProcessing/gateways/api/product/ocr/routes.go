@@ -2,7 +2,7 @@ package ocr
 
 import (
 	"github.com/gin-gonic/gin"
-	"lib/data/dto/product_processing/ocr"
+	"lib/data/dto/product/ocr"
 	"lib/helpers"
 	"lib/network/http"
 	"productProcessing/data/database/repositories"

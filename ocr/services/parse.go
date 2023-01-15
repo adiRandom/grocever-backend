@@ -3,10 +3,10 @@ package services
 import (
 	"fmt"
 	libModels "lib/data/models"
+	"lib/data/models/product"
 	"lib/functional"
 	"lib/helpers"
 	"ocr/api/store"
-	"ocr/models"
 	"ocr/utils"
 	"regexp"
 	"strconv"
@@ -33,7 +33,7 @@ func GetParseService() ParseService {
 	return *parseService
 }
 
-func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, error) {
+func (s *ParseService) GetOcrProducts(ocrText string, userId uint) ([]product.UserOcrProductModel, error) {
 	storeName, err := s.getStore(ocrText)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, erro
 	tokens = tokens[storeMetadata.OcrHeaderLines:]
 	productAndPrice := s.zipProductAndPrice(tokens)
 
-	products, err := s.getOcrProductsFromPairs(productAndPrice, storeMetadata)
+	products, err := s.getOcrProductsFromPairs(productAndPrice, storeMetadata, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -61,16 +61,17 @@ func (s *ParseService) GetOcrProducts(ocrText string) ([]models.OcrProduct, erro
 func (s *ParseService) getOcrProductsFromPairs(
 	productAndPrice []helpers.Pair[string, string],
 	store libModels.StoreMetadata,
-) ([]models.OcrProduct, error) {
-	products := make([]models.OcrProduct, len(productAndPrice))
+	userId uint,
+) ([]product.UserOcrProductModel, error) {
+	products := make([]product.UserOcrProductModel, len(productAndPrice))
 	for i, pair := range productAndPrice {
-		product := pair.First
+		ocrProductName := pair.First
 		priceLine := pair.Second
 
 		qty, err := s.getQty(priceLine)
 		if err != nil {
 			return nil, helpers.Error{
-				Msg:    fmt.Sprintf("Could not parse qty for %s", product),
+				Msg:    fmt.Sprintf("Could not parse qty for %s", ocrProductName),
 				Reason: err.Error(),
 			}
 		}
@@ -78,17 +79,24 @@ func (s *ParseService) getOcrProductsFromPairs(
 		unitPrice, err := s.getUnitPrice(priceLine)
 		if err != nil {
 			return nil, helpers.Error{
-				Msg:    fmt.Sprintf("Could not parse unit price for %s", product),
+				Msg:    fmt.Sprintf("Could not parse unit price for %s", ocrProductName),
 				Reason: err.Error(),
 			}
 		}
 
-		products[i] = models.NewOcrProduct(
-			product,                              // name
-			unit,                                 // unitName
+		price := float32(utils.TruncateFloat(qty, 3)) * float32(utils.TruncateFloat(unitPrice, 3))
+
+		ocrProduct := product.NewOcrProductModel(ocrProductName, price, nil, nil)
+
+		products[i] = *product.NewUserOcrProductModel(
+			-1,                                   // id
 			float32(utils.TruncateFloat(qty, 3)), // qty
-			float32(utils.TruncateFloat(unitPrice, 3)), // unitPrice,
+			price,                                // price
+			userId,                               // userId
+			*ocrProduct,                          // ocrProduct
+			float32(utils.TruncateFloat(unitPrice, 3)), // unitPrice
 			store, // store
+			unit,  // unit
 		)
 	}
 	return products, nil

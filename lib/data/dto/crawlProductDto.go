@@ -1,7 +1,8 @@
 package dto
 
+import "lib/data/dto/product"
+
 type CrawlProductDto struct {
-	OcrProduct   OcrProductDto    `json:"ocrProduct"`
-	CrawlSources []CrawlSourceDto `json:"crawlSources"`
-	UserId       int              `json:"userId"`
+	OcrProduct   product.UserOcrProductDto `json:"ocrProduct"`
+	CrawlSources []CrawlSourceDto          `json:"crawlSources"`
 }

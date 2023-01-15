@@ -1,20 +1,13 @@
 package services
 
 import (
-	"context"
-	"encoding/json"
-	"github.com/rabbitmq/amqp091-go"
 	"lib/data/dto"
-	"lib/data/dto/scheduling"
 	productModel "lib/data/models/product"
-	"lib/functional"
 	"productProcessing/data/database/repositories"
 	"time"
 )
 
 type ProductService struct {
-	scheduleQueue   amqp091.Queue
-	scheduleCh      *amqp091.Channel
 	requeueTimeout  *time.Duration
 	productRepo     *repositories.ProductRepository
 	ocrProductRepo  *repositories.OcrProductRepository
@@ -22,18 +15,11 @@ type ProductService struct {
 }
 
 func NewProductService(
-	scheduleQueue amqp091.Queue,
-	scheduleCh *amqp091.Channel,
-	requeueTimeout *time.Duration,
 	productRepo *repositories.ProductRepository,
 	ocrProductRepo *repositories.OcrProductRepository,
 	userProductRepo *repositories.UserProductRepository,
-
 ) *ProductService {
 	return &ProductService{
-		scheduleQueue:   scheduleQueue,
-		scheduleCh:      scheduleCh,
-		requeueTimeout:  requeueTimeout,
 		productRepo:     productRepo,
 		ocrProductRepo:  ocrProductRepo,
 		userProductRepo: userProductRepo,
@@ -42,18 +28,6 @@ func NewProductService(
 
 func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) []error {
 	products := productModel.NewProductModelsFromProcessDto(productDto)
-
-	requeueDto := scheduling.CrawlDto{
-		Type: scheduling.Requeue,
-		Product: dto.CrawlProductDto{
-			OcrProduct: productDto.OcrProductDto,
-			CrawlSources: functional.Map(products, func(product *productModel.Model) dto.CrawlSourceDto {
-				return product.CrawlLink.ToCrawlSourceDto()
-			}),
-			UserId: -1,
-		},
-	}
-
 	errors := make([]error, 0)
 
 	// First create all the OCR products in the DB
@@ -85,16 +59,16 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 			return errors
 		}
 
-		if productDto.UserId != -1 {
+		if productDto.OcrProduct.UserId != -1 {
 			userOcrProduct := productModel.NewUserOcrProductModel(
-				-1,                                 // ID
-				productDto.OcrProductDto.Qty,       // Qty
-				productDto.OcrProductDto.Price,     // Price
-				uint(productDto.UserId),            // UserId
-				*ocrProduct,                        // OcrProduct
-				productDto.OcrProductDto.UnitPrice, // UnitPrice
-				uint(productDto.OcrProductDto.Store.StoreId), // StoreId
-				productDto.OcrProductDto.UnitType,            // UnitType
+				-1,                              // ID
+				productDto.OcrProduct.Qty,       // Qty
+				productDto.OcrProduct.Price,     // Price
+				productDto.OcrProduct.UserId,    // UserId
+				*ocrProduct,                     // OcrProduct
+				productDto.OcrProduct.UnitPrice, // UnitPrice
+				productDto.OcrProduct.Store,     // Store
+				productDto.OcrProduct.UnitName,  // UnitType
 			)
 			err = s.userProductRepo.CreateModel(*userOcrProduct)
 			if err != nil {
@@ -107,30 +81,6 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 			return errs
 		}
 
-	}
-
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, *s.requeueTimeout)
-	defer cancel()
-
-	requestDtoBody, err := json.Marshal(requeueDto)
-	if err != nil {
-		errors = append(errors, err)
-	}
-
-	err = s.scheduleCh.PublishWithContext(
-		ctx,
-		"",
-		s.scheduleQueue.Name,
-		false,
-		false,
-		amqp091.Publishing{
-			ContentType: "application/json",
-			Body:        requestDtoBody,
-		},
-	)
-	if err != nil {
-		return append(errors, err)
 	}
 
 	if len(errors) > 0 {

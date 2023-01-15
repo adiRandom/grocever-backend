@@ -1,7 +1,7 @@
 package products
 
 import (
-	"lib/data/dto/product_processing"
+	"lib/data/dto/product"
 	"lib/network/http"
 	"os"
 )
@@ -21,9 +21,9 @@ func GetClient() *Client {
 	return client
 }
 
-func (s *Client) GetProductList() ([]product_processing.UserOcrProductDto, *http.Error) {
+func (s *Client) GetProductList() ([]product.UserOcrProductDto, *http.Error) {
 	res, err := http.ParseHttpResponse(
-		http.GetSync[http.Response[product_processing.UserProductListDto]](s.baseUrl + "/product/list"),
+		http.GetSync[http.Response[product.UserProductListDto]](s.baseUrl + "/product/list"),
 	)
 	if err != nil {
 		return nil, err

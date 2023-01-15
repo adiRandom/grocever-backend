@@ -2,22 +2,37 @@ package scheduling
 
 import (
 	"lib/data/dto"
+	"lib/data/dto/product"
 )
 
-type CrawlDto struct {
+type CrawlScheduleDto struct {
 	Product dto.CrawlProductDto `json:"product"`
 	Type    string              `json:"type"`
 }
 
-func NewCrawlDto(
-	product dto.OcrProductDto,
-	crawlSource dto.CrawlSourceDto,
+func NewCrawlScheduleDto(
+	product product.UserOcrProductDto,
+	crawlSources []dto.CrawlSourceDto,
 	crawlType string,
-) CrawlDto {
-	return CrawlDto{
+) CrawlScheduleDto {
+	return CrawlScheduleDto{
 		Product: dto.CrawlProductDto{
 			OcrProduct:   product,
-			CrawlSources: []dto.CrawlSourceDto{crawlSource},
+			CrawlSources: crawlSources,
+		},
+		Type: crawlType,
+	}
+}
+
+func NewRequeueCrawlScheduleDto(
+	ocrProductName string,
+	crawlSources []dto.CrawlSourceDto,
+	crawlType string,
+) CrawlScheduleDto {
+	return CrawlScheduleDto{
+		Product: dto.CrawlProductDto{
+			OcrProduct:   product.UserOcrProductDto{OcrName: ocrProductName, UserId: -1},
+			CrawlSources: crawlSources,
 		},
 		Type: crawlType,
 	}
@@ -25,4 +40,3 @@ func NewCrawlDto(
 
 const Normal = "normal"
 const Prioritized = "prioritized"
-const Requeue = "requeue"

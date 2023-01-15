@@ -54,9 +54,9 @@ func (s *RequeueService) requeue() {
 	}
 
 	for _, product := range products {
-		crawlDto := scheduling.NewCrawlDto(
-			product.Product,
-			product.CrawlSource,
+		crawlDto := scheduling.NewRequeueCrawlScheduleDto(
+			product.OcrProductName,
+			[]dto.CrawlSourceDto{product.CrawlSource},
 			scheduling.Normal,
 		)
 		scheduler.ScheduleCrawl(crawlDto)

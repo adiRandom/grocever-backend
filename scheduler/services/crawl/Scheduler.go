@@ -56,15 +56,7 @@ func (s *Scheduler) Close() {
 	s.cleanup()
 }
 
-func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
-	if dto.Type == scheduling.Requeue {
-		err := requeueService.Requeue(dto.Product)
-		if err != nil {
-			return
-		}
-		return
-	}
-
+func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlScheduleDto) {
 	queueName := crawl.GetQueueForPriority(dto.Type)
 	if queueName == "" {
 		fmt.Printf("Invalid crawl type: %s", dto.Type)
@@ -77,7 +69,7 @@ func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
 	body := dto.Product
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		fmt.Printf("Failed to marshal crawl source: %s. Error: %s", body.String(), err.Error())
+		fmt.Printf("Failed to marshal crawl source: %v. Error: %s", body, err.Error())
 		return
 	}
 
@@ -95,6 +87,12 @@ func (s *Scheduler) ScheduleCrawl(dto scheduling.CrawlDto) {
 		},
 	)
 	if err != nil {
-		fmt.Printf("Failed to publish crawl request: %s. Error: %s", body.String(), err.Error())
+		fmt.Printf("Failed to publish crawl request: %v. Error: %s", body, err.Error())
+	}
+
+	// After scheduling a crawl save in the DB an entity for requeue
+	err = requeueService.Requeue(dto.Product)
+	if err != nil {
+		fmt.Printf("Failed to save requeue entity: %v. Error: %s", dto.Product, err.Error())
 	}
 }

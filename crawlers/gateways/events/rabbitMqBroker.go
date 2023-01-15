@@ -69,14 +69,11 @@ func processJsonMessage(args multiplex.OnMessageArgs[dto.CrawlProductDto]) {
 	println("Processing message from queue: ", args.From)
 
 	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
-	body := dto.ProductProcessDto{OcrProductDto: args.Msg.OcrProduct, CrawlResults: crawlRes, UserId: args.Msg.UserId}
+	body := dto.ProductProcessDto{OcrProduct: args.Msg.OcrProduct, CrawlResults: crawlRes}
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		fmt.Printf("Failed to marshal process product dto for product %s from store %d. Error: %s",
-			err.Error(),
-			body.OcrProductDto.ProductName,
-			body.OcrProductDto.ProductName)
+		fmt.Printf("Failed to marshal process product dto for product %s from store %d. Error: %s", args.Msg.OcrProduct.OcrName, args.Msg.OcrProduct.Store.StoreId, err.Error())
 	}
 
 	err = args.OutCh.PublishWithContext(args.Ctx,

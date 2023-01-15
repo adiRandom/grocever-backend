@@ -2,8 +2,8 @@ package product
 
 import (
 	"github.com/gin-gonic/gin"
-	"lib/data/dto/product_processing"
-	"lib/data/models/product"
+	productDtos "lib/data/dto/product"
+	productModels "lib/data/models/product"
 	"lib/functional"
 	"lib/helpers"
 	"lib/network/http"
@@ -35,12 +35,12 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 		return
 	}
 
-	context.JSON(200, http.Response[product_processing.UserProductListDto]{
+	context.JSON(200, http.Response[productDtos.UserProductListDto]{
 		StatusCode: 200,
-		Body: product_processing.UserProductListDto{
+		Body: productDtos.UserProductListDto{
 			Products: functional.Map(
 				products,
-				func(userOcrProductModel product.UserOcrProductModel) product_processing.UserOcrProductDto {
+				func(userOcrProductModel productModels.UserOcrProductModel) productDtos.UserOcrProductDto {
 					return userOcrProductModel.ToDto()
 				},
 			),

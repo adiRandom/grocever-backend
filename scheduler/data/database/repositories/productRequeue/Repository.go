@@ -34,8 +34,7 @@ func (r *Repository) GetProductsForRequeue() ([]entities.ProductRequeueEntity, e
 			return err
 		}
 
-		//return tx.Exec("DELETE FROM product_requeue_entities").Error
-		return nil
+		return tx.Exec("DELETE FROM product_requeue_entities").Error
 	})
 
 	if err != nil {
