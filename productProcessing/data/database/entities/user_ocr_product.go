@@ -9,14 +9,14 @@ import (
 
 type UserOcrProduct struct {
 	gorm.Model
-	UserId         uint
-	OcrProductName string
-	OcrProduct     OcrProductEntity `gorm:"foreignKey:OcrProductName"`
-	Qty            float32
-	UnitPrice      float32
-	Price          float32
-	StoreId        uint
-	UnitType       string
+	UserId           uint
+	OcrProductNameFk string           `gorm:"size:255"`
+	OcrProduct       OcrProductEntity `gorm:"foreignKey:OcrProductNameFk;references:OcrProductName"`
+	Qty              float32
+	UnitPrice        float32
+	Price            float32
+	StoreId          uint
+	UnitType         string
 }
 
 func (entity UserOcrProduct) ToModel(store models.StoreMetadata) product.UserOcrProductModel {
@@ -38,14 +38,14 @@ func NewUserOcrProductFromModel(model product.UserOcrProductModel) (*UserOcrProd
 	}
 
 	return &UserOcrProduct{
-		Model:          gorm.Model{ID: uint(model.Id)},
-		UserId:         uint(model.UserId),
-		OcrProductName: model.OcrProduct.OcrProductName,
-		Qty:            model.Qty,
-		OcrProduct:     NewOcrProductEntityFromModel(model.OcrProduct),
-		UnitPrice:      model.UnitPrice,
-		StoreId:        uint(model.Store.StoreId),
-		Price:          model.Price,
-		UnitType:       model.UnitType,
+		Model:            gorm.Model{ID: uint(model.Id)},
+		UserId:           uint(model.UserId),
+		OcrProductNameFk: model.OcrProduct.OcrProductName,
+		Qty:              model.Qty,
+		OcrProduct:       NewOcrProductEntityFromModel(model.OcrProduct),
+		UnitPrice:        model.UnitPrice,
+		StoreId:          uint(model.Store.StoreId),
+		Price:            model.Price,
+		UnitType:         model.UnitType,
 	}, nil
 }

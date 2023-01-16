@@ -3,7 +3,7 @@ package test
 //func InitDbTestData() {
 //	ocrProductEntities := [1]*entities.OcrProductEntity{
 //		&entities.OcrProductEntity{
-//			OcrProductName: "test",
+//			OcrProductNameFk: "test",
 //		},
 //	}
 //	repositories.GetProductRepository().Create(
@@ -34,7 +34,7 @@ package test
 //
 //	ocrProductEntities = [1]*entities.OcrProductEntity{
 //		&entities.OcrProductEntity{
-//			OcrProductName: "tes",
+//			OcrProductNameFk: "tes",
 //		},
 //	}
 //
