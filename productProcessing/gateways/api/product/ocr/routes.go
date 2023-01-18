@@ -19,8 +19,8 @@ func NewOcrRouter(ocrProductRepo *repositories.OcrProductRepository) *Router {
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
-	router.GET("/:name/exists", r.doesOcrProductExist)
 	router.POST("/exists", r.doOcrProductsExist)
+	router.GET("/:name/exists", r.doesOcrProductExist)
 }
 
 func (r *Router) doesOcrProductExist(context *gin.Context) {

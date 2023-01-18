@@ -34,3 +34,12 @@ func (r *StoreMetadata) GetByName(name string) (*entity.StoreMetadata, error) {
 	}
 	return &storeMetadata, err
 }
+
+func (r *StoreMetadata) GetByNameAllUpper(name string) (*entity.StoreMetadata, error) {
+	var storeMetadata entity.StoreMetadata
+	err := r.Db.First(&storeMetadata, "upper(name) = ?", name).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return &storeMetadata, err
+}

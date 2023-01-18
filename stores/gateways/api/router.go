@@ -62,8 +62,7 @@ func (c *Router) getAllStores(ctx *gin.Context) {
 
 func (c *Router) getStoreByName(ctx *gin.Context) {
 	name := ctx.Param("name")
-	store, err := c.repo.GetByName(name)
-	storeModel := store.ToModel()
+	store, err := c.repo.GetByNameAllUpper(name)
 	if err != nil {
 		ctx.JSON(500,
 			(http.Response[helpers.None]{
@@ -74,9 +73,10 @@ func (c *Router) getStoreByName(ctx *gin.Context) {
 		)
 		return
 	}
+
+	storeModel := store.ToModel()
 	ctx.JSON(200,
 		(http.Response[dtos.MetadataDto]{
-			Err:        err.Error(),
 			StatusCode: 200,
 			Body:       storeModel.ToDto(),
 		}).GetH(),

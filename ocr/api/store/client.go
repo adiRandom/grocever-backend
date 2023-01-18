@@ -16,7 +16,7 @@ var client *Client
 func GetClient() *Client {
 	if client == nil {
 		client = &Client{
-			baseUrl: os.Getenv("STORES_API_BASE_URL"),
+			baseUrl: os.Getenv("STORE_API_BASE_URL"),
 		}
 	}
 	return client

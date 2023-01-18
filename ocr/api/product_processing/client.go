@@ -2,6 +2,7 @@ package product_processing
 
 import (
 	dto "lib/data/dto/product/ocr"
+	"lib/helpers"
 	"lib/network/http"
 	"os"
 )
@@ -22,8 +23,13 @@ func GetClient() *Client {
 }
 
 func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
+
+	if ocrNames == nil {
+		return nil, helpers.Error{Msg: "ocrNames cannot be nil"}
+	}
+
 	res, err := http.ParseHttpResponse(http.PostSync[http.Response[dto.ProductExistsResponse]](
-		s.baseUrl+"/product/exists",
+		s.baseUrl+"/product/orc/exists",
 		dto.ProductExists{
 			OcrNames: ocrNames,
 		},

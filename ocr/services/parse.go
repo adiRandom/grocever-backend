@@ -4,7 +4,6 @@ import (
 	"fmt"
 	libModels "lib/data/models"
 	"lib/data/models/product"
-	"lib/functional"
 	"lib/helpers"
 	"ocr/api/store"
 	"ocr/utils"
@@ -17,6 +16,7 @@ var priceLineRegex = regexp.MustCompile(`((\d+)|(\d+(\.|,)\d{1,3})) * ((BUC)|(KG
 var qtyRegex = regexp.MustCompile(`^((\d+)|(\d+\.\d{1,3}))`)
 var unitRegex = regexp.MustCompile(`(BUC)|(KG)`)
 var unitPriceRegex = regexp.MustCompile(`\d+(\.|,)\d{2}$`)
+var unitAndUnitPriceRegex = regexp.MustCompile(`((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
 
 type ParseService struct {
 	storeApi *store.Client
@@ -108,7 +108,7 @@ func (s *ParseService) getStore(ocrText string) (string, error) {
 
 	storeNameRegexStr := ""
 	for i, name := range storeNames {
-		storeNameRegexStr += "(" + name + ")"
+		storeNameRegexStr += "(" + strings.ToUpper(name) + ")"
 		if i < len(storeNames)-1 {
 			storeNameRegexStr += "|"
 		}
@@ -133,13 +133,12 @@ func (s *ParseService) getStore(ocrText string) (string, error) {
 * and the second element is the price line
  */
 func (s *ParseService) zipProductAndPrice(tokens []string) []helpers.Pair[string, string] {
-	upperCaseTokens := functional.Map(tokens, func(token string) string {
-		return strings.ToUpper(token)
-	})
-	isFirstLinePrice := priceLineRegex.MatchString(upperCaseTokens[0])
+	isFirstLinePrice := priceLineRegex.MatchString(strings.ToUpper(tokens[0]))
+	reconciledTokens := s.reconcileSplitTokens(tokens, isFirstLinePrice)
+
 	// Count how many tokens are price lines
 	productCount := 0
-	for _, token := range tokens {
+	for _, token := range reconciledTokens {
 		if priceLineRegex.MatchString(token) {
 			productCount++
 		}
@@ -150,15 +149,63 @@ func (s *ParseService) zipProductAndPrice(tokens []string) []helpers.Pair[string
 	i := 0
 	for pairsIndex < productCount {
 		if isFirstLinePrice {
-			pairs[pairsIndex] = helpers.Pair[string, string]{tokens[i+1], tokens[i]}
+			pairs[pairsIndex] = helpers.Pair[string, string]{reconciledTokens[i+1], reconciledTokens[i]}
 		} else {
-			pairs[pairsIndex] = helpers.Pair[string, string]{tokens[i], tokens[i+1]}
+			pairs[pairsIndex] = helpers.Pair[string, string]{reconciledTokens[i], reconciledTokens[i+1]}
 		}
 		i += 2
 		pairsIndex++
 	}
 
 	return pairs
+}
+
+// If the price line was split wrong, merge them
+// If the product name was split in multiple lines, merge them
+func (s *ParseService) reconcileSplitTokens(tokens []string, isFirstLinePriceLine bool) []string {
+	// copy the tokens
+	newTokens := make([]string, len(tokens))
+	copy(newTokens, tokens)
+
+	for i := 0; i < len(newTokens); i++ {
+		if (i%2 == 0 && isFirstLinePriceLine) || (i&2 == 1 && !isFirstLinePriceLine) {
+			token := newTokens[i]
+			qtyMatch := qtyRegex.MatchString(token)
+			unitAndUnitPriceMatch := unitAndUnitPriceRegex.MatchString(strings.ToUpper(token))
+
+			if qtyMatch && unitAndUnitPriceMatch {
+				continue
+			}
+
+			if qtyMatch {
+				for j := i + 1; j < len(newTokens); j++ {
+					if unitAndUnitPriceRegex.MatchString(strings.ToUpper(newTokens[j])) {
+						newTokens[i] = token + " " + (newTokens)[j]
+						newTokens = append((newTokens)[:j], (newTokens)[j+1:]...)
+						break
+					}
+				}
+			} else if unitAndUnitPriceMatch {
+				for j := i - 1; j >= 0; j-- {
+					if qtyRegex.MatchString((newTokens)[j]) {
+						newTokens[i] = (newTokens)[j] + " " + token
+						newTokens = append((newTokens)[:j], (newTokens)[j+1:]...)
+						break
+					}
+				}
+			} else {
+				// This is a product name split in 2 lines
+				// Append this to the previous token
+				newTokens[i-1] = newTokens[i-1] + " " + token
+				newTokens = append(newTokens[:i], newTokens[i+1:]...)
+				// We merged the current token with the previous one
+				// so we need to decrement i so that we don't skip the next token
+				i--
+			}
+		}
+	}
+
+	return newTokens
 }
 
 func (s *ParseService) getQty(priceLine string) (float64, error) {
@@ -168,7 +215,7 @@ func (s *ParseService) getQty(priceLine string) (float64, error) {
 }
 
 func (s *ParseService) getUnit(priceLine string) string {
-	return unitRegex.FindString(priceLine)
+	return unitRegex.FindString(strings.ToUpper(priceLine))
 }
 
 func (s *ParseService) getUnitPrice(priceLine string) (float64, error) {
