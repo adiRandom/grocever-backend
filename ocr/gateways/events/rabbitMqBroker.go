@@ -68,7 +68,7 @@ func processJsonMessage(msg ocr.UploadDto,
 
 	fmt.Printf("Sending new products to product processing.\n")
 	for _, dtoProduct := range dtoProducts {
-		fmt.Printf("Product: %v\n", dtoProduct)
+		fmt.Printf("%v \n", dtoProduct)
 	}
 
 	for _, dtoProduct := range dtoProducts {

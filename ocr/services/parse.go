@@ -139,7 +139,7 @@ func (s *ParseService) zipProductAndPrice(tokens []string) []helpers.Pair[string
 	// Count how many tokens are price lines
 	productCount := 0
 	for _, token := range reconciledTokens {
-		if priceLineRegex.MatchString(token) {
+		if priceLineRegex.MatchString(strings.ToUpper(token)) {
 			productCount++
 		}
 	}

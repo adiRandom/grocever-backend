@@ -29,7 +29,7 @@ func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
 	}
 
 	res, err := http.ParseHttpResponse(http.PostSync[http.Response[dto.ProductExistsResponse]](
-		s.baseUrl+"/product/orc/exists",
+		s.baseUrl+"/product/ocr/exists",
 		dto.ProductExists{
 			OcrNames: ocrNames,
 		},
