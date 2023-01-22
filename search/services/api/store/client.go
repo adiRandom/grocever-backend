@@ -21,11 +21,11 @@ func GetClient() *Client {
 	return client
 }
 
-func (s *Client) GetAllStores() []store.MetadataDto {
+func (s *Client) GetAllStores() ([]store.MetadataDto, error) {
 	res, err := http.ParseHttpResponse(http.GetSync[http.Response[[]store.MetadataDto]](s.baseUrl + "/store/list"))
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return *res
+	return *res, nil
 }

@@ -24,7 +24,10 @@ func GetStoreMetadata() *StoreMetadata {
 }
 
 func (s *StoreMetadata) GetForUrl(url string) *models.StoreMetadata {
-	stores := s.api.GetAllStores()
+	stores, err := s.api.GetAllStores()
+	if err != nil {
+		return nil
+	}
 	dto := functional.Find(stores, func(store storeDto.MetadataDto) bool {
 		return store.Url == url
 	})
