@@ -1,7 +1,7 @@
 package auth
 
 type AuthResponse struct {
-	AccessToken  string `json:"access_token"`
+	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refresh"`
 	User         User   `json:"user"`
 }
@@ -19,15 +19,15 @@ type RegisterRequest struct {
 
 type RefreshRequest struct {
 	RefreshToken         string `json:"refresh"`
-	LastValidAccessToken string `json:"access_token"`
+	LastValidAccessToken string `json:"accessToken"`
 }
 
 type RefreshResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"accessToken"`
 }
 
 type ValidateRequest struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"accessToken"`
 }
 
 type ValidateResponse struct {
