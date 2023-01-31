@@ -21,6 +21,13 @@ type AuchanCrawler struct {
 func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	collyClient := colly.NewCollector()
 
+	collyClient.OnHTML("body", func(body *colly.HTMLElement) {
+		if body.DOM.Find(auchanContentElementQuerySelector.String()).Length() == 0 {
+			// Not url to product page
+			resCh <- crawl.ResultModel{CrawlUrl: ""}
+		}
+	})
+
 	collyClient.OnHTML(auchanContentElementQuerySelector.
 		String(),
 		func(body *colly.HTMLElement) {

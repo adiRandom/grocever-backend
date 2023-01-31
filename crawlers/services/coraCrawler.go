@@ -21,6 +21,13 @@ type CoraCrawler struct {
 func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	collyClient := colly.NewCollector()
 
+	collyClient.OnHTML("body", func(body *colly.HTMLElement) {
+		if body.DOM.Find(coraContentElementQuerySelector.String()).Length() == 0 {
+			// Not url to product page
+			resCh <- crawl.ResultModel{CrawlUrl: ""}
+		}
+	})
+
 	collyClient.OnHTML(coraContentElementQuerySelector.
 		String(),
 		func(body *colly.HTMLElement) {

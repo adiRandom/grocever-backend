@@ -25,6 +25,7 @@ func GetSync[TResult any](url string) (*TResult, error) {
 	body, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.Fatal(readErr)
+		return nil, readErr
 	}
 
 	var parsed TResult
@@ -32,6 +33,7 @@ func GetSync[TResult any](url string) (*TResult, error) {
 
 	if jsonErr != nil {
 		log.Fatal(jsonErr)
+		return nil, jsonErr
 	}
 	return &parsed, nil
 }
@@ -54,6 +56,7 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 	resBody, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.Fatal(readErr)
+		return nil, readErr
 	}
 
 	var parsed TResult
@@ -61,6 +64,7 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 
 	if jsonErr != nil {
 		log.Fatal(jsonErr)
+		return nil, jsonErr
 	}
 	return &parsed, nil
 }
@@ -135,6 +139,7 @@ func PostFormSync[TResult any](url string, values map[string]any) (*TResult, err
 	resBody, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.Fatal(readErr)
+		return nil, readErr
 	}
 
 	var parsed TResult
@@ -142,6 +147,7 @@ func PostFormSync[TResult any](url string, values map[string]any) (*TResult, err
 
 	if jsonErr != nil {
 		log.Fatal(jsonErr)
+		return nil, jsonErr
 	}
 	return &parsed, nil
 }
