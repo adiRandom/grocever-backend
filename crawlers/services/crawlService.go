@@ -6,6 +6,7 @@ import (
 	crawl2 "lib/data/dto/crawl"
 	"lib/data/models"
 	"lib/data/models/crawl"
+	"lib/functional"
 )
 
 func getCrawler(store models.StoreMetadata) Crawler {
@@ -54,5 +55,8 @@ func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
 		res = append(res, <-resCh)
 		fmt.Printf("Got result: %+v\n", res)
 	}
-	return res
+
+	return functional.Filter(res, func(r crawl.ResultModel) bool {
+		return r.CrawlUrl != ""
+	})
 }

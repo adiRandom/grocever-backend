@@ -16,7 +16,7 @@ import (
 
 var rabbitMqBroker *multiplex.JsonBroker[crawl.ProductDto]
 var messageProcessingTimeout = 1 * time.Minute
-var deadlockTimeout = 5 * time.Minute
+var deadlockTimeout = 5 * time.Second
 var inboundQueues = multiplex.InQueues{
 	amqpLib.PriorityCrawlQueue: *multiplex.NewInQueueMetadata(
 		amqpLib.PriorityCrawlQueue,
@@ -34,7 +34,7 @@ func pickInboundQueue(currentQueueName string,
 	queueMetadata multiplex.OnSelectQueueCtx[crawl.ProductDto],
 ) string {
 	if currentQueueName == "" {
-		return amqpLib.CrawlQueue
+		return amqpLib.PriorityCrawlQueue
 	}
 
 	if currentQueueName == amqpLib.PriorityCrawlQueue {
@@ -72,6 +72,10 @@ func processJsonMessage(args multiplex.OnMessageArgs[crawl.ProductDto]) {
 	println("Processing message from queue: ", args.From)
 
 	crawlRes := crawlers.CrawlProductPages(args.Msg.CrawlSources)
+	if crawlRes == nil {
+		return
+	}
+
 	body := dto.ProductProcessDto{
 		OcrProduct: args.Msg.OcrProduct,
 		CrawlResults: functional.Map(crawlRes, func(res crawlModels.ResultModel) crawl.ResultDto {

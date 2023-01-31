@@ -40,11 +40,16 @@ func getMegaImageProductUrl(url string) (*string, error) {
 func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	correctUrl, err := getMegaImageProductUrl(url)
 	if err != nil {
+		fmt.Printf("Error crawling %s : %s\n", url, err)
+		resCh <- crawl.ResultModel{CrawlUrl: ""}
 		return
 	}
 
 	apiRes, err := http.GetSync[types.MegaImageDto](*correctUrl)
+
 	if err != nil {
+		fmt.Printf("Error crawling %s : %s\n", url, err)
+		resCh <- crawl.ResultModel{CrawlUrl: ""}
 		return
 	}
 
@@ -54,4 +59,6 @@ func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.R
 	res.Store = crawler.store
 
 	resCh <- res
+
+	fmt.Printf("Mega Image from url %s: %s - %s - %f\n", url, res.ProductName, res.ProductPrice, res.ProductPrice)
 }

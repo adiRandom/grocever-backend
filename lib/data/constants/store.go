@@ -2,5 +2,5 @@ package constants
 
 const AuchanStoreId = 1
 const FreshfulStoreId = 2
-const MegaImageStoreId = 3
-const CoraStoreId = 4
+const MegaImageStoreId = 4
+const CoraStoreId = 6

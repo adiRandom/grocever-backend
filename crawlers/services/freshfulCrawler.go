@@ -40,11 +40,15 @@ func getFreshfulProductUrl(url string) (*string, error) {
 func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
 	correctUrl, err := getFreshfulProductUrl(url)
 	if err != nil {
+		fmt.Printf("Error crawling %s : %s\n", url, err)
+		resCh <- crawl.ResultModel{CrawlUrl: ""}
 		return
 	}
 
 	apiRes, err := http.GetSync[types.FreshfulDto](*correctUrl)
 	if err != nil {
+		fmt.Printf("Error crawling %s : %s\n", url, err)
+		resCh <- crawl.ResultModel{CrawlUrl: ""}
 		return
 	}
 
@@ -54,4 +58,5 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultMo
 	res.Store = c.store
 
 	resCh <- res
+	fmt.Printf("Freshful from url %s: %s - %s - %f\n", url, res.ProductName, res.ProductPrice, res.ProductPrice)
 }
