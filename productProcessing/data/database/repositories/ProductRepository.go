@@ -92,7 +92,7 @@ func (r *ProductRepository) createProductAndCrawlLink(
 ) (*entities.ProductEntity, error) {
 
 	entity := entities.NewProductEntityFromModel(*product)
-	hasCrawlLink := entity.CrawlLink == nil
+	hasCrawlLink := entity.CrawlLink != nil
 
 	err := r.Db.Create(entity).Error
 	if err != nil {
@@ -102,7 +102,7 @@ func (r *ProductRepository) createProductAndCrawlLink(
 	if !hasCrawlLink {
 		// Create the crawl link entity now that we have the id of the product enitity
 		updatedCrawlLinkModel := product.CrawlLink
-		updatedCrawlLinkModel.Id = int(entity.ID)
+		updatedCrawlLinkModel.ProductId = int(entity.ID)
 		crawlLinkEntity := entities.NewCrawlLinkEntityFromModel(updatedCrawlLinkModel)
 		err = r.Db.Create(crawlLinkEntity).Error
 		if err != nil {
@@ -169,6 +169,9 @@ func (r *ProductRepository) Create(
 
 	if existingProduct == nil {
 		entity, err := r.createProductAndCrawlLink(product)
+		if err != nil {
+			return err
+		}
 		err = r.linkProductAndOcrProduct(associatedOcrProductName, *entity)
 		if err != nil {
 			return err
