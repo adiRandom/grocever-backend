@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 	"lib/data/models"
 	"lib/data/models/product"
-	"lib/helpers"
 )
 
 type UserOcrProduct struct {
@@ -32,13 +31,8 @@ func (entity UserOcrProduct) ToModel(store models.StoreMetadata) product.UserOcr
 	}
 }
 
-func NewUserOcrProductFromModel(model product.UserOcrProductModel) (*UserOcrProduct, error) {
-	if model.Id == -1 {
-		return nil, helpers.Error{Msg: "Id is required to create user ocr product entity"}
-	}
-
-	return &UserOcrProduct{
-		Model:            gorm.Model{ID: uint(model.Id)},
+func NewUserOcrProductFromModel(model product.UserOcrProductModel) *UserOcrProduct {
+	entity := &UserOcrProduct{
 		UserId:           uint(model.UserId),
 		OcrProductNameFk: model.OcrProduct.OcrProductName,
 		Qty:              model.Qty,
@@ -47,5 +41,11 @@ func NewUserOcrProductFromModel(model product.UserOcrProductModel) (*UserOcrProd
 		StoreId:          uint(model.Store.StoreId),
 		Price:            model.Price,
 		UnitType:         model.UnitType,
-	}, nil
+	}
+
+	if model.Id != -1 {
+		entity.Model = gorm.Model{ID: uint(model.Id)}
+	}
+
+	return entity
 }

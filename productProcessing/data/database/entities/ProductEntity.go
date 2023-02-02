@@ -9,7 +9,7 @@ import (
 type ProductEntity struct {
 	gorm.Model
 	Name        string
-	CrawlLink   CrawlLinkEntity `gorm:"foreignKey:ProductId"`
+	CrawlLink   *CrawlLinkEntity `gorm:"foreignKey:ProductId"`
 	StoreId     int
 	Price       float32
 	UnityType   string
@@ -33,22 +33,19 @@ func (entity ProductEntity) ToModel() product.Model {
 	}
 }
 
-func NewProductEntityFromModel(model product.Model) (*ProductEntity, error) {
-	crawlLinkEntity, err := NewCrawlLinkEntityFromModel(model.CrawlLink)
-	if err != nil {
-		return nil, err
-	}
+func NewProductEntityFromModel(model product.Model) *ProductEntity {
+	crawlLinkEntity := NewCrawlLinkEntityFromModel(model.CrawlLink)
 
 	entity := ProductEntity{
 		Name:      model.Name,
 		StoreId:   model.StoreId,
 		Price:     model.Price,
 		UnityType: model.UnityType,
-		CrawlLink: *crawlLinkEntity,
+		CrawlLink: crawlLinkEntity,
 	}
 
 	if model.ID != -1 {
 		entity.ID = uint(model.ID)
 	}
-	return &entity, nil
+	return &entity
 }

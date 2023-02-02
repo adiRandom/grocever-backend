@@ -34,9 +34,9 @@ func (r *OcrProductRepository) GetAll() ([]entities.OcrProductEntity, error) {
 	return ocrProducts, err
 }
 
-func (r *OcrProductRepository) GetById(id string) (*entities.OcrProductEntity, error) {
+func (r *OcrProductRepository) GetById(ocrName string) (*entities.OcrProductEntity, error) {
 	var ocrProduct entities.OcrProductEntity
-	err := r.Db.First(&ocrProduct, id).Error
+	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrName).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -46,7 +46,11 @@ func (r *OcrProductRepository) GetById(id string) (*entities.OcrProductEntity, e
 
 func (r *OcrProductRepository) GetByIdWithJoins(name string) (*entities.OcrProductEntity, error) {
 	var ocrProduct entities.OcrProductEntity
-	err := r.Db.Joins("Related").Joins("Products").Find(&ocrProduct, name).Error
+	err := r.Db.
+		Preload("Related").
+		Preload("Products").
+		Find(&ocrProduct, "ocr_product_entities.ocr_product_name = ?", name).
+		Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -68,48 +72,6 @@ func (r *OcrProductRepository) Create(model product.OcrProductModel) error {
 		BestPrice:      model.BestPrice,
 	}
 	return r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
-}
-
-func (r *OcrProductRepository) LinkProductAndOcrProduct(
-	ocrProductName string,
-	product entities.ProductEntity,
-) error {
-	var ocrProduct entities.OcrProductEntity
-
-	err := r.Db.First(&ocrProduct, ocrProductName).Error
-	if err != nil {
-		return err
-	}
-
-	var existingOcrProducts []entities.OcrProductEntity
-	err = r.Db.Model(&product).Association("OcrProducts").Find(&existingOcrProducts)
-
-	err = r.Db.Model(&product).Association("OcrProducts").Append(&ocrProduct)
-	if err != nil {
-		return err
-	}
-
-	err = r.Db.Model(&ocrProduct).Association("Products").Append(&product)
-	if err != nil {
-		return err
-	}
-
-	// Link this ocr product to the eixsting ocr product
-	// Then link the existing ocr product to this ocr product
-	for _, existingOcrProduct := range existingOcrProducts {
-		if existingOcrProduct.OcrProductName != ocrProductName {
-			err = r.Db.Model(&ocrProduct).Association("Related").Append(&existingOcrProduct)
-			if err != nil {
-				return err
-			}
-			err = r.Db.Model(&existingOcrProduct).Association("Related").Append(&ocrProduct)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
 
 func (r *OcrProductRepository) GetBestPrice(ocrName string) (*float32, error) {

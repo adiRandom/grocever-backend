@@ -31,8 +31,8 @@ func GetUserRepository() *User {
 	return userRepository
 }
 
-func toEntity(model auth.User) (entity.User, error) {
-	return entity.User{
+func toEntity(model auth.User) (*entity.User, error) {
+	return &entity.User{
 		Model: gorm.Model{
 			ID: model.ID,
 		},

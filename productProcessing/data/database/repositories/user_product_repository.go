@@ -55,7 +55,6 @@ func (r *UserProductRepository) toModel(entity entities.UserOcrProduct) (product
 	return entity.ToModel(storeMetadata), nil
 }
 
-func (r *UserProductRepository) toEntity(model product.UserOcrProductModel) (entities.UserOcrProduct, error) {
-	entity, err := entities.NewUserOcrProductFromModel(model)
-	return *entity, err
+func (r *UserProductRepository) toEntity(model product.UserOcrProductModel) (*entities.UserOcrProduct, error) {
+	return entities.NewUserOcrProductFromModel(model), nil
 }

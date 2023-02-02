@@ -5,7 +5,7 @@ import "lib/functional"
 type DbRepositoryWithModel[TEntity any, TModel any] struct {
 	DbRepository[TEntity]
 	ToModel  func(entity TEntity) (TModel, error)
-	ToEntity func(model TModel) (TEntity, error)
+	ToEntity func(model TModel) (*TEntity, error)
 }
 
 func (r *DbRepositoryWithModel[TEntity, TModel]) GetAll() ([]TModel, error) {
@@ -61,7 +61,7 @@ func (r *DbRepositoryWithModel[TEntity, TModel]) SaveModel(model TModel) error {
 	if err != nil {
 		return err
 	}
-	return r.DbRepository.Save(entity)
+	return r.DbRepository.Save(*entity)
 }
 
 func (r *DbRepositoryWithModel[TEntity, TModel]) SaveEntity(entity TEntity) error {
@@ -73,7 +73,7 @@ func (r *DbRepositoryWithModel[TEntity, TModel]) DeleteModel(model TModel) error
 	if err != nil {
 		return err
 	}
-	return r.DbRepository.Delete(entity)
+	return r.DbRepository.Delete(*entity)
 }
 
 func (r *DbRepositoryWithModel[TEntity, TModel]) DeleteEntity(entity TEntity) error {
@@ -85,7 +85,7 @@ func (r *DbRepositoryWithModel[TEntity, TModel]) CreateModel(model TModel) error
 	if err != nil {
 		return err
 	}
-	return r.DbRepository.Create(entity)
+	return r.DbRepository.Create(*entity)
 }
 
 func (r *DbRepositoryWithModel[TEntity, TModel]) CreateEntity(entity TEntity) error {

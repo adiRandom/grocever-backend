@@ -3,7 +3,6 @@ package entities
 import (
 	"gorm.io/gorm"
 	"lib/data/models/crawl"
-	"lib/helpers"
 )
 
 type CrawlLinkEntity struct {
@@ -22,10 +21,10 @@ func (entity CrawlLinkEntity) ToModel() crawl.LinkModel {
 	}
 }
 
-func NewCrawlLinkEntityFromModel(model crawl.LinkModel) (*CrawlLinkEntity, error) {
+func NewCrawlLinkEntityFromModel(model crawl.LinkModel) *CrawlLinkEntity {
 
 	if model.ProductId == -1 {
-		return nil, helpers.Error{Msg: "ProductId cannot be -1"}
+		return nil
 	}
 
 	entity := CrawlLinkEntity{
@@ -37,5 +36,5 @@ func NewCrawlLinkEntityFromModel(model crawl.LinkModel) (*CrawlLinkEntity, error
 	if model.Id != -1 {
 		entity.ID = uint(model.Id)
 	}
-	return &entity, nil
+	return &entity
 }
