@@ -21,7 +21,8 @@ func getCrawler(store models.StoreMetadata) Crawler {
 		}
 	case constants.MegaImageStoreId:
 		{
-			return &MegaImageCrawler{store}
+			//return &MegaImageCrawler{store}
+			return nil
 		}
 	case constants.CoraStoreId:
 		{
@@ -57,6 +58,6 @@ func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
 	}
 
 	return functional.Filter(res, func(r crawl.ResultModel) bool {
-		return r.CrawlUrl != ""
+		return r.CrawlUrl != "" && r.ProductPrice != 0 && r.ProductName != ""
 	})
 }

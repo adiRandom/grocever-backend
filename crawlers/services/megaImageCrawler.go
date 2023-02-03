@@ -1,64 +1,59 @@
 package services
 
 import (
-	types "crawlers/data/dto"
+	"crawlers/utils"
 	"fmt"
+	"github.com/gocolly/colly"
 	"lib/data/models"
 	"lib/data/models/crawl"
-	"lib/helpers"
-	"lib/network/http"
-	url2 "net/url"
+	"strconv"
 	"strings"
 )
 
-const megaImageApiUrl = "https://api.mega-image.ro/?operationName=ProductDetails&variables={\"productCode\":\"%s\",\"lang\":\"ro\"}&extensions={\"persistedQuery\":{\"version\":1,\"sha256Hash\":\"c734fc7b27b17d674c66d9ae0c70caf29dbdf2667b0300e50f89fc444418d59b\"}}"
+const megaContentElementQuerySelector = utils.CssSelector("[data-testid=product-details-section]")
+const megaTitleElementQuerySelector = utils.CssSelector("[data-testid=product-common-header-title]")
+const megaPriceElementQuerySelector = utils.CssSelector("[data-testid=product-block-price]")
 
 type MegaImageCrawler struct {
 	store models.StoreMetadata
 }
 
-func getMegaImageProductUrl(url string) (*string, error) {
-	parsedUrl, err := url2.Parse(url)
-	if err != nil {
-		return nil, helpers.Error{Msg: fmt.Sprintf(cannotParseUrlError, "Mega Image", url), Reason: notUrlErrorReason}
-	}
-
-	path := parsedUrl.Path
-	segments := strings.Split(path, "/")
-
-	productId, err := helpers.SafeGet(segments, len(segments)-1)
-
-	if err != nil {
-		return nil, helpers.Error{Msg: fmt.Sprintf(cannotParseUrlError, "Mega Image", url), Reason: notEnoughSegmentsErrorReason}
-	}
-
-	correctUrl := fmt.Sprintf(megaImageApiUrl, *productId)
-
-	return &correctUrl, nil
-}
-
 func (crawler MegaImageCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultModel) {
-	correctUrl, err := getMegaImageProductUrl(url)
+	collyClient := colly.NewCollector()
+
+	collyClient.OnHTML("body", func(body *colly.HTMLElement) {
+		print(body.DOM.Html())
+		if body.DOM.Find(megaContentElementQuerySelector.String()).Length() == 0 {
+			// Not url to product page
+			resCh <- crawl.ResultModel{CrawlUrl: ""}
+		}
+	})
+
+	collyClient.OnHTML(megaContentElementQuerySelector.
+		String(),
+		func(body *colly.HTMLElement) {
+			res := crawl.ResultModel{CrawlUrl: url}
+			res.ProductName = body.ChildText(megaTitleElementQuerySelector.String())
+			priceWithCurrency := body.ChildText(megaPriceElementQuerySelector.String())
+			priceString := strings.Replace(priceWithCurrency[0:len(priceWithCurrency)-4], ",", ".", 1)
+			price, err := strconv.ParseFloat(priceString, 32)
+
+			if err != nil {
+				fmt.Printf("Error crawling %s : %s\n", url, err)
+				resCh <- crawl.ResultModel{CrawlUrl: ""}
+				return
+			}
+			res.ProductPrice = float32(price)
+			res.Store = crawler.store
+
+			resCh <- res
+			fmt.Printf("Mega Image from url %s: %s - %s - %f\n", url, res.ProductName, res.ProductPrice, res.ProductPrice)
+		})
+
+	err := collyClient.Visit(url)
 	if err != nil {
 		fmt.Printf("Error crawling %s : %s\n", url, err)
 		resCh <- crawl.ResultModel{CrawlUrl: ""}
 		return
 	}
-
-	apiRes, err := http.GetSync[types.MegaImageDto](*correctUrl)
-
-	if err != nil {
-		fmt.Printf("Error crawling %s : %s\n", url, err)
-		resCh <- crawl.ResultModel{CrawlUrl: ""}
-		return
-	}
-
-	res := crawl.ResultModel{CrawlUrl: url}
-	res.ProductName = apiRes.Data.ProductDetails.Name
-	res.ProductPrice = apiRes.Data.ProductDetails.Price.Value
-	res.Store = crawler.store
-
-	resCh <- res
-
-	fmt.Printf("Mega Image from url %s: %s - %s - %f\n", url, res.ProductName, res.ProductPrice, res.ProductPrice)
 }
