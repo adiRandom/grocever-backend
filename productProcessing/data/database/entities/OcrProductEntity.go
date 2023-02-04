@@ -10,7 +10,8 @@ import (
 // OcrProductEntity Link between product and ocr names
 type OcrProductEntity struct {
 	OcrProductName string `gorm:"primaryKey"`
-	BestPrice      float32
+	BestProductID  uint
+	BestProduct    *ProductEntity `gorm:"foreignKey:BestProductID;"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	DeletedAt      gorm.DeletedAt      `gorm:"index"`
@@ -21,7 +22,7 @@ type OcrProductEntity struct {
 func (entity OcrProductEntity) ToModel(withProducts bool, withRelated bool) product.OcrProductModel {
 	ocrProductModel := product.OcrProductModel{
 		OcrProductName: entity.OcrProductName,
-		BestPrice:      entity.BestPrice,
+		BestProduct:    entity.BestProduct.ToModel(),
 	}
 
 	if withProducts {
@@ -48,6 +49,7 @@ func (entity OcrProductEntity) ToModel(withProducts bool, withRelated bool) prod
 func NewOcrProductEntityFromModel(model product.OcrProductModel) OcrProductEntity {
 	return OcrProductEntity{
 		OcrProductName: model.OcrProductName,
-		BestPrice:      model.BestPrice,
+		BestProduct:    NewProductEntityFromModel(model.BestProduct),
+		BestProductID:  uint(model.BestProduct.ID),
 	}
 }

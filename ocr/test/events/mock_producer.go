@@ -19,7 +19,7 @@ func PublishMockProducts() {
 	defer helpers.SafeClose(conn)
 	defer helpers.SafeClose(ch)
 
-	// Read the UserOcrProductDto array from products.json and publish it to the queue
+	// Read the PurchaseInstalmentDto array from products.json and publish it to the queue
 
 	dat, err2 := os.ReadFile("products.json")
 	if err2 != nil {
@@ -28,7 +28,7 @@ func PublishMockProducts() {
 
 	println(string(dat))
 
-	var dtos []product.UserOcrProductDto
+	var dtos []product.PurchaseInstalmentDto
 	err2 = json.Unmarshal(dat, &dtos)
 	if err2 != nil {
 		panic(err2)

@@ -21,7 +21,7 @@ func GetClient() *Client {
 	return client
 }
 
-func (s *Client) GetProductList() ([]product.UserOcrProductDto, *http.Error) {
+func (s *Client) GetProductList() ([]product.PurchaseInstalmentDto, *http.Error) {
 	res, err := http.ParseHttpResponse(
 		http.GetSync[http.Response[product.UserProductListDto]](s.baseUrl + "/product/list"),
 	)

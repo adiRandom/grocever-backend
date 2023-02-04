@@ -6,6 +6,6 @@ import (
 )
 
 type ProductProcessDto struct {
-	OcrProduct   product.UserOcrProductDto `json:"ocrProduct"`
-	CrawlResults []crawl.ResultDto         `json:"crawlResult"`
+	OcrProduct   product.PurchaseInstalmentWithUserDto `json:"ocrProduct"`
+	CrawlResults []crawl.ResultDto                     `json:"crawlResult"`
 }

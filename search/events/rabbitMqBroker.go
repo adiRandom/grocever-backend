@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-var rabbitMqBroker *rabbitmq.JsonBroker[product.UserOcrProductDto]
+var rabbitMqBroker *rabbitmq.JsonBroker[product.PurchaseInstalmentDto]
 var searchRequestTimeout = 1 * time.Minute
 
-func processJsonMessage(msg product.UserOcrProductDto,
+func processJsonMessage(msg product.PurchaseInstalmentDto,
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
 	ctx context.Context,
@@ -59,12 +59,12 @@ func processJsonMessage(msg product.UserOcrProductDto,
 	}
 }
 
-func GetRabbitMqBroker() *rabbitmq.JsonBroker[product.UserOcrProductDto] {
+func GetRabbitMqBroker() *rabbitmq.JsonBroker[product.PurchaseInstalmentDto] {
 	if rabbitMqBroker != nil {
 		return rabbitMqBroker
 	}
 
-	rabbitMqBroker = rabbitmq.NewJsonBroker[product.UserOcrProductDto](
+	rabbitMqBroker = rabbitmq.NewJsonBroker[product.PurchaseInstalmentDto](
 		processJsonMessage,
 		amqpLib.SearchQueue,
 		&amqpLib.ScheduleQueue,

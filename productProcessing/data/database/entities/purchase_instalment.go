@@ -6,7 +6,7 @@ import (
 	"lib/data/models/product"
 )
 
-type UserOcrProduct struct {
+type PurchaseInstalment struct {
 	gorm.Model
 	UserId           uint
 	OcrProductNameFk string           `gorm:"size:255"`
@@ -18,8 +18,8 @@ type UserOcrProduct struct {
 	UnitType         string
 }
 
-func (entity UserOcrProduct) ToModel(store models.StoreMetadata) product.UserOcrProductModel {
-	return product.UserOcrProductModel{
+func (entity PurchaseInstalment) ToModel(store models.StoreMetadata) product.PurchaseInstalmentModel {
+	return product.PurchaseInstalmentModel{
 		Id:         int(entity.ID),
 		UserId:     int(entity.UserId),
 		OcrProduct: entity.OcrProduct.ToModel(false, false),
@@ -31,8 +31,8 @@ func (entity UserOcrProduct) ToModel(store models.StoreMetadata) product.UserOcr
 	}
 }
 
-func NewUserOcrProductFromModel(model product.UserOcrProductModel) *UserOcrProduct {
-	entity := &UserOcrProduct{
+func NewPurchaseInstalmentFromModel(model product.PurchaseInstalmentModel) *PurchaseInstalment {
+	entity := &PurchaseInstalment{
 		UserId:           uint(model.UserId),
 		OcrProductNameFk: model.OcrProduct.OcrProductName,
 		Qty:              model.Qty,

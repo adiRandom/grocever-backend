@@ -2,15 +2,15 @@ package product
 
 type OcrProductModel struct {
 	OcrProductName string
-	BestPrice      float32
+	BestProduct    *Model
 	Products       []*Model
 	Related        []*OcrProductModel
 }
 
-func NewOcrProductModel(ocrProductName string, bestPrice float32, products []*Model, related []*OcrProductModel) *OcrProductModel {
+func NewOcrProductModel(ocrProductName string, bestProduct *Model, products []*Model, related []*OcrProductModel) *OcrProductModel {
 	return &OcrProductModel{
 		OcrProductName: ocrProductName,
-		BestPrice:      bestPrice,
+		BestProduct:    bestProduct,
 		Products:       products,
 		Related:        related,
 	}

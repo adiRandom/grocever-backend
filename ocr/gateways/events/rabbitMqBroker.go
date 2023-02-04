@@ -39,9 +39,9 @@ func processJsonMessage(msg ocr.UploadDto,
 		fmt.Printf("Failed to parse product. Error: %s", err.Error())
 	}
 
-	productNames := functional.Map[product.UserOcrProductModel, string](
+	productNames := functional.Map[product.PurchaseInstalmentModel, string](
 		products,
-		func(productModel product.UserOcrProductModel) string {
+		func(productModel product.PurchaseInstalmentModel) string {
 			return productModel.OcrProduct.OcrProductName
 		},
 	)
@@ -49,20 +49,20 @@ func processJsonMessage(msg ocr.UploadDto,
 	productProcessingApiClient := product_processing.GetClient()
 	exists, err := productProcessingApiClient.OcrProductsExists(productNames)
 
-	var newProducts []product.UserOcrProductModel
+	var newProducts []product.PurchaseInstalmentModel
 	if err != nil {
 		fmt.Printf("Failed to check if product exist. Error: %s", err.Error())
 		newProducts = products
 	} else {
-		newProducts = functional.IndexedFilter[product.UserOcrProductModel](
+		newProducts = functional.IndexedFilter[product.PurchaseInstalmentModel](
 			products,
-			func(index int, _ product.UserOcrProductModel) bool {
+			func(index int, _ product.PurchaseInstalmentModel) bool {
 				return !exists[index]
 			},
 		)
 	}
 
-	dtoProducts := functional.Map(newProducts, func(product product.UserOcrProductModel) productDto.UserOcrProductDto {
+	dtoProducts := functional.Map(newProducts, func(product product.PurchaseInstalmentModel) productDto.PurchaseInstalmentDto {
 		return product.ToDto()
 	})
 

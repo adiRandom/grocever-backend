@@ -11,20 +11,21 @@ import (
 )
 
 type Router struct {
-	repository *repositories.UserProductRepository
+	repository *repositories.PurchaseInstalmentRepository
 }
 
-func NewProductRouter(userProductRepo *repositories.UserProductRepository) *Router {
+func NewProductRouter(userProductRepo *repositories.PurchaseInstalmentRepository) *Router {
 	return &Router{
 		repository: userProductRepo,
 	}
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
-	router.GET("/list", r.getAllUserProducts)
+	router.GET("/:userId/list", r.getAllUserProducts)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
+	userId := context.Param("userId")
 	products, err := r.repository.GetAll()
 	if err != nil {
 		context.JSON(500, http.Response[helpers.None]{
@@ -40,7 +41,7 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 		Body: productDtos.UserProductListDto{
 			Products: functional.Map(
 				products,
-				func(userOcrProductModel productModels.UserOcrProductModel) productDtos.UserOcrProductDto {
+				func(userOcrProductModel productModels.PurchaseInstalmentModel) productDtos.PurchaseInstalmentDto {
 					return userOcrProductModel.ToDto()
 				},
 			),

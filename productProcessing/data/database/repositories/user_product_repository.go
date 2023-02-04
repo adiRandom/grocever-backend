@@ -10,15 +10,15 @@ import (
 	"productProcessing/services/api/store"
 )
 
-type UserProductRepository struct {
-	repositories.DbRepositoryWithModel[entities.UserOcrProduct, product.UserOcrProductModel]
+type PurchaseInstalmentRepository struct {
+	repositories.DbRepositoryWithModel[entities.PurchaseInstalment, product.PurchaseInstalmentModel]
 }
 
-var repo *UserProductRepository = nil
+var repo *PurchaseInstalmentRepository = nil
 
-func GetUserProductRepository() *UserProductRepository {
+func GetUserProductRepository() *PurchaseInstalmentRepository {
 	if repo == nil {
-		repo = &UserProductRepository{}
+		repo = &PurchaseInstalmentRepository{}
 		repo.ToModel = repo.toModel
 		repo.ToEntity = repo.toEntity
 		db, err := database.GetDb()
@@ -30,7 +30,7 @@ func GetUserProductRepository() *UserProductRepository {
 	return repo
 }
 
-func (r *UserProductRepository) getStoreMetadataForId(id int) (models.StoreMetadata, error) {
+func (r *PurchaseInstalmentRepository) getStoreMetadataForId(id int) (models.StoreMetadata, error) {
 	apiClient := store.GetClient()
 	stores, err := apiClient.GetAllStores()
 	if err != nil {
@@ -45,16 +45,16 @@ func (r *UserProductRepository) getStoreMetadataForId(id int) (models.StoreMetad
 	return models.StoreMetadata{}, helpers.Error{Msg: "Store not found"}
 }
 
-func (r *UserProductRepository) toModel(entity entities.UserOcrProduct) (product.UserOcrProductModel, error) {
+func (r *PurchaseInstalmentRepository) toModel(entity entities.PurchaseInstalment) (product.PurchaseInstalmentModel, error) {
 	storeMetadata, err := r.getStoreMetadataForId(int(entity.StoreId))
 
 	if err != nil {
-		return product.UserOcrProductModel{}, err
+		return product.PurchaseInstalmentModel{}, err
 	}
 
 	return entity.ToModel(storeMetadata), nil
 }
 
-func (r *UserProductRepository) toEntity(model product.UserOcrProductModel) (*entities.UserOcrProduct, error) {
-	return entities.NewUserOcrProductFromModel(model), nil
+func (r *PurchaseInstalmentRepository) toEntity(model product.PurchaseInstalmentModel) (*entities.PurchaseInstalment, error) {
+	return entities.NewPurchaseInstalmentFromModel(model), nil
 }

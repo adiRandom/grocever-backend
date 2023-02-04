@@ -10,7 +10,7 @@ import (
 type Router struct {
 	api.Router
 	ocrProductRepository  *repositories.OcrProductRepository
-	userProductRepository *repositories.UserProductRepository
+	userProductRepository *repositories.PurchaseInstalmentRepository
 }
 
 var router *Router = nil

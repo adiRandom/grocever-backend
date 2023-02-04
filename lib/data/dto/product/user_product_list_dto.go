@@ -1,5 +1,5 @@
 package product
 
 type UserProductListDto struct {
-	Products []UserOcrProductDto `json:"product"`
+	Products []UserProductDto `json:"product"`
 }

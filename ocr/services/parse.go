@@ -33,7 +33,7 @@ func GetParseService() ParseService {
 	return *parseService
 }
 
-func (s *ParseService) GetOcrProducts(ocrText string, userId int) ([]product.UserOcrProductModel, error) {
+func (s *ParseService) GetOcrProducts(ocrText string, userId int) ([]product.PurchaseInstalmentModel, error) {
 	storeName, err := s.getStore(ocrText)
 	if err != nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (s *ParseService) getOcrProductsFromPairs(
 	productAndPrice []helpers.Pair[string, string],
 	store libModels.StoreMetadata,
 	userId int,
-) ([]product.UserOcrProductModel, error) {
-	products := make([]product.UserOcrProductModel, len(productAndPrice))
+) ([]product.PurchaseInstalmentModel, error) {
+	products := make([]product.PurchaseInstalmentModel, len(productAndPrice))
 	for i, pair := range productAndPrice {
 		ocrProductName := pair.First
 		priceLine := pair.Second
@@ -88,7 +88,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 
 		ocrProduct := product.NewOcrProductModel(ocrProductName, price, nil, nil)
 
-		products[i] = *product.NewUserOcrProductModel(
+		products[i] = *product.NewPurchaseInstalmentModel(
 			-1,                                   // id
 			float32(utils.TruncateFloat(qty, 3)), // qty
 			price,                                // price

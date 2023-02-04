@@ -27,13 +27,6 @@ func NewProductModel(
 }
 
 func NewProductModelsFromProcessDto(dto dto.ProductProcessDto) []*Model {
-	bestPrice := dto.OcrProduct.UnitPrice
-	for _, product := range dto.CrawlResults {
-		if product.ProductPrice < bestPrice {
-			bestPrice = product.ProductPrice
-		}
-	}
-
 	productModels := make([]*Model, len(dto.CrawlResults))
 	for i, crawlResult := range dto.CrawlResults {
 		productModels[i] = NewProductModel(
@@ -52,7 +45,7 @@ func NewProductModelsFromProcessDto(dto dto.ProductProcessDto) []*Model {
 		)
 	}
 
-	ocrProduct := NewOcrProductModel(dto.OcrProduct.OcrName, bestPrice, productModels, []*OcrProductModel{})
+	ocrProduct := NewOcrProductModel(dto.OcrProduct.OcrName, nil, productModels, []*OcrProductModel{})
 
 	for _, productModel := range productModels {
 		productModel.OcrProducts = append(productModel.OcrProducts, ocrProduct)

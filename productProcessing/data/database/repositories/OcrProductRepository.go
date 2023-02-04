@@ -69,7 +69,8 @@ func (r *OcrProductRepository) Delete(entity entities.OcrProductEntity) error {
 func (r *OcrProductRepository) Create(model product.OcrProductModel) error {
 	entity := entities.OcrProductEntity{
 		OcrProductName: model.OcrProductName,
-		BestPrice:      model.BestPrice,
+		BestProductID:  uint(model.BestProduct.ID),
+		BestProduct:    entities.NewProductEntityFromModel(*model.BestProduct),
 	}
 	return r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
 }
@@ -133,40 +134,44 @@ func (r *OcrProductRepository) ExistsMultiple(ocrNames []string) ([]bool, error)
 	return exists, nil
 }
 
-func (r *OcrProductRepository) UpdateBestPrice(ocrName string) []error {
+func (r *OcrProductRepository) UpdateBestProduct(ocrName string) (*entities.OcrProductEntity, []error) {
 	ocrProduct, err := r.GetByIdWithJoins(ocrName)
 	if err != nil {
-		return []error{err}
+		return nil, []error{err}
 	}
 
 	// Get best price from products
-	var bestPrice float32
+	var bestProduct *entities.ProductEntity = nil
 	for _, productEntity := range ocrProduct.Products {
-		if bestPrice == 0 || productEntity.Price < bestPrice {
-			bestPrice = productEntity.Price
+		if bestProduct == nil || productEntity.Price < bestProduct.Price {
+			bestProduct = productEntity
 		}
 	}
 
-	if ocrProduct.BestPrice != bestPrice {
-		err = r.Db.Model(&ocrProduct).Update("best_price", bestPrice).Error
+	if ocrProduct.BestProduct != bestProduct {
+		err = r.Db.Model(&ocrProduct).Update("best_product_ID", bestProduct.ID).Error
 		if err != nil {
-			return []error{err}
+			return nil, []error{err}
 		}
 
 		errList := make([]error, 0)
 
 		// Update best price for related ocr products
 		for _, relatedOcrProduct := range ocrProduct.Related {
-			err = r.Db.Model(&relatedOcrProduct).Update("best_price", bestPrice).Error
+			err = r.Db.Model(&relatedOcrProduct).Update("best_product_ID", bestProduct.ID).Error
 			if err != nil {
 				errList = append(errList, err)
 			}
 		}
 
 		if len(errList) > 0 {
-			return errList
+			return nil, errList
 		}
 	}
 
-	return nil
+	updatedOcrProduct := *ocrProduct
+	updatedOcrProduct.BestProduct = bestProduct
+	updatedOcrProduct.BestProductID = bestProduct.ID
+
+	return &updatedOcrProduct, nil
 }

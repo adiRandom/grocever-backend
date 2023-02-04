@@ -12,13 +12,13 @@ type ProductService struct {
 	requeueTimeout  *time.Duration
 	productRepo     *repositories.ProductRepository
 	ocrProductRepo  *repositories.OcrProductRepository
-	userProductRepo *repositories.UserProductRepository
+	userProductRepo *repositories.PurchaseInstalmentRepository
 }
 
 func NewProductService(
 	productRepo *repositories.ProductRepository,
 	ocrProductRepo *repositories.OcrProductRepository,
-	userProductRepo *repositories.UserProductRepository,
+	userProductRepo *repositories.PurchaseInstalmentRepository,
 ) *ProductService {
 	return &ProductService{
 		productRepo:     productRepo,
@@ -60,8 +60,14 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 			return errors
 		}
 
+		// Now that everything is in the db we can set the best product for this ocr product
+		_, updateErrList := s.ocrProductRepo.UpdateBestProduct(ocrProduct.OcrProductName)
+		if len(updateErrList) > 0 {
+			return updateErrList
+		}
+
 		if productDto.OcrProduct.UserId != -1 {
-			userOcrProduct := productModel.NewUserOcrProductModel(
+			userOcrProduct := productModel.NewPurchaseInstalmentModel(
 				-1,                              // ID
 				productDto.OcrProduct.Qty,       // Qty
 				productDto.OcrProduct.Price,     // Price
@@ -76,12 +82,6 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 				return []error{err}
 			}
 		}
-
-		errs := s.ocrProductRepo.UpdateBestPrice(ocrProduct.OcrProductName)
-		if len(errs) > 0 {
-			return errs
-		}
-
 	}
 
 	if len(errors) > 0 {
