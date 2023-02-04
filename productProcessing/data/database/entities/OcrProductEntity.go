@@ -20,9 +20,10 @@ type OcrProductEntity struct {
 }
 
 func (entity OcrProductEntity) ToModel(withProducts bool, withRelated bool) product.OcrProductModel {
+	bestProductModel := entity.BestProduct.ToModel()
 	ocrProductModel := product.OcrProductModel{
 		OcrProductName: entity.OcrProductName,
-		BestProduct:    entity.BestProduct.ToModel(),
+		BestProduct:    &bestProductModel,
 	}
 
 	if withProducts {
@@ -49,7 +50,7 @@ func (entity OcrProductEntity) ToModel(withProducts bool, withRelated bool) prod
 func NewOcrProductEntityFromModel(model product.OcrProductModel) OcrProductEntity {
 	return OcrProductEntity{
 		OcrProductName: model.OcrProductName,
-		BestProduct:    NewProductEntityFromModel(model.BestProduct),
+		BestProduct:    NewProductEntityFromModel(*model.BestProduct),
 		BestProductID:  uint(model.BestProduct.ID),
 	}
 }

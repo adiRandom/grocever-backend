@@ -90,3 +90,13 @@ func Find[T any](s []T, fn func(T) bool) *T {
 
 	return nil
 }
+
+func GroupBy[T any, S comparable](s []T, fn func(T) S) map[S][]T {
+	grouped := make(map[S][]T)
+	for _, el := range s {
+		key := fn(el)
+		grouped[key] = append(grouped[key], el)
+	}
+
+	return grouped
+}

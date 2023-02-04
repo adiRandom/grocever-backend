@@ -5,8 +5,10 @@ import (
 	"lib/data/database/repositories"
 	"lib/data/models"
 	"lib/data/models/product"
+	"lib/functional"
 	"lib/helpers"
 	"productProcessing/data/database/entities"
+	productModels "productProcessing/data/models"
 	"productProcessing/services/api/store"
 )
 
@@ -57,4 +59,49 @@ func (r *PurchaseInstalmentRepository) toModel(entity entities.PurchaseInstalmen
 
 func (r *PurchaseInstalmentRepository) toEntity(model product.PurchaseInstalmentModel) (*entities.PurchaseInstalment, error) {
 	return entities.NewPurchaseInstalmentFromModel(model), nil
+}
+
+func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productModels.UserProduct, error) {
+	var purchaseInstalments []entities.PurchaseInstalment
+	err := r.Db.
+		Where("user_id = ?", userId).
+		Preload("OcrProduct").
+		Preload("BestProduct").
+		Find(&purchaseInstalments).Error
+	if err != nil {
+		return nil, err
+	}
+
+	instalmentsGroupedByBestProduct := functional.GroupBy(
+		purchaseInstalments,
+		func(purchaseInstalment entities.PurchaseInstalment,
+		) *entities.ProductEntity {
+			return purchaseInstalment.OcrProduct.BestProduct
+		})
+
+	var userProducts []productModels.UserProduct
+	for bestProduct, purchaseInstalments := range instalmentsGroupedByBestProduct {
+		storeMetadata, err := r.getStoreMetadataForId(bestProduct.StoreId)
+		if err != nil {
+			continue
+		}
+
+		purchaseInstalmentsModels := functional.Map(
+			purchaseInstalments,
+			func(purchaseInstalment entities.PurchaseInstalment) product.PurchaseInstalmentModel {
+				return purchaseInstalment.ToModel(storeMetadata)
+			})
+		userProduct := productModels.NewUserProduct(
+			bestProduct.Name,
+			bestProduct.Price,
+			purchaseInstalmentsModels,
+			uint(storeMetadata.StoreId),
+			storeMetadata.Name,
+			storeMetadata.Url,
+		)
+
+		userProducts = append(userProducts, *userProduct)
+	}
+
+	return userProducts, nil
 }
