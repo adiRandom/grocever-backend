@@ -86,7 +86,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 
 		price := float32(utils.TruncateFloat(qty, 3)) * float32(utils.TruncateFloat(unitPrice, 3))
 
-		ocrProduct := product.NewOcrProductModel(ocrProductName, price, nil, nil)
+		ocrProduct := product.NewOcrProductModel(ocrProductName, nil, nil, nil)
 
 		products[i] = *product.NewPurchaseInstalmentModel(
 			-1,                                   // id

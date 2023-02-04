@@ -11,7 +11,7 @@ type CrawlScheduleDto struct {
 }
 
 func NewCrawlScheduleDto(
-	product product.PurchaseInstalmentDto,
+	product product.PurchaseInstalmentWithUserDto,
 	crawlSources []crawlDto.SourceDto,
 	crawlType string,
 ) CrawlScheduleDto {
@@ -31,7 +31,12 @@ func NewRequeueCrawlScheduleDto(
 ) CrawlScheduleDto {
 	return CrawlScheduleDto{
 		Product: crawlDto.ProductDto{
-			OcrProduct:   product.PurchaseInstalmentDto{OcrName: ocrProductName, UserId: -1},
+			OcrProduct: product.PurchaseInstalmentWithUserDto{
+				PurchaseInstalmentDto: product.PurchaseInstalmentDto{
+					OcrName: ocrProductName,
+				},
+				UserId: -1,
+			},
 			CrawlSources: crawlSources,
 		},
 		Type: crawlType,
