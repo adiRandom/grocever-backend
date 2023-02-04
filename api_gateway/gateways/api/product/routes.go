@@ -6,6 +6,7 @@ import (
 	"lib/data/dto/product"
 	"lib/helpers"
 	"lib/network/http"
+	"strconv"
 )
 
 type Router struct {
@@ -17,14 +18,25 @@ func NewProductRouter(productApiClient *products.Client) *Router {
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
-	router.GET("/list", r.getAllUserProducts)
+	router.GET("/:userId/list", r.getAllUserProducts)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
-	productList, err := r.productApiClient.GetProductList()
+	userId := context.Param("userId")
+	intUserId, err := strconv.Atoi(userId)
 	if err != nil {
-		context.JSON(err.Code, http.Response[helpers.None]{
-			StatusCode: err.Code,
+		context.JSON(500, http.Response[helpers.None]{
+			StatusCode: 500,
+			Err:        "Invalid user id",
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	productList, apiError := r.productApiClient.GetProductList(intUserId)
+	if err != nil {
+		context.JSON(apiError.Code, http.Response[helpers.None]{
+			StatusCode: apiError.Code,
 			Err:        err.Error(),
 			Body:       helpers.None{},
 		}.GetH())
