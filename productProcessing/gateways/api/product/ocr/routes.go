@@ -2,6 +2,7 @@ package ocr
 
 import (
 	"github.com/gin-gonic/gin"
+	"lib/data/dto/product"
 	"lib/data/dto/product/ocr"
 	"lib/helpers"
 	"lib/network/http"
@@ -9,23 +10,29 @@ import (
 )
 
 type Router struct {
-	repository *repositories.OcrProductRepository
+	ocrProductRepository         *repositories.OcrProductRepository
+	purchaseInstalmentRepository *repositories.PurchaseInstalmentRepository
 }
 
-func NewOcrRouter(ocrProductRepo *repositories.OcrProductRepository) *Router {
+func NewOcrRouter(
+	ocrProductRepo *repositories.OcrProductRepository,
+	purchaseInstalmentRepository *repositories.PurchaseInstalmentRepository,
+) *Router {
 	return &Router{
-		repository: ocrProductRepo,
+		ocrProductRepository:         ocrProductRepo,
+		purchaseInstalmentRepository: purchaseInstalmentRepository,
 	}
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.POST("/exists", r.doOcrProductsExist)
 	router.GET("/:name/exists", r.doesOcrProductExist)
+	router.POST("/instalment", r.createPurchaseInstalment)
 }
 
 func (r *Router) doesOcrProductExist(context *gin.Context) {
 	name := context.Param("name")
-	exists, _ := r.repository.Exists(name)
+	exists, _ := r.ocrProductRepository.Exists(name)
 	if exists {
 		context.Status(200)
 		return
@@ -45,8 +52,38 @@ func (r *Router) doOcrProductsExist(context *gin.Context) {
 		return
 	}
 
-	exists, _ := r.repository.ExistsMultiple(ocrNamesDto.OcrNames)
+	exists, _ := r.ocrProductRepository.ExistsMultiple(ocrNamesDto.OcrNames)
 	context.JSON(200, http.Response[ocr.ProductExistsResponse]{
 		Body: ocr.ProductExistsResponse{Exists: exists},
 	}.GetH())
+}
+
+func (r *Router) createPurchaseInstalment(context *gin.Context) {
+	var purchaseInstalmentDto product.CretePurchaseInstalmentDto
+	err := context.BindJSON(&purchaseInstalmentDto)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	purchaseInstalment, err := r.purchaseInstalmentRepository.CreatePurchaseInstalment(purchaseInstalmentDto)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[product.PurchaseInstalmentDto]{
+		Err:        "",
+		Body:       purchaseInstalment.ToDto(),
+		StatusCode: 200,
+	}.GetH())
+	return
 }

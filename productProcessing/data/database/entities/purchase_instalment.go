@@ -18,6 +18,28 @@ type PurchaseInstalment struct {
 	UnitType         string
 }
 
+func NewPurchaseInstalment(
+	userId uint,
+	ocrProductNameFk string,
+	ocrProduct OcrProductEntity,
+	qty float32,
+	unitPrice float32,
+	price float32,
+	storeId uint,
+	unitType string,
+) *PurchaseInstalment {
+	return &PurchaseInstalment{
+		UserId:           userId,
+		OcrProductNameFk: ocrProductNameFk,
+		OcrProduct:       ocrProduct,
+		Qty:              qty,
+		UnitPrice:        unitPrice,
+		Price:            price,
+		StoreId:          storeId,
+		UnitType:         unitType,
+	}
+}
+
 func (entity PurchaseInstalment) ToModel(store models.StoreMetadata) product.PurchaseInstalmentModel {
 	return product.PurchaseInstalmentModel{
 		Id:         int(entity.ID),

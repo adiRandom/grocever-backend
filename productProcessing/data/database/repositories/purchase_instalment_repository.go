@@ -3,6 +3,7 @@ package repositories
 import (
 	"lib/data/database"
 	"lib/data/database/repositories"
+	productDto "lib/data/dto/product"
 	"lib/data/models"
 	"lib/data/models/product"
 	"lib/functional"
@@ -14,13 +15,16 @@ import (
 
 type PurchaseInstalmentRepository struct {
 	repositories.DbRepositoryWithModel[entities.PurchaseInstalment, product.PurchaseInstalmentModel]
+	ocrProductRepository *OcrProductRepository
 }
 
 var repo *PurchaseInstalmentRepository = nil
 
 func GetUserProductRepository() *PurchaseInstalmentRepository {
 	if repo == nil {
-		repo = &PurchaseInstalmentRepository{}
+		repo = &PurchaseInstalmentRepository{
+			ocrProductRepository: GetOcrProductRepository(),
+		}
 		repo.ToModel = repo.toModel
 		repo.ToEntity = repo.toEntity
 		db, err := database.GetDb()
@@ -104,4 +108,32 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 	}
 
 	return userProducts, nil
+}
+
+func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
+	dto productDto.CretePurchaseInstalmentDto,
+) (*product.PurchaseInstalmentModel, error) {
+	ocrProduct, err := r.ocrProductRepository.GetById(dto.OcrName)
+	if err != nil {
+		return nil, err
+	}
+
+	entity := entities.NewPurchaseInstalment(
+		dto.UserId,
+		dto.OcrName,
+		*ocrProduct,
+		dto.Qty,
+		dto.UnitPrice,
+		dto.Qty*dto.UnitPrice,
+		uint(dto.Store.StoreId),
+		dto.UnitName,
+	)
+	err = r.Create(*entity)
+	if err != nil {
+		return nil, err
+	}
+
+	model := entity.ToModel(models.NewStoreMetadataFromDto(dto.Store))
+
+	return &model, nil
 }
