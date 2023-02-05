@@ -40,6 +40,15 @@ func Map[T any, R any](s []T, fn func(T) R) []R {
 	return mapped
 }
 
+func IndexedMap[T any, R any](s []T, fn func(int, T) R) []R {
+	var mapped []R
+	for i, el := range s {
+		mapped = append(mapped, fn(i, el))
+	}
+
+	return mapped
+}
+
 func Filter[T any](s []T, fn func(T) bool) []T {
 	var filtered []T
 	for _, el := range s {

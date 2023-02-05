@@ -137,3 +137,49 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
 
 	return &model, nil
 }
+
+func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
+	dto productDto.CreatePurchaseInstalmentListDto,
+) ([]product.PurchaseInstalmentModel, error) {
+	ocrProductNames := functional.Map(
+		dto.Instalments,
+		func(purchaseInstalmentDto productDto.CretePurchaseInstalmentDto) string {
+			return purchaseInstalmentDto.OcrName
+		},
+	)
+
+	ocrProducts, err := r.ocrProductRepository.GetOcrProductsByNames(ocrProductNames)
+	if err != nil {
+		return nil, err
+	}
+
+	purchaseInstalments := functional.Map(
+		dto.Instalments,
+		func(dto productDto.CretePurchaseInstalmentDto) entities.PurchaseInstalment {
+			return *entities.NewPurchaseInstalment(
+				dto.UserId,
+				dto.OcrName,
+				ocrProducts[dto.OcrName],
+				dto.Qty,
+				dto.UnitPrice,
+				dto.Qty*dto.UnitPrice,
+				uint(dto.Store.StoreId),
+				dto.UnitName,
+			)
+		},
+	)
+
+	err = r.CreateMany(purchaseInstalments)
+	if err != nil {
+		return nil, err
+	}
+
+	purchaseInstalmentModels := functional.IndexedMap(
+		purchaseInstalments,
+		func(index int, purchaseInstalment entities.PurchaseInstalment) product.PurchaseInstalmentModel {
+			return purchaseInstalment.ToModel(models.NewStoreMetadataFromDto(dto.Instalments[index].Store))
+		},
+	)
+
+	return purchaseInstalmentModels, nil
+}

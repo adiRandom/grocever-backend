@@ -27,3 +27,7 @@ type CretePurchaseInstalmentDto struct {
 	Store     store.MetadataDto `json:"store"`
 	UserId    uint              `json:"userId"`
 }
+
+type CreatePurchaseInstalmentListDto struct {
+	Instalments []CretePurchaseInstalmentDto `json:"instalments"`
+}

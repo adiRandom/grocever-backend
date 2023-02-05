@@ -20,6 +20,42 @@ import (
 var broker *rabbitmq.JsonBroker[ocr.UploadDto]
 var timeout = 1 * time.Minute
 
+func handleExistingOcrProducts(products []product.PurchaseInstalmentModel) []product.PurchaseInstalmentModel {
+	productNames := functional.Map[product.PurchaseInstalmentModel, string](
+		products,
+		func(productModel product.PurchaseInstalmentModel) string {
+			return productModel.OcrProduct.OcrProductName
+		},
+	)
+
+	productProcessingApiClient := product_processing.GetClient()
+	exists, err := productProcessingApiClient.OcrProductsExists(productNames)
+
+	var newProducts []product.PurchaseInstalmentModel
+	var existingProducts []product.PurchaseInstalmentModel
+
+	if err != nil {
+		fmt.Printf("Failed to check if product exist. Error: %s", err.Error())
+		newProducts = products
+	} else {
+		newProducts = functional.IndexedFilter[product.PurchaseInstalmentModel](
+			products,
+			func(index int, _ product.PurchaseInstalmentModel) bool {
+				return !exists[index]
+			},
+		)
+
+		existingProducts = functional.IndexedFilter[product.PurchaseInstalmentModel](
+			products,
+			func(index int, _ product.PurchaseInstalmentModel) bool {
+				return exists[index]
+			},
+		)
+	}
+
+	return newProducts
+}
+
 func processJsonMessage(msg ocr.UploadDto,
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
@@ -39,28 +75,7 @@ func processJsonMessage(msg ocr.UploadDto,
 		fmt.Printf("Failed to parse product. Error: %s", err.Error())
 	}
 
-	productNames := functional.Map[product.PurchaseInstalmentModel, string](
-		products,
-		func(productModel product.PurchaseInstalmentModel) string {
-			return productModel.OcrProduct.OcrProductName
-		},
-	)
-
-	productProcessingApiClient := product_processing.GetClient()
-	exists, err := productProcessingApiClient.OcrProductsExists(productNames)
-
-	var newProducts []product.PurchaseInstalmentModel
-	if err != nil {
-		fmt.Printf("Failed to check if product exist. Error: %s", err.Error())
-		newProducts = products
-	} else {
-		newProducts = functional.IndexedFilter[product.PurchaseInstalmentModel](
-			products,
-			func(index int, _ product.PurchaseInstalmentModel) bool {
-				return !exists[index]
-			},
-		)
-	}
+	newProducts := handleExistingOcrProducts(products)
 
 	dtoProducts := functional.Map(newProducts, func(product product.PurchaseInstalmentModel) productDto.PurchaseInstalmentDto {
 		return product.ToDto()

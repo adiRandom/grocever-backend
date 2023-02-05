@@ -1,6 +1,7 @@
 package product_processing
 
 import (
+	"lib/data/dto/product"
 	dto "lib/data/dto/product/ocr"
 	"lib/helpers"
 	"lib/network/http"
@@ -40,4 +41,17 @@ func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
 	}
 
 	return res.Exists, nil
+}
+
+func (s *Client) CreatePurchaseInstalment(instalment product.CretePurchaseInstalmentDto) (*product.PurchaseInstalmentDto, error) {
+	purchaseInstalment, err := http.ParseHttpResponse(http.PostSync[http.Response[product.PurchaseInstalmentDto]](
+		s.baseUrl+"/product/ocr/instalment",
+		instalment,
+	))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return purchaseInstalment, nil
 }

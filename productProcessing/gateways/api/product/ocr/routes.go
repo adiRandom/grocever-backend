@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"lib/data/dto/product"
 	"lib/data/dto/product/ocr"
+	productModel "lib/data/models/product"
+	"lib/functional"
 	"lib/helpers"
 	"lib/network/http"
 	"productProcessing/data/database/repositories"
@@ -28,6 +30,8 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.POST("/exists", r.doOcrProductsExist)
 	router.GET("/:name/exists", r.doesOcrProductExist)
 	router.POST("/instalment", r.createPurchaseInstalment)
+	router.POST("/instalment/list", r.createPurchaseInstalments)
+
 }
 
 func (r *Router) doesOcrProductExist(context *gin.Context) {
@@ -83,6 +87,41 @@ func (r *Router) createPurchaseInstalment(context *gin.Context) {
 	context.JSON(200, http.Response[product.PurchaseInstalmentDto]{
 		Err:        "",
 		Body:       purchaseInstalment.ToDto(),
+		StatusCode: 200,
+	}.GetH())
+	return
+}
+
+func (r *Router) createPurchaseInstalments(context *gin.Context) {
+	var purchaseInstalmentsDto product.CreatePurchaseInstalmentListDto
+	err := context.BindJSON(&purchaseInstalmentsDto)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	purchaseInstalments, err := r.purchaseInstalmentRepository.CreatePurchaseInstalments(purchaseInstalmentsDto)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[[]product.PurchaseInstalmentDto]{
+		Err: "",
+		Body: functional.Map(
+			purchaseInstalments,
+			func(purchaseInstalment productModel.PurchaseInstalmentModel) product.PurchaseInstalmentDto {
+				return purchaseInstalment.ToDto()
+			},
+		),
 		StatusCode: 200,
 	}.GetH())
 	return

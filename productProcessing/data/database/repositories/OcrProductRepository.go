@@ -175,3 +175,9 @@ func (r *OcrProductRepository) UpdateBestProduct(ocrName string) (*entities.OcrP
 
 	return &updatedOcrProduct, nil
 }
+
+func (r *OcrProductRepository) GetOcrProductsByNames(names []string) (map[string]entities.OcrProductEntity, error) {
+	result := map[string]entities.OcrProductEntity{}
+	err := r.Db.Model(&entities.OcrProductEntity{}).Where("ocr_product_name IN (?)", names).Find(&result).Error
+	return result, err
+}

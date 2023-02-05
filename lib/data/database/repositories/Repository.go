@@ -44,3 +44,7 @@ func (r *DbRepository[T]) Delete(entity T) error {
 func (r *DbRepository[T]) Create(entity T) error {
 	return r.Db.Create(&entity).Error
 }
+
+func (r *DbRepository[T]) CreateMany(entities []T) error {
+	return r.Db.Create(&entities).Error
+}
