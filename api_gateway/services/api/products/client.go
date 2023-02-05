@@ -23,7 +23,7 @@ func GetClient() *Client {
 }
 
 func (s *Client) GetProductList(userId int) ([]product.UserProductDto, *http.Error) {
-	res, err := http.ParseHttpResponse(
+	res, err := http.UnwrapHttpResponse(
 		http.GetSync[http.Response[product.UserProductListDto]](fmt.Sprintf(s.baseUrl+"/product/%d/list", userId)),
 	)
 	if err != nil {

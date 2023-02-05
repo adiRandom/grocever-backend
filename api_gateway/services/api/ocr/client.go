@@ -28,6 +28,6 @@ func (s *Client) UploadImage(body ocr.UploadImageRequest) *http.Error {
 	reqBody := make(map[string]interface{})
 	reqBody[ocr.UploadImageParam] = body.Image
 	reqBody[ocr.UploadImageUserIdParam] = strings.NewReader(strconv.Itoa(int(body.UserId)))
-	_, err := http.ParseHttpResponse[helpers.None](http.PostFormSync[http.Response[helpers.None]](s.baseUrl+"/ocr", reqBody))
+	_, err := http.UnwrapHttpResponse[helpers.None](http.PostFormSync[http.Response[helpers.None]](s.baseUrl+"/ocr", reqBody))
 	return err
 }

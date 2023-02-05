@@ -1,6 +1,7 @@
 package product_processing
 
 import (
+	"github.com/chebyrash/promise"
 	"lib/data/dto/product"
 	dto "lib/data/dto/product/ocr"
 	"lib/helpers"
@@ -29,7 +30,7 @@ func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
 		return nil, helpers.Error{Msg: "ocrNames cannot be nil"}
 	}
 
-	res, err := http.ParseHttpResponse(http.PostSync[http.Response[dto.ProductExistsResponse]](
+	res, err := http.UnwrapHttpResponse(http.PostSync[http.Response[dto.ProductExistsResponse]](
 		s.baseUrl+"/product/ocr/exists",
 		dto.ProductExists{
 			OcrNames: ocrNames,
@@ -44,7 +45,7 @@ func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
 }
 
 func (s *Client) CreatePurchaseInstalment(instalment product.CretePurchaseInstalmentDto) (*product.PurchaseInstalmentDto, error) {
-	purchaseInstalment, err := http.ParseHttpResponse(http.PostSync[http.Response[product.PurchaseInstalmentDto]](
+	purchaseInstalment, err := http.UnwrapHttpResponse(http.PostSync[http.Response[product.PurchaseInstalmentDto]](
 		s.baseUrl+"/product/ocr/instalment",
 		instalment,
 	))
@@ -54,4 +55,13 @@ func (s *Client) CreatePurchaseInstalment(instalment product.CretePurchaseInstal
 	}
 
 	return purchaseInstalment, nil
+}
+
+func (s *Client) CreatePurchaseInstalmentsAsync(
+	instalments product.CreatePurchaseInstalmentListDto,
+) *promise.Promise[[]product.PurchaseInstalmentDto] {
+	return http.UnwrapHttpAsyncResponse(http.PostAsync[http.Response[[]product.PurchaseInstalmentDto]](
+		s.baseUrl+"/product/ocr/instalment/list",
+		instalments,
+	))
 }

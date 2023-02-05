@@ -2,6 +2,7 @@ package product
 
 import (
 	"lib/data/dto/store"
+	"lib/data/models/product"
 )
 
 type PurchaseInstalmentDto struct {
@@ -26,6 +27,19 @@ type CretePurchaseInstalmentDto struct {
 	UnitName  string            `json:"unitName"`
 	Store     store.MetadataDto `json:"store"`
 	UserId    uint              `json:"userId"`
+}
+
+func NewCreatePurchaseInstalmentDtoFromModel(
+	model product.PurchaseInstalmentModel,
+) CretePurchaseInstalmentDto {
+	return CretePurchaseInstalmentDto{
+		OcrName:   model.OcrProduct.OcrProductName,
+		Qty:       model.Qty,
+		UnitPrice: model.UnitPrice,
+		UnitName:  model.UnitType,
+		Store:     model.Store.ToDto(),
+		UserId:    uint(model.UserId),
+	}
 }
 
 type CreatePurchaseInstalmentListDto struct {

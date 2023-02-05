@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/chebyrash/promise"
 	"io"
 	"lib/helpers"
 	"log"
@@ -67,6 +68,18 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 		return nil, jsonErr
 	}
 	return &parsed, nil
+}
+
+func PostAsync[TResult any](url string, body interface{}) *promise.Promise[TResult] {
+	return promise.New[TResult](func(resolve func(TResult), reject func(error)) {
+		res, err := PostSync(url, body)
+		if err != nil {
+			reject(err)
+		} else {
+			var promiseResult interface{} = res
+			resolve(promiseResult)
+		}
+	})
 }
 
 // PostFormSync

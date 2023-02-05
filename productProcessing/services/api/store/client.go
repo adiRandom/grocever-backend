@@ -22,7 +22,7 @@ func GetClient() *Client {
 }
 
 func (s *Client) GetAllStores() ([]store.MetadataDto, error) {
-	res, err := http.ParseHttpResponse(
+	res, err := http.UnwrapHttpResponse(
 		http.GetSync[http.Response[[]store.MetadataDto]](s.baseUrl + "/store/list"),
 	)
 	if err != nil {
