@@ -25,7 +25,7 @@ func GetSync[TResult any](url string) (*TResult, error) {
 
 	body, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
-		log.Fatal(readErr)
+		println(readErr)
 		return nil, readErr
 	}
 
@@ -56,7 +56,7 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 
 	resBody, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
-		log.Fatal(readErr)
+		println(readErr)
 		return nil, readErr
 	}
 
@@ -64,7 +64,7 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 	jsonErr := json.Unmarshal(resBody, &parsed)
 
 	if jsonErr != nil {
-		log.Fatal(jsonErr)
+		println(jsonErr)
 		return nil, jsonErr
 	}
 	return &parsed, nil
@@ -72,12 +72,37 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 
 func PostAsync[TResult any](url string, body interface{}) *promise.Promise[TResult] {
 	return promise.New[TResult](func(resolve func(TResult), reject func(error)) {
-		res, err := PostSync(url, body)
+
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			reject(err)
+		}
+
+		res, err := http.Post(url, "application/json", io.NopCloser(bytes.NewReader(jsonBody)))
+		if err != nil {
+			reject(err)
+		}
+
+		if res.Body != nil {
+			defer res.Body.Close()
+		}
+
+		resBody, readErr := io.ReadAll(res.Body)
+		if readErr != nil {
+			reject(readErr)
+		}
+
+		var parsed TResult
+		jsonErr := json.Unmarshal(resBody, &parsed)
+
+		if jsonErr != nil {
+			reject(jsonErr)
+		}
+
 		if err != nil {
 			reject(err)
 		} else {
-			var promiseResult interface{} = res
-			resolve(promiseResult)
+			resolve(parsed)
 		}
 	})
 }
