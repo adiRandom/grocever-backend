@@ -44,7 +44,7 @@ func (s *Client) OcrProductsExists(ocrNames []string) ([]bool, error) {
 	return res.Exists, nil
 }
 
-func (s *Client) CreatePurchaseInstalment(instalment product.CretePurchaseInstalmentDto) (*product.PurchaseInstalmentDto, error) {
+func (s *Client) CreatePurchaseInstalment(instalment product.CreatePurchaseInstalmentDto) (*product.PurchaseInstalmentDto, error) {
 	purchaseInstalment, err := http.UnwrapHttpResponse(http.PostSync[http.Response[product.PurchaseInstalmentDto]](
 		s.baseUrl+"/product/ocr/instalment",
 		instalment,

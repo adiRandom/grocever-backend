@@ -70,7 +70,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 	err := r.Db.
 		Where("user_id = ?", userId).
 		Preload("OcrProduct").
-		Preload("BestProduct").
+		Preload("OcrProduct.BestProduct").
 		Find(&purchaseInstalments).Error
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 			return purchaseInstalment.OcrProduct.BestProduct
 		})
 
-	var userProducts []productModels.UserProduct
+	userProducts := make([]productModels.UserProduct, len(instalmentsGroupedByBestProduct))
 	for bestProduct, purchaseInstalments := range instalmentsGroupedByBestProduct {
 		storeMetadata, err := r.getStoreMetadataForId(bestProduct.StoreId)
 		if err != nil {
@@ -111,7 +111,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 }
 
 func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
-	dto productDto.CretePurchaseInstalmentDto,
+	dto productDto.CreatePurchaseInstalmentDto,
 ) (*product.PurchaseInstalmentModel, error) {
 	ocrProduct, err := r.ocrProductRepository.GetById(dto.OcrName)
 	if err != nil {
@@ -143,7 +143,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
 ) ([]product.PurchaseInstalmentModel, error) {
 	ocrProductNames := functional.Map(
 		dto.Instalments,
-		func(purchaseInstalmentDto productDto.CretePurchaseInstalmentDto) string {
+		func(purchaseInstalmentDto productDto.CreatePurchaseInstalmentDto) string {
 			return purchaseInstalmentDto.OcrName
 		},
 	)
@@ -155,7 +155,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
 
 	purchaseInstalments := functional.Map(
 		dto.Instalments,
-		func(dto productDto.CretePurchaseInstalmentDto) entities.PurchaseInstalment {
+		func(dto productDto.CreatePurchaseInstalmentDto) entities.PurchaseInstalment {
 			return *entities.NewPurchaseInstalment(
 				dto.UserId,
 				dto.OcrName,

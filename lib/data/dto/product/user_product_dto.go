@@ -10,5 +10,5 @@ type UserProductDto struct {
 }
 
 type UserProductListDto struct {
-	Products []UserProductDto `json:"product"`
+	Products []UserProductDto `json:"products"`
 }

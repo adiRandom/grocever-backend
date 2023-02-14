@@ -9,8 +9,8 @@ import (
 
 type Router struct {
 	api.Router
-	ocrProductRepository  *repositories.OcrProductRepository
-	userProductRepository *repositories.PurchaseInstalmentRepository
+	ocrProductRepository         *repositories.OcrProductRepository
+	purchaseInstalmentRepository *repositories.PurchaseInstalmentRepository
 }
 
 var router *Router = nil
@@ -18,8 +18,8 @@ var router *Router = nil
 func GetRouter() *Router {
 	if router == nil {
 		router = &Router{
-			ocrProductRepository:  repositories.GetOcrProductRepository(),
-			userProductRepository: repositories.GetUserProductRepository(),
+			ocrProductRepository:         repositories.GetOcrProductRepository(),
+			purchaseInstalmentRepository: repositories.GetUserProductRepository(),
 		}
 		router.Init()
 		router.initEndpoints()
@@ -28,6 +28,6 @@ func GetRouter() *Router {
 }
 
 func (c *Router) initEndpoints() {
-	c.Group("/product/ocr", ocr.NewOcrRouter(c.ocrProductRepository))
-	c.Group("/product", product.NewProductRouter(c.userProductRepository))
+	c.Group("/product/ocr", ocr.NewOcrRouter(c.ocrProductRepository, c.purchaseInstalmentRepository))
+	c.Group("/product", product.NewProductRouter(c.purchaseInstalmentRepository))
 }

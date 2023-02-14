@@ -63,7 +63,7 @@ func (r *Router) doOcrProductsExist(context *gin.Context) {
 }
 
 func (r *Router) createPurchaseInstalment(context *gin.Context) {
-	var purchaseInstalmentDto product.CretePurchaseInstalmentDto
+	var purchaseInstalmentDto product.CreatePurchaseInstalmentDto
 	err := context.BindJSON(&purchaseInstalmentDto)
 	if err != nil {
 		context.JSON(500, http.Response[helpers.None]{

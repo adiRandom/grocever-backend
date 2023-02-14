@@ -3,10 +3,10 @@ package product
 import (
 	"api_gateway/services/api/products"
 	"github.com/gin-gonic/gin"
+	"lib/api/middleware"
 	"lib/data/dto/product"
 	"lib/helpers"
 	"lib/network/http"
-	"strconv"
 )
 
 type Router struct {
@@ -18,26 +18,25 @@ func NewProductRouter(productApiClient *products.Client) *Router {
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
-	router.GET("/:userId/list", r.getAllUserProducts)
+	router.GET("/list", r.getAllUserProducts)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
-	userId := context.Param("userId")
-	intUserId, err := strconv.Atoi(userId)
-	if err != nil {
-		context.JSON(500, http.Response[helpers.None]{
-			StatusCode: 500,
-			Err:        "Invalid user id",
+	userId, exists := context.Get(middleware.UserIdKey)
+	if !exists {
+		context.JSON(401, http.Response[helpers.None]{
+			StatusCode: 401,
+			Err:        "Unauthorized",
 			Body:       helpers.None{},
-		}.GetH())
+		})
 		return
 	}
 
-	productList, apiError := r.productApiClient.GetProductList(intUserId)
-	if err != nil {
+	productList, apiError := r.productApiClient.GetProductList(userId.(int))
+	if apiError != nil {
 		context.JSON(apiError.Code, http.Response[helpers.None]{
 			StatusCode: apiError.Code,
-			Err:        err.Error(),
+			Err:        apiError.Error(),
 			Body:       helpers.None{},
 		}.GetH())
 		return
@@ -47,5 +46,6 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 		Body: product.UserProductListDto{
 			Products: productList,
 		},
+		Err: "",
 	}.GetH())
 }

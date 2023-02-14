@@ -30,3 +30,14 @@ func (m *PurchaseInstalmentModel) ToDto() product.PurchaseInstalmentDto {
 		Store:     m.Store.ToDto(),
 	}
 }
+
+func (m *PurchaseInstalmentModel) ToCreateDto() product.CreatePurchaseInstalmentDto {
+	return product.CreatePurchaseInstalmentDto{
+		OcrName:   m.OcrProduct.OcrProductName,
+		Qty:       m.Qty,
+		UnitPrice: m.UnitPrice,
+		UnitName:  m.UnitType,
+		Store:     m.Store.ToDto(),
+		UserId:    uint(m.UserId),
+	}
+}

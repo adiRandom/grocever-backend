@@ -31,6 +31,7 @@ func (r *Router) login(c *gin.Context) {
 			Err:        err.Error(),
 			Body:       helpers.None{},
 		})
+		return
 	}
 
 	res, apiErr := r.authApiClient.Login(body)
@@ -40,6 +41,7 @@ func (r *Router) login(c *gin.Context) {
 			Err:        apiErr.Error(),
 			Body:       helpers.None{},
 		})
+		return
 	}
 
 	c.JSON(200, http.Response[dto.AuthResponse]{
@@ -51,13 +53,14 @@ func (r *Router) login(c *gin.Context) {
 
 func (r *Router) register(c *gin.Context) {
 	var body dto.RegisterRequest
-	err := c.BindJSON(body)
+	err := c.BindJSON(&body)
 	if err != nil {
 		c.JSON(400, http.Response[helpers.None]{
 			StatusCode: 400,
 			Err:        err.Error(),
 			Body:       helpers.None{},
 		})
+		return
 	}
 
 	res, apiErr := r.authApiClient.Register(body)
@@ -67,6 +70,7 @@ func (r *Router) register(c *gin.Context) {
 			Err:        apiErr.Error(),
 			Body:       helpers.None{},
 		})
+		return
 	}
 
 	c.JSON(200, http.Response[dto.AuthResponse]{
@@ -78,7 +82,7 @@ func (r *Router) register(c *gin.Context) {
 
 func (r *Router) refresh(c *gin.Context) {
 	var body dto.RefreshRequest
-	err := c.BindJSON(body)
+	err := c.BindJSON(&body)
 	if err != nil {
 		c.JSON(400, http.Response[helpers.None]{
 			StatusCode: 400,

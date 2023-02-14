@@ -32,7 +32,7 @@ func Accumulate[T any](s []T, fn ReduceCb[T, T]) (T, error) {
 }
 
 func Map[T any, R any](s []T, fn func(T) R) []R {
-	var mapped []R
+	mapped := make([]R, len(s))
 	for _, el := range s {
 		mapped = append(mapped, fn(el))
 	}
@@ -41,7 +41,7 @@ func Map[T any, R any](s []T, fn func(T) R) []R {
 }
 
 func IndexedMap[T any, R any](s []T, fn func(int, T) R) []R {
-	var mapped []R
+	mapped := make([]R, len(s))
 	for i, el := range s {
 		mapped = append(mapped, fn(i, el))
 	}

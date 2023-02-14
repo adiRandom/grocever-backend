@@ -54,10 +54,10 @@ func handleExistingOcrProducts(products []product.PurchaseInstalmentModel) []pro
 	}
 
 	createInstalmentsDto := productDto.CreatePurchaseInstalmentListDto{
-		Instalments: functional.Map[product.PurchaseInstalmentModel, productDto.CretePurchaseInstalmentDto](
+		Instalments: functional.Map[product.PurchaseInstalmentModel, productDto.CreatePurchaseInstalmentDto](
 			existingProducts,
-			func(productModel product.PurchaseInstalmentModel) productDto.CretePurchaseInstalmentDto {
-				return productDto.NewCreatePurchaseInstalmentDtoFromModel(productModel)
+			func(productModel product.PurchaseInstalmentModel) productDto.CreatePurchaseInstalmentDto {
+				return productModel.ToCreateDto()
 			}),
 	}
 
