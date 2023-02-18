@@ -107,21 +107,24 @@ func PostAsync[TResult any](url string, body interface{}) *promise.Promise[TResu
 	})
 }
 
+type readerOrString any
+type PostFormValue = readerOrString
+
 // PostFormSync
-// The values of the map must be pointer to Readers
-func PostFormSync[TResult any](url string, values map[string]any) (*TResult, error) {
+// The values of the map must be pointer to Readers or string
+func PostFormSync[TResult any](url string, values map[string]readerOrString) (*TResult, error) {
 	client := &http.Client{}
 
 	// Prepare a form that you will submit to that URL.
 	var bodyBuffer bytes.Buffer
 	bodyWriter := multipart.NewWriter(&bodyBuffer)
 
-	for key, reader := range values {
-		if field, ok := reader.(io.Closer); ok {
+	for key, readerOrString := range values {
+		if field, ok := readerOrString.(io.Closer); ok {
 			defer helpers.SafeClose(field)
 		}
 		// Add an image file
-		if field, ok := reader.(*os.File); ok {
+		if field, ok := readerOrString.(*os.File); ok {
 			fieldWriter, err := bodyWriter.CreateFormFile(key, field.Name())
 			if err != nil {
 				return nil, &helpers.Error{Msg: "Cannot create form filed"}
@@ -130,7 +133,7 @@ func PostFormSync[TResult any](url string, values map[string]any) (*TResult, err
 			if _, err = io.Copy(fieldWriter, field); err != nil {
 				return nil, &helpers.Error{Msg: "Cannot write the value of the field"}
 			}
-		} else if field, ok := reader.(*multipart.File); ok {
+		} else if field, ok := readerOrString.(*multipart.File); ok {
 			fieldWriter, err := bodyWriter.CreateFormFile(key, key)
 			if err != nil {
 				return nil, &helpers.Error{Msg: "Cannot create form filed"}
@@ -139,7 +142,7 @@ func PostFormSync[TResult any](url string, values map[string]any) (*TResult, err
 			if _, err = io.Copy(fieldWriter, *field); err != nil {
 				return nil, &helpers.Error{Msg: "Cannot write the value of the field"}
 			}
-		} else if field, ok := reader.(*io.Reader); ok {
+		} else if field, ok := readerOrString.(*io.Reader); ok {
 			// Add other fields
 			fieldWriter, err := bodyWriter.CreateFormField(key)
 			if err != nil {
@@ -147,6 +150,11 @@ func PostFormSync[TResult any](url string, values map[string]any) (*TResult, err
 			}
 
 			if _, err = io.Copy(fieldWriter, *field); err != nil {
+				return nil, &helpers.Error{Msg: "Cannot write the value of the field"}
+			}
+		} else if field, ok := readerOrString.(string); ok {
+			err := bodyWriter.WriteField(key, field)
+			if err != nil {
 				return nil, &helpers.Error{Msg: "Cannot write the value of the field"}
 			}
 		}

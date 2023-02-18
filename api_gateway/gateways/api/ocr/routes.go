@@ -1,21 +1,21 @@
-package auth
+package ocr
 
 import (
 	"api_gateway/services/api/ocr"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"lib/api/middleware"
 	ocrDto "lib/data/dto/ocr"
 	"lib/helpers"
 	"lib/network/http"
 	"mime/multipart"
-	"strconv"
 )
 
 type Router struct {
 	ocrApiClient *ocr.Client
 }
 
-func NewAuthRouter(ocrApiClient *ocr.Client) *Router {
+func NewOcrRouter(ocrApiClient *ocr.Client) *Router {
 	return &Router{ocrApiClient}
 }
 
@@ -34,20 +34,10 @@ func (r *Router) uploadImage(ctx *gin.Context) {
 		return
 	}
 
-	userId, exists := ctx.GetPostForm(ocrDto.UploadImageUserIdParam)
+	userId, exists := ctx.Get(middleware.UserIdKey)
 	if !exists {
-		ctx.JSON(400, http.Response[helpers.None]{
-			Err:        "userId is required",
-			StatusCode: 400,
-			Body:       helpers.None{},
-		}.GetH())
-		return
-	}
-
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
 		ctx.JSON(401, http.Response[helpers.None]{
-			Err:        "Wrong format of userId",
+			Err:        "Unauthorized",
 			StatusCode: 401,
 			Body:       helpers.None{},
 		}.GetH())
@@ -72,10 +62,10 @@ func (r *Router) uploadImage(ctx *gin.Context) {
 		}
 	}(imageFile)
 
-	err = r.ocrApiClient.UploadImage(*ocrDto.NewUploadImageRequest(&imageFile, userIdInt))
-	if err != nil {
+	uploadErr := r.ocrApiClient.UploadImage(*ocrDto.NewUploadImageRequest(&imageFile, userId.(int)))
+	if uploadErr != nil {
 		ctx.JSON(500, http.Response[helpers.None]{
-			Err:        err.Error(),
+			Err:        uploadErr.Error(),
 			StatusCode: 500,
 			Body:       helpers.None{},
 		}.GetH())

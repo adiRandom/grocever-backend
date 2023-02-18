@@ -6,7 +6,6 @@ import (
 	"lib/network/http"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type Client struct {
@@ -25,9 +24,9 @@ func GetClient() *Client {
 }
 
 func (s *Client) UploadImage(body ocr.UploadImageRequest) *http.Error {
-	reqBody := make(map[string]interface{})
+	reqBody := make(map[string]http.PostFormValue)
 	reqBody[ocr.UploadImageParam] = body.Image
-	reqBody[ocr.UploadImageUserIdParam] = strings.NewReader(strconv.Itoa(int(body.UserId)))
+	reqBody[ocr.UploadImageUserIdParam] = strconv.Itoa(body.UserId)
 	_, err := http.UnwrapHttpResponse[helpers.None](http.PostFormSync[http.Response[helpers.None]](s.baseUrl+"/ocr", reqBody))
 	return err
 }

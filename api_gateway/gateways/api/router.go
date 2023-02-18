@@ -2,8 +2,10 @@ package api
 
 import (
 	"api_gateway/gateways/api/auth"
+	"api_gateway/gateways/api/ocr"
 	"api_gateway/gateways/api/product"
 	authApi "api_gateway/services/api/auth"
+	ocrApi "api_gateway/services/api/ocr"
 	productApi "api_gateway/services/api/products"
 	"lib/api"
 	dto "lib/data/dto/auth"
@@ -29,6 +31,7 @@ func GetRouter() *Router {
 func (c *Router) initEndpoints() {
 	c.GroupWithAuth("/product", product.NewProductRouter(productApi.GetClient()))
 	c.Group("/auth", auth.NewAuthRouter(authApi.GetClient()))
+	c.GroupWithAuth("/ocr", ocr.NewOcrRouter(ocrApi.GetClient()))
 }
 
 func handleAuthVerification(access string) (int, error) {
