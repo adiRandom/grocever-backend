@@ -28,6 +28,15 @@ type CreatePurchaseInstalmentDto struct {
 	UserId    uint              `json:"userId"`
 }
 
+type CreatePurchaseInstalmentNoOcrDto struct {
+	ProductName string  `json:"ocrName"`
+	Qty         float32 `json:"qty"`
+	UnitPrice   float32 `json:"unitPrice"`
+	UnitName    string  `json:"unitName"`
+	StoreId     uint    `json:"storeId"`
+	UserId      uint    `json:"userId"`
+}
+
 type CreatePurchaseInstalmentListDto struct {
 	Instalments []CreatePurchaseInstalmentDto `json:"instalments"`
 }

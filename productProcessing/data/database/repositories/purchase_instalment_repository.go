@@ -138,6 +138,39 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
 	return &model, nil
 }
 
+func (r *PurchaseInstalmentRepository) CreatePurchaseInstalmentNoOcr(
+	dto productDto.CreatePurchaseInstalmentNoOcrDto,
+) (*product.PurchaseInstalmentModel, error) {
+	ocrProduct, err := r.ocrProductRepository.CreateFromProductName(dto.ProductName)
+	if err != nil {
+		return nil, err
+	}
+
+	entity := entities.NewPurchaseInstalment(
+		dto.UserId,
+		dto.ProductName,
+		*ocrProduct,
+		dto.Qty,
+		dto.UnitPrice,
+		dto.Qty*dto.UnitPrice,
+		dto.StoreId,
+		dto.UnitName,
+	)
+	err = r.Create(*entity)
+	if err != nil {
+		return nil, err
+	}
+
+	storeModel, err := r.getStoreMetadataForId(int(dto.StoreId))
+	if err != nil {
+		return nil, err
+	}
+
+	model := entity.ToModel(storeModel)
+
+	return &model, nil
+}
+
 func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
 	dto productDto.CreatePurchaseInstalmentListDto,
 ) ([]product.PurchaseInstalmentModel, error) {

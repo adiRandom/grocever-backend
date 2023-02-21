@@ -75,6 +75,14 @@ func (r *OcrProductRepository) Create(model product.OcrProductModel) error {
 	return r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
 }
 
+func (r *OcrProductRepository) CreateFromProductName(name string) (*entities.OcrProductEntity, error) {
+	entity := entities.OcrProductEntity{
+		OcrProductName: name,
+	}
+	err := r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
+	return &entity, err
+}
+
 func (r *OcrProductRepository) GetBestPrice(ocrName string) (*float32, error) {
 	var ocrProduct entities.OcrProductEntity
 	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrName).Error

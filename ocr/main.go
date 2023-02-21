@@ -5,7 +5,6 @@ import (
 	"github.com/joho/godotenv"
 	"ocr/gateways/api"
 	"ocr/gateways/events"
-	mock "ocr/test/events"
 	"os"
 )
 
@@ -15,8 +14,6 @@ func main() {
 		panic(err)
 	}
 	println(os.Getenv("API_PORT"))
-
-	mock.PublishMockProducts()
 
 	router := api.GetRouter()
 	broker := events.GetRabbitMqBroker()
