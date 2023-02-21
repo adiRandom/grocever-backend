@@ -26,7 +26,7 @@ func NewProductModel(
 	return &Model{ID: ID, Name: name, CrawlLink: crawlLink, StoreId: storeId, Price: price, UnityType: unityType, OcrProducts: ocrProducts}
 }
 
-func NewProductModelsFromProcessDto(dto dto.ProductProcessDto) []*Model {
+func NewProductModelsFromProcessDto(dto dto.ProductProcessDto, existingOcrProduct *OcrProductModel) []*Model {
 	productModels := make([]*Model, len(dto.CrawlResults))
 	for i, crawlResult := range dto.CrawlResults {
 		productModels[i] = NewProductModel(
@@ -45,11 +45,19 @@ func NewProductModelsFromProcessDto(dto dto.ProductProcessDto) []*Model {
 		)
 	}
 
-	ocrProduct := NewOcrProductModel(dto.OcrProduct.OcrName, nil, productModels, []*OcrProductModel{})
+	if existingOcrProduct == nil {
+		ocrProduct := NewOcrProductModel(dto.OcrProduct.OcrName, nil, productModels, []*OcrProductModel{})
 
-	for _, productModel := range productModels {
-		productModel.OcrProducts = append(productModel.OcrProducts, ocrProduct)
+		for _, productModel := range productModels {
+			productModel.OcrProducts = append(productModel.OcrProducts, ocrProduct)
+		}
+
+	} else {
+		for _, productModel := range productModels {
+			productModel.OcrProducts = append(productModel.OcrProducts, existingOcrProduct)
+		}
 	}
 
 	return productModels
+
 }

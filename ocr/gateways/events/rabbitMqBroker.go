@@ -87,8 +87,11 @@ func processJsonMessage(msg ocr.UploadDto,
 
 	newProducts := handleExistingOcrProducts(products)
 
-	dtoProducts := functional.Map(newProducts, func(product product.PurchaseInstalmentModel) productDto.PurchaseInstalmentDto {
-		return product.ToDto()
+	dtoProducts := functional.Map(newProducts, func(product product.PurchaseInstalmentModel) productDto.PurchaseInstalmentWithUserDto {
+		return productDto.PurchaseInstalmentWithUserDto{
+			PurchaseInstalmentDto: product.ToDto(),
+			UserId:                msg.UserId,
+		}
 	})
 
 	fmt.Printf("Sending new products to product processing.\n")

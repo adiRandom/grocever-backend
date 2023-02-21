@@ -28,18 +28,44 @@ func NewProductService(
 }
 
 func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) []error {
-	products := productModel.NewProductModelsFromProcessDto(productDto)
-	errors := make([]error, 0)
-
-	// First create all the OCR products in the DB
-	var ocrProduct *productModel.OcrProductModel = nil
-
-	if len(products) > 0 {
-		ocrProduct = products[0].OcrProducts[0]
+	existingOcrProduct, err := s.ocrProductRepo.GetById(productDto.OcrProduct.OcrName)
+	if err != nil {
+		return []error{err}
 	}
 
-	if ocrProduct != nil {
-		err := s.ocrProductRepo.Create(*ocrProduct)
+	var existingOcrProductModel *productModel.OcrProductModel
+	if existingOcrProduct != nil {
+		model := existingOcrProduct.ToModel(false, false)
+		existingOcrProductModel = &model
+	} else {
+		existingOcrProductModel = nil
+	}
+
+	products := productModel.NewProductModelsFromProcessDto(productDto, existingOcrProductModel)
+	errors := make([]error, 0)
+
+	var ocrProductToUse *productModel.OcrProductModel
+
+	if existingOcrProduct == nil && len(products) > 0 {
+		// New ocr product
+		newOcrProduct := products[0].OcrProducts[0]
+		if newOcrProduct != nil {
+			err = s.ocrProductRepo.Create(*newOcrProduct)
+			if err != nil {
+				return []error{err}
+			}
+
+			ocrProductToUse = newOcrProduct
+		} else {
+			return nil
+		}
+	} else {
+		ocrProductToUse = existingOcrProductModel
+	}
+
+	// Create the new products
+	for _, product := range products {
+		err := s.productRepo.Create(product, ocrProductToUse.OcrProductName)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -47,40 +73,28 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 		if len(errors) > 0 {
 			return errors
 		}
+	}
 
-		// Then create all the products in the DB
-		for _, product := range products {
-			err := s.productRepo.Create(product, ocrProduct.OcrProductName)
-			if err != nil {
-				errors = append(errors, err)
-			}
-		}
+	// Now that everything is in the db we can set the best product for this ocr product
+	_, updateErrList := s.ocrProductRepo.UpdateBestProduct(ocrProductToUse.OcrProductName)
+	if len(updateErrList) > 0 {
+		return updateErrList
+	}
 
-		if len(errors) > 0 {
-			return errors
-		}
-
-		// Now that everything is in the db we can set the best product for this ocr product
-		_, updateErrList := s.ocrProductRepo.UpdateBestProduct(ocrProduct.OcrProductName)
-		if len(updateErrList) > 0 {
-			return updateErrList
-		}
-
-		if productDto.OcrProduct.UserId != -1 {
-			userOcrProduct := productModel.NewPurchaseInstalmentModel(
-				-1,                              // ID
-				productDto.OcrProduct.Qty,       // Qty
-				productDto.OcrProduct.Price,     // Price
-				productDto.OcrProduct.UserId,    // UserId
-				*ocrProduct,                     // OcrProduct
-				productDto.OcrProduct.UnitPrice, // UnitPrice
-				models.NewStoreMetadataFromDto(productDto.OcrProduct.Store), // Store
-				productDto.OcrProduct.UnitName,                              // UnitType
-			)
-			err = s.userProductRepo.CreateModel(*userOcrProduct)
-			if err != nil {
-				return []error{err}
-			}
+	if productDto.OcrProduct.UserId != -1 {
+		userOcrProduct := productModel.NewPurchaseInstalmentModel(
+			-1,                              // ID
+			productDto.OcrProduct.Qty,       // Qty
+			productDto.OcrProduct.Price,     // Price
+			productDto.OcrProduct.UserId,    // UserId
+			*ocrProductToUse,                // OcrProduct
+			productDto.OcrProduct.UnitPrice, // UnitPrice
+			models.NewStoreMetadataFromDto(productDto.OcrProduct.Store), // Store
+			productDto.OcrProduct.UnitName,                              // UnitType
+		)
+		err = s.userProductRepo.CreateModel(*userOcrProduct)
+		if err != nil {
+			return []error{err}
 		}
 	}
 

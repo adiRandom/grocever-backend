@@ -79,7 +79,7 @@ func (r *OcrProductRepository) CreateFromProductName(name string) (*entities.Ocr
 	entity := entities.OcrProductEntity{
 		OcrProductName: name,
 	}
-	err := r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
+	err := r.Db.FirstOrCreate(&entity).Error
 	return &entity, err
 }
 
