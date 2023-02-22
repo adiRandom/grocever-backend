@@ -67,11 +67,7 @@ func (r *OcrProductRepository) Delete(entity entities.OcrProductEntity) error {
 }
 
 func (r *OcrProductRepository) Create(model product.OcrProductModel) error {
-	entity := entities.OcrProductEntity{
-		OcrProductName: model.OcrProductName,
-		BestProductID:  uint(model.BestProduct.ID),
-		BestProduct:    entities.NewProductEntityFromModel(*model.BestProduct),
-	}
+	entity := entities.NewOcrProductEntityFromModel(model)
 	return r.Db.Clauses(clause.OnConflict{DoNothing: true}).Create(&entity).Error
 }
 
@@ -179,7 +175,7 @@ func (r *OcrProductRepository) UpdateBestProduct(ocrName string) (*entities.OcrP
 
 	updatedOcrProduct := *ocrProduct
 	updatedOcrProduct.BestProduct = bestProduct
-	updatedOcrProduct.BestProductID = bestProduct.ID
+	updatedOcrProduct.BestProductID = &bestProduct.ID
 
 	return &updatedOcrProduct, nil
 }
