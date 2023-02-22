@@ -27,7 +27,7 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 }
 
 func (r *Router) createPurchaseInstalment(context *gin.Context) {
-	var dto productDtos.CreatePurchaseInstalmentNoOcrDto
+	var dto productDtos.CreatePurchaseInstalmentNoOcrWithUserDto
 	err := context.BindJSON(&dto)
 	if err != nil {
 		context.JSON(400, http.Response[helpers.None]{

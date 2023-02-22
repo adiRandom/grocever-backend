@@ -32,7 +32,7 @@ func (s *Client) GetProductList(userId int) ([]product.UserProductDto, *http.Err
 	return res.Products, nil
 }
 
-func (s *Client) CreatePurchaseInstalmentNoOcr(userId int, purchaseInstalmentNoOcrDto product.CreatePurchaseInstalmentNoOcrDto) (*product.PurchaseInstalmentDto, *http.Error) {
+func (s *Client) CreatePurchaseInstalmentNoOcr(userId int, purchaseInstalmentNoOcrDto product.CreatePurchaseInstalmentNoOcrWithUserDto) (*product.PurchaseInstalmentDto, *http.Error) {
 	res, err := http.UnwrapHttpResponse(
 		http.PostSync[http.Response[product.PurchaseInstalmentDto]](fmt.Sprintf(s.baseUrl+"/product/%d", userId), purchaseInstalmentNoOcrDto),
 	)

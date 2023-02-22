@@ -139,7 +139,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
 }
 
 func (r *PurchaseInstalmentRepository) CreatePurchaseInstalmentNoOcr(
-	dto productDto.CreatePurchaseInstalmentNoOcrDto,
+	dto productDto.CreatePurchaseInstalmentNoOcrWithUserDto,
 ) (*product.PurchaseInstalmentModel, error) {
 	ocrProduct, err := r.ocrProductRepository.CreateFromProductName(dto.ProductName)
 	if err != nil {

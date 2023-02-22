@@ -75,7 +75,11 @@ func (r *Router) createPurchaseInstalmentNoOcr(context *gin.Context) {
 		return
 	}
 
-	resDto, err := r.productApiClient.CreatePurchaseInstalmentNoOcr(userId.(int), dto)
+	dtoWithUserId := product.CreatePurchaseInstalmentNoOcrWithUserDto{
+		CreatePurchaseInstalmentNoOcrDto: dto, UserId: uint(userId.(int)),
+	}
+
+	resDto, err := r.productApiClient.CreatePurchaseInstalmentNoOcr(userId.(int), dtoWithUserId)
 	if err != nil {
 		context.JSON(500, http.Response[helpers.None]{
 			Err:        err.Error(),

@@ -34,7 +34,11 @@ type CreatePurchaseInstalmentNoOcrDto struct {
 	UnitPrice   float32 `json:"unitPrice"`
 	UnitName    string  `json:"unitName"`
 	StoreId     uint    `json:"storeId"`
-	UserId      uint    `json:"userId"`
+}
+
+type CreatePurchaseInstalmentNoOcrWithUserDto struct {
+	CreatePurchaseInstalmentNoOcrDto
+	UserId uint `json:"userId"`
 }
 
 type CreatePurchaseInstalmentListDto struct {
