@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"lib/api/middleware"
 	"lib/data/dto/product"
+	"lib/events/rabbitmq"
 	"lib/helpers"
+	"lib/network/amqp"
 	"lib/network/http"
 )
 
@@ -19,6 +21,7 @@ func NewProductRouter(productApiClient *products.Client) *Router {
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/list", r.getAllUserProducts)
+	router.POST("/", r.createPurchaseInstalmentNoOcr)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
@@ -47,5 +50,59 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 			Products: productList,
 		},
 		Err: "",
+	}.GetH())
+}
+
+func (r *Router) createPurchaseInstalmentNoOcr(context *gin.Context) {
+	userId, exists := context.Get(middleware.UserIdKey)
+	if !exists {
+		context.JSON(401, http.Response[helpers.None]{
+			StatusCode: 401,
+			Err:        "Unauthorized",
+			Body:       helpers.None{},
+		})
+		return
+	}
+
+	var dto product.CreatePurchaseInstalmentNoOcrDto
+	err := context.BindJSON(&dto)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 400,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	resDto, err := r.productApiClient.CreatePurchaseInstalmentNoOcr(userId.(int), dto)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	searchDto := product.PurchaseInstalmentWithUserDto{
+		PurchaseInstalmentDto: *resDto,
+		UserId:                userId.(int),
+	}
+
+	err = rabbitmq.PushToQueue[product.PurchaseInstalmentWithUserDto](amqp.SearchQueue, searchDto)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        "Failed to push to queue",
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[product.PurchaseInstalmentDto]{
+		Err:        "",
+		Body:       *resDto,
+		StatusCode: 200,
 	}.GetH())
 }

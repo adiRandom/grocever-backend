@@ -3,7 +3,6 @@ package product
 import (
 	"github.com/gin-gonic/gin"
 	productDtos "lib/data/dto/product"
-	"lib/data/models/product"
 	"lib/functional"
 	"lib/helpers"
 	"lib/network/http"
@@ -24,6 +23,7 @@ func NewProductRouter(userProductRepo *repositories.PurchaseInstalmentRepository
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/:userId/list", r.getAllUserProducts)
+	router.POST("/:userId", r.createPurchaseInstalment)
 }
 
 func (r *Router) createPurchaseInstalment(context *gin.Context) {
@@ -48,14 +48,11 @@ func (r *Router) createPurchaseInstalment(context *gin.Context) {
 		return
 	}
 
-	context.JSON(200, http.Response[product.PurchaseInstalmentModel]{
+	context.JSON(200, http.Response[productDtos.PurchaseInstalmentDto]{
 		Err:        "",
-		Body:       *model,
+		Body:       model.ToDto(),
 		StatusCode: 200,
 	}.GetH())
-
-	// TODO: Register for search
-
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {

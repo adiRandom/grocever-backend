@@ -140,3 +140,34 @@ func (broker JsonBroker[T]) SendInput(body T) {
 		},
 	)
 }
+
+func PushToQueue[T any](queueName string, body T) error {
+	outConn, outCh, outQ, outConnErr := amqpLib.GetConnection(&queueName)
+	if outConnErr != nil {
+		return outConnErr
+	}
+	defer helpers.SafeClose(outConn)
+	defer helpers.SafeClose(outCh)
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	err = outCh.PublishWithContext(ctx,
+		"",
+		outQ.Name,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        bodyBytes,
+		})
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
