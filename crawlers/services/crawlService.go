@@ -19,11 +19,6 @@ func getCrawler(store models.StoreMetadata) Crawler {
 		{
 			return &FreshfulCrawler{store}
 		}
-	case constants.MegaImageStoreId:
-		{
-			//return &MegaImageCrawler{store}
-			return nil
-		}
 	case constants.CoraStoreId:
 		{
 			return &CoraCrawler{store}
