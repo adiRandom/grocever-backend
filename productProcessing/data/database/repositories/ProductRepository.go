@@ -162,6 +162,10 @@ func (r *ProductRepository) Create(
 	product *product.Model,
 	associatedOcrProductName string,
 ) error {
+	if product.Name == "" && product.Price == 0 {
+		return nil
+	}
+
 	existingProduct, err := r.GetProductByNameAndStoreId(product.Name, product.StoreId, false)
 	if err != nil {
 		return err
