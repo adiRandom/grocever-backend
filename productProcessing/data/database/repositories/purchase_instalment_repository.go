@@ -128,7 +128,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
 		uint(dto.Store.StoreId),
 		dto.UnitName,
 	)
-	err = r.Create(*entity)
+	err = r.Create(entity)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalmentNoOcr(
 		dto.StoreId,
 		dto.UnitName,
 	)
-	err = r.Create(*entity)
+	err = r.Create(entity)
 	if err != nil {
 		return nil, err
 	}

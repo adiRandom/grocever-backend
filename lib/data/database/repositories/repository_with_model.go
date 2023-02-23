@@ -85,9 +85,9 @@ func (r *DbRepositoryWithModel[TEntity, TModel]) CreateModel(model TModel) error
 	if err != nil {
 		return err
 	}
-	return r.DbRepository.Create(*entity)
+	return r.DbRepository.Create(entity)
 }
 
-func (r *DbRepositoryWithModel[TEntity, TModel]) CreateEntity(entity TEntity) error {
+func (r *DbRepositoryWithModel[TEntity, TModel]) CreateEntity(entity *TEntity) error {
 	return r.DbRepository.Create(entity)
 }
