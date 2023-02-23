@@ -44,10 +44,15 @@ func crawlProductPages(srcs []crawl2.SourceDto, resCh chan crawl.ResultModel) {
 
 func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
 	resCh := make(chan crawl.ResultModel)
-	crawlProductPages(srcs, resCh)
+
+	filteredSrcs := functional.Filter(srcs, func(src crawl2.SourceDto) bool {
+		return src.Url != ""
+	})
+
+	crawlProductPages(filteredSrcs, resCh)
 
 	var res []crawl.ResultModel
-	for range srcs {
+	for range filteredSrcs {
 		res = append(res, <-resCh)
 		fmt.Printf("Got result: %+v\n", res)
 	}
