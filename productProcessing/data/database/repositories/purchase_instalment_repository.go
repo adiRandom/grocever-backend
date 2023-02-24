@@ -71,6 +71,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 		Where("user_id = ?", userId).
 		Preload("OcrProduct").
 		Preload("OcrProduct.BestProduct").
+		Preload("OcrProduct.BestProduct.CrawlLink").
 		Find(&purchaseInstalments).Error
 	if err != nil {
 		return nil, err
