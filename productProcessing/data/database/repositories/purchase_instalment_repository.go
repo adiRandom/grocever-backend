@@ -84,7 +84,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 			return purchaseInstalment.OcrProduct.BestProduct
 		})
 
-	userProducts := make([]productModels.UserProduct, len(instalmentsGroupedByBestProduct))
+	userProducts := make([]productModels.UserProduct, 0)
 	for bestProduct, purchaseInstalments := range instalmentsGroupedByBestProduct {
 		storeMetadata, err := r.getStoreMetadataForId(bestProduct.StoreId)
 		if err != nil {
