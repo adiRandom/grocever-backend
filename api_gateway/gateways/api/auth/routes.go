@@ -64,7 +64,7 @@ func (r *Router) register(c *gin.Context) {
 	}
 
 	res, apiErr := r.authApiClient.Register(body)
-	if err != nil {
+	if apiErr != nil {
 		c.JSON(apiErr.Code, http.Response[helpers.None]{
 			StatusCode: apiErr.Code,
 			Err:        apiErr.Error(),
@@ -92,7 +92,7 @@ func (r *Router) refresh(c *gin.Context) {
 	}
 
 	res, apiErr := r.authApiClient.Refresh(body)
-	if err != nil {
+	if apiErr != nil {
 		c.JSON(apiErr.Code, http.Response[helpers.None]{
 			StatusCode: apiErr.Code,
 			Err:        apiErr.Error(),
