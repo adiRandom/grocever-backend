@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const jwtExp = 24 * time.Hour
+const jwtExp = 2 * 24 * time.Hour
 const refreshExp = 14 * 24 * time.Hour
 const signKeyArg = "SIGN_KEY"
 const issuerArg = "ISSUER"
