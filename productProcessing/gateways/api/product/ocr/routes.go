@@ -31,7 +31,6 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/:name/exists", r.doesOcrProductExist)
 	router.POST("/instalment", r.createPurchaseInstalment)
 	router.POST("/instalment/list", r.createPurchaseInstalments)
-
 }
 
 func (r *Router) doesOcrProductExist(context *gin.Context) {

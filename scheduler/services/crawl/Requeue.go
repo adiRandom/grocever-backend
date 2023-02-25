@@ -27,7 +27,7 @@ func (s *RequeueService) Requeue(product crawl.ProductDto) error {
 	repository := repositories.GetRepository()
 	requeueEntities := entities.NewProductRequeueEntities(product)
 	for _, entity := range requeueEntities {
-		err := repository.Create(entity)
+		err := repository.Create(&entity)
 		if err != nil {
 			return err
 		}
