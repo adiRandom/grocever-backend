@@ -5,6 +5,7 @@ import (
 	"auth/data/repository"
 	"github.com/golang-jwt/jwt/v4"
 	"lib/data/models/auth"
+	"lib/helpers"
 	"os"
 	"time"
 )
@@ -58,6 +59,10 @@ func GenerateRefreshToken(user auth.User) (string, error) {
 }
 
 func VerifyJwtToken(tokenString string) (*models.JwtClaims, error) {
+	return verifyJwtToken(tokenString, true)
+}
+
+func verifyJwtToken(tokenString string, checkExpiration bool) (*models.JwtClaims, error) {
 	issuer := os.Getenv(issuerArg)
 	token, err := jwt.ParseWithClaims(tokenString, &models.JwtClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return getSignKey(), nil
@@ -75,54 +80,40 @@ func VerifyJwtToken(tokenString string) (*models.JwtClaims, error) {
 		return nil, err
 	}
 
-	if err := claims.Valid(); err != nil {
-		return nil, err
+	if checkExpiration {
+		if err := claims.Valid(); err != nil {
+			return nil, err
+		}
 	}
 
 	return claims, nil
 }
 
 func VerifyRefreshToken(oldJwt string, refreshString string) (*models.JwtClaims, error) {
-	issuer := os.Getenv(issuerArg)
-	token, err := jwt.ParseWithClaims(refreshString, &models.JwtClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return getSignKey(), nil
-	})
+	refreshClaims, err := VerifyJwtToken(refreshString)
 	if err != nil {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*models.JwtClaims)
-	if !ok {
-		return nil, err
-	}
-
-	if claims.Issuer != issuer {
-		return nil, err
-	}
-
-	if err := claims.Valid(); err != nil {
-		return nil, err
-	}
-
-	oldClaims, err := VerifyJwtToken(oldJwt)
+	oldClaims, err := verifyJwtToken(oldJwt, false)
 	if err != nil {
 		return nil, err
 	}
 
-	if oldClaims.UserId != claims.UserId {
-		return nil, err
+	if oldClaims.UserId != refreshClaims.UserId {
+		return nil, helpers.Error{Msg: "User id mismatch"}
 	}
 
-	return claims, nil
+	return refreshClaims, nil
 }
 
 func RefreshJwtToken(oldJwt string, refreshString string, userRepository *repository.User) (string, error) {
-	claims, err := VerifyRefreshToken(oldJwt, refreshString)
+	refreshClaims, err := VerifyRefreshToken(oldJwt, refreshString)
 	if err != nil {
 		return "", err
 	}
 
-	user, err := userRepository.GetById(claims.UserId)
+	user, err := userRepository.GetById(refreshClaims.UserId)
 	if err != nil {
 		return "", err
 	}
