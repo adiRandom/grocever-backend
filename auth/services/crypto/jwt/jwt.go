@@ -66,7 +66,7 @@ func verifyJwtToken(tokenString string, checkExpiration bool) (*models.JwtClaims
 	issuer := os.Getenv(issuerArg)
 	token, err := jwt.ParseWithClaims(tokenString, &models.JwtClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return getSignKey(), nil
-	})
+	}, jwt.WithoutClaimsValidation())
 	if err != nil {
 		return nil, err
 	}

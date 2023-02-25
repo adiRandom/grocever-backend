@@ -89,6 +89,7 @@ func (r *Router) refresh(c *gin.Context) {
 			Err:        err.Error(),
 			Body:       helpers.None{},
 		})
+		return
 	}
 
 	res, apiErr := r.authApiClient.Refresh(body)
@@ -98,6 +99,7 @@ func (r *Router) refresh(c *gin.Context) {
 			Err:        apiErr.Error(),
 			Body:       helpers.None{},
 		})
+		return
 	}
 
 	c.JSON(200, http.Response[dto.RefreshResponse]{

@@ -93,7 +93,7 @@ func HandleRefresh(body dto.RefreshRequest, userRepository *repository.User) htt
 	newAccessToken, err := jwt.RefreshJwtToken(body.LastValidAccessToken, body.RefreshToken, userRepository)
 	if err != nil {
 		return http.Response[any]{
-			StatusCode: 400,
+			StatusCode: 403,
 			Err:        err.Error(),
 			Body:       helpers.None{},
 		}
