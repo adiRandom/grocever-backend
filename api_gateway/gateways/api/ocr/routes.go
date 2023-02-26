@@ -20,7 +20,7 @@ func NewOcrRouter(ocrApiClient *ocr.Client) *Router {
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
-	router.POST("/", r.uploadImage)
+	router.POST("", r.uploadImage)
 }
 
 func (r *Router) uploadImage(ctx *gin.Context) {

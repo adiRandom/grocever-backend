@@ -21,7 +21,7 @@ func NewProductRouter(productApiClient *products.Client) *Router {
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/list", r.getAllUserProducts)
-	router.POST("/", r.createPurchaseInstalmentNoOcr)
+	router.POST("", r.createPurchaseInstalmentNoOcr)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
