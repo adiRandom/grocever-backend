@@ -13,6 +13,7 @@ type UserProduct struct {
 	BestStoreId         uint                             `json:"bestStoreId"`
 	BestStoreName       string                           `json:"bestStoreName"`
 	BestStoreUrl        string                           `json:"bestStoreUrl"`
+	BestProductUrl      string                           `json:"bestProductUrl"`
 }
 
 func NewUserProduct(
@@ -22,6 +23,7 @@ func NewUserProduct(
 	bestStoreId uint,
 	bestStoreName string,
 	bestStoreUrl string,
+	bestProductUrl string,
 ) *UserProduct {
 	return &UserProduct{
 		Name:                name,
@@ -30,6 +32,7 @@ func NewUserProduct(
 		BestStoreId:         bestStoreId,
 		BestStoreName:       bestStoreName,
 		BestStoreUrl:        bestStoreUrl,
+		BestProductUrl:      bestProductUrl,
 	}
 }
 
@@ -40,8 +43,9 @@ func (p *UserProduct) ToDto() product.UserProductDto {
 		PurchaseInstalments: functional.Map(p.PurchaseInstalments, func(p models.PurchaseInstalmentModel) product.PurchaseInstalmentDto {
 			return p.ToDto()
 		}),
-		BestStoreId:   p.BestStoreId,
-		BestStoreName: p.BestStoreName,
-		BestStoreUrl:  p.BestStoreUrl,
+		BestStoreId:    p.BestStoreId,
+		BestStoreName:  p.BestStoreName,
+		BestStoreUrl:   p.BestStoreUrl,
+		BestProductUrl: p.BestProductUrl,
 	}
 }
