@@ -1,8 +1,19 @@
 package dto
 
 type FreshfulDto struct {
-	Name  string  `json:"name"`
-	Price float32 `json:"price"`
+	Name   string  `json:"name"`
+	Price  float32 `json:"price"`
+	Images []struct {
+		Thumbnail struct {
+			Default string `json:"default"`
+		} `json:"thumbnail"`
+		Large struct {
+			Default string `json:"default"`
+		} `json:"large"`
+		Extralarge struct {
+			Default string `json:"default"`
+		} `json:"extralarge"`
+	} `json:"images"`
 }
 
 type MegaImageDto struct {

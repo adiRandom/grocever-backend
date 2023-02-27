@@ -57,6 +57,12 @@ func (c FreshfulCrawler) ScrapeProductPage(url string, resCh chan crawl.ResultMo
 	res.ProductPrice = apiRes.Price
 	res.Store = c.store
 
+	if len(apiRes.Images) == 0 {
+		fmt.Printf("Warning crawling %s with api url %s: %s\n", url, *correctUrl, "No images found")
+	} else {
+		res.ImageUrl = apiRes.Images[0].Large.Default
+	}
+
 	resCh <- res
 	fmt.Printf("Freshful from url %s: %s - %s - %f\n", url, res.ProductName, res.ProductPrice, res.ProductPrice)
 }

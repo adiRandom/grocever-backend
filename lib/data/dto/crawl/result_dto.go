@@ -9,4 +9,5 @@ type ResultDto struct {
 	ProductPrice float32
 	Store        store.MetadataDto
 	CrawlUrl     string
+	ImageUrl     string
 }

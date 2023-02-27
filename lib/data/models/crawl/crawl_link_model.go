@@ -5,8 +5,5 @@ type LinkModel struct {
 	Url       string
 	StoreId   int
 	ProductId int
-}
-
-func NewCrawlLinkModel(id int, url string, storeId int, productId int) *LinkModel {
-	return &LinkModel{Id: id, Url: url, StoreId: storeId, ProductId: productId}
+	ImageUrl  string
 }

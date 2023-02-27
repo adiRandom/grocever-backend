@@ -10,6 +10,7 @@ type CrawlLinkEntity struct {
 	Url       string
 	StoreId   int
 	ProductId uint
+	ImageUrl  string
 }
 
 func (entity CrawlLinkEntity) ToModel() crawl.LinkModel {
@@ -18,6 +19,7 @@ func (entity CrawlLinkEntity) ToModel() crawl.LinkModel {
 		Url:       entity.Url,
 		StoreId:   entity.StoreId,
 		ProductId: int(entity.ProductId),
+		ImageUrl:  entity.ImageUrl,
 	}
 }
 
@@ -30,6 +32,7 @@ func NewCrawlLinkEntityFromModel(model crawl.LinkModel) *CrawlLinkEntity {
 	entity := CrawlLinkEntity{
 		Url:       model.Url,
 		StoreId:   model.StoreId,
+		ImageUrl:  model.ImageUrl,
 		ProductId: uint(model.ProductId),
 	}
 
