@@ -77,8 +77,12 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 		return nil, err
 	}
 
+	filteredPurchaseInstalments := functional.Filter(purchaseInstalments, func(purchaseInstalment entities.PurchaseInstalment) bool {
+		return purchaseInstalment.OcrProduct.BestProduct != nil
+	})
+
 	instalmentsGroupedByBestProduct := functional.GroupBy(
-		purchaseInstalments,
+		filteredPurchaseInstalments,
 		func(purchaseInstalment entities.PurchaseInstalment,
 		) *entities.ProductEntity {
 			return purchaseInstalment.OcrProduct.BestProduct
