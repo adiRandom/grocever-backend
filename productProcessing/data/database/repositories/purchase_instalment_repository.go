@@ -108,6 +108,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 			storeMetadata.Name,
 			storeMetadata.Url,
 			bestProduct.CrawlLink.Url,
+			bestProduct.ImageUrl,
 		)
 
 		userProducts = append(userProducts, *userProduct)

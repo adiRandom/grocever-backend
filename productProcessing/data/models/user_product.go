@@ -14,6 +14,7 @@ type UserProduct struct {
 	BestStoreName       string                           `json:"bestStoreName"`
 	BestStoreUrl        string                           `json:"bestStoreUrl"`
 	BestProductUrl      string                           `json:"bestProductUrl"`
+	ImageUrl            string                           `json:"imageUrl"`
 }
 
 func NewUserProduct(
@@ -24,6 +25,7 @@ func NewUserProduct(
 	bestStoreName string,
 	bestStoreUrl string,
 	bestProductUrl string,
+	imageUrl string,
 ) *UserProduct {
 	return &UserProduct{
 		Name:                name,
@@ -33,6 +35,7 @@ func NewUserProduct(
 		BestStoreName:       bestStoreName,
 		BestStoreUrl:        bestStoreUrl,
 		BestProductUrl:      bestProductUrl,
+		ImageUrl:            imageUrl,
 	}
 }
 
@@ -47,5 +50,6 @@ func (p *UserProduct) ToDto() product.UserProductDto {
 		BestStoreName:  p.BestStoreName,
 		BestStoreUrl:   p.BestStoreUrl,
 		BestProductUrl: p.BestProductUrl,
+		ImageUrl:       p.ImageUrl,
 	}
 }

@@ -8,6 +8,7 @@ type UserProductDto struct {
 	BestStoreName       string                  `json:"bestStoreName"`
 	BestStoreUrl        string                  `json:"bestStoreUrl"`
 	BestProductUrl      string                  `json:"bestProductUrl"`
+	ImageUrl            string                  `json:"imageUrl"`
 }
 
 type UserProductListDto struct {

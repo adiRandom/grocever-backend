@@ -8,6 +8,7 @@ import (
 type Model struct {
 	ID          int
 	Name        string
+	ImageUrl    string
 	CrawlLink   crawl.LinkModel
 	StoreId     int
 	Price       float32
@@ -18,12 +19,13 @@ type Model struct {
 func NewProductModel(
 	ID int,
 	name string,
+	imageUrl string,
 	crawlLink crawl.LinkModel,
 	storeId int,
 	price float32,
 	unityType string,
 	ocrProducts []*OcrProductModel) *Model {
-	return &Model{ID: ID, Name: name, CrawlLink: crawlLink, StoreId: storeId, Price: price, UnityType: unityType, OcrProducts: ocrProducts}
+	return &Model{ID: ID, Name: name, ImageUrl: imageUrl, CrawlLink: crawlLink, StoreId: storeId, Price: price, UnityType: unityType, OcrProducts: ocrProducts}
 }
 
 func NewProductModelsFromProcessDto(dto dto.ProductProcessDto, existingOcrProduct *OcrProductModel) []*Model {
@@ -32,6 +34,7 @@ func NewProductModelsFromProcessDto(dto dto.ProductProcessDto, existingOcrProduc
 		productModels[i] = NewProductModel(
 			-1,
 			crawlResult.ProductName,
+			crawlResult.ImageUrl,
 			crawl.LinkModel{
 				Id:        -1,
 				Url:       crawlResult.CrawlUrl,

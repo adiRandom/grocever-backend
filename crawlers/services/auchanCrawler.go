@@ -7,6 +7,7 @@ import (
 	"lib/data/models"
 	"lib/data/models/crawl"
 	"strconv"
+	"strings"
 )
 
 const auchanContentElementQuerySelector = utils.CssSelector(".vtex-flex-layout-0-x-flexCol--prodDetailsDesktop")
@@ -30,18 +31,30 @@ func (crawler AuchanCrawler) ScrapeProductPage(url string, resCh chan crawl.Resu
 		}
 
 		res := crawl.ResultModel{CrawlUrl: url}
-		res.ProductName = body.ChildText(auchanTitleElementQuerySelector.String())
-		priceString := body.ChildText(auchanIntPriceElementQuerySelector.String()) + "." + body.ChildText(auchanDecimalPriceElementQuerySelector.String())
-		price, err := strconv.ParseFloat(priceString, 32)
+		productName, err := body.DOM.Find(auchanTitleElementQuerySelector.String()).Html()
+
+		if err == nil {
+			res.ProductName = strings.Replace(productName, "<!-- -->", "", -1)
+		}
+
+		intPrice, errInt := body.DOM.Find(auchanIntPriceElementQuerySelector.String()).Html()
+		decimalPrice, errDecimal := body.DOM.Find(auchanDecimalPriceElementQuerySelector.String()).Html()
+
+		if errInt == nil && errDecimal == nil {
+			priceString := intPrice + "." + decimalPrice
+			price, err := strconv.ParseFloat(priceString, 32)
+
+			if err != nil {
+				fmt.Printf("Error crawling %s : %s\n", url, err)
+				resCh <- crawl.ResultModel{CrawlUrl: ""}
+				return
+			}
+
+			res.ProductPrice = float32(price)
+		}
 
 		imageUrl := body.ChildAttr(auchanImageElementQuerySelector.String(), "src")
 
-		if err != nil {
-			fmt.Printf("Error crawling %s : %s\n", url, err)
-			resCh <- crawl.ResultModel{CrawlUrl: ""}
-			return
-		}
-		res.ProductPrice = float32(price)
 		res.Store = crawler.store
 		res.ImageUrl = imageUrl
 

@@ -9,6 +9,7 @@ import (
 type ProductEntity struct {
 	gorm.Model
 	Name        string
+	ImageUrl    string
 	CrawlLink   *CrawlLinkEntity `gorm:"foreignKey:ProductId"`
 	StoreId     int
 	Price       float32
@@ -19,6 +20,7 @@ type ProductEntity struct {
 func (entity ProductEntity) ToModel() product.Model {
 	return product.Model{
 		ID:        int(entity.ID),
+		ImageUrl:  entity.ImageUrl,
 		Name:      entity.Name,
 		StoreId:   entity.StoreId,
 		Price:     entity.Price,
@@ -42,6 +44,7 @@ func NewProductEntityFromModel(model product.Model) *ProductEntity {
 		Price:     model.Price,
 		UnityType: model.UnityType,
 		CrawlLink: crawlLinkEntity,
+		ImageUrl:  model.ImageUrl,
 	}
 
 	if model.ID != -1 {

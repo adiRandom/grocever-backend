@@ -13,7 +13,7 @@ const coraContentElementQuerySelector = utils.CssSelector(".product-info-main")
 const coraTitleElementQuerySelector = utils.CssSelector(".page-title span[data-ui-id=page-title-wrapper]")
 const coraPriceElementQuerySelector = utils.CssSelector(".price-wrapper")
 const corePriceAttrib = "data-price-amount"
-const coreImaggeElementQuerySelector = utils.CssSelector(".fotorama__img")
+const coreImageElementQuerySelector = utils.CssSelector("meta[property=\"og:image\"]")
 
 type CoraCrawler struct {
 	store models.StoreMetadata
@@ -40,7 +40,10 @@ func (crawler CoraCrawler) ScrapeProductPage(url string, resCh chan crawl.Result
 		}
 		res.ProductPrice = float32(price)
 		res.Store = crawler.store
-		res.ImageUrl = body.ChildAttr(coreImaggeElementQuerySelector.String(), "src")
+		imgUrl, existsImg := body.DOM.Find(coreImageElementQuerySelector.String()).Attr("content")
+		if existsImg {
+			res.ImageUrl = imgUrl
+		}
 
 		resCh <- res
 		fmt.Printf("CoraCrawler from url %s: %v\n", url, res)
