@@ -1,6 +1,7 @@
 package product
 
 type UserProductDto struct {
+	Id                  uint                    `json:"id"`
 	Name                string                  `json:"name"`
 	BestPrice           float32                 `json:"bestPrice"`
 	PurchaseInstalments []PurchaseInstalmentDto `json:"purchaseInstalments"`

@@ -101,6 +101,7 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 				return purchaseInstalment.ToModel(storeMetadata)
 			})
 		userProduct := productModels.NewUserProduct(
+			bestProduct.ID,
 			bestProduct.Name,
 			bestProduct.Price,
 			purchaseInstalmentsModels,

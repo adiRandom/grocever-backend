@@ -7,6 +7,7 @@ import (
 )
 
 type UserProduct struct {
+	Id                  uint                             `json:"id"`
 	Name                string                           `json:"name"`
 	BestPrice           float32                          `json:"bestPrice"`
 	PurchaseInstalments []models.PurchaseInstalmentModel `json:"purchaseInstalments"`
@@ -18,6 +19,7 @@ type UserProduct struct {
 }
 
 func NewUserProduct(
+	id uint,
 	name string,
 	bestPrice float32,
 	purchaseInstalments []models.PurchaseInstalmentModel,
@@ -28,6 +30,7 @@ func NewUserProduct(
 	imageUrl string,
 ) *UserProduct {
 	return &UserProduct{
+		Id:                  id,
 		Name:                name,
 		BestPrice:           bestPrice,
 		PurchaseInstalments: purchaseInstalments,
@@ -41,6 +44,7 @@ func NewUserProduct(
 
 func (p *UserProduct) ToDto() product.UserProductDto {
 	return product.UserProductDto{
+		Id:        p.Id,
 		Name:      p.Name,
 		BestPrice: p.BestPrice,
 		PurchaseInstalments: functional.Map(p.PurchaseInstalments, func(p models.PurchaseInstalmentModel) product.PurchaseInstalmentDto {
