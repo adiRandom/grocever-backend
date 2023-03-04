@@ -16,7 +16,7 @@ func main() {
 		panic(err)
 	}
 
-	err = database.InitDatabase(&entities.ProductEntity{}, &entities.CrawlLinkEntity{}, &entities.OcrProductEntity{}, &entities.PurchaseInstalment{})
+	err = database.InitDatabase(&entities.ProductEntity{}, &entities.CrawlLinkEntity{}, &entities.OcrProductEntity{}, &entities.PurchaseInstalment{}, &entities.MissLink{})
 	if err != nil {
 		return
 	}

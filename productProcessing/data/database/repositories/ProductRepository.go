@@ -11,13 +11,16 @@ import (
 
 type ProductRepository struct {
 	repositories.DbRepository[entities.ProductEntity]
+	missLinkRepository *MissLinkRepository
 }
 
 var pr *ProductRepository = nil
 
-func GetProductRepository() *ProductRepository {
+func GetProductRepository(missLinkRepository *MissLinkRepository) *ProductRepository {
 	if pr == nil {
-		pr = &ProductRepository{}
+		pr = &ProductRepository{
+			missLinkRepository: missLinkRepository,
+		}
 		db, err := database.GetDb()
 		if err != nil {
 			panic(err)
@@ -181,19 +184,26 @@ func (r *ProductRepository) Create(
 			return err
 		}
 	} else {
-		err := r.linkProductAndOcrProduct(associatedOcrProductName, *existingProduct)
+		isLinkDenied, err := r.missLinkRepository.IsLinkingDenied(existingProduct.ID, associatedOcrProductName)
 		if err != nil {
 			return err
 		}
 
-		err = r.updateCrawLinkUrl(existingProduct, product.CrawlLink.Url)
-		if err != nil {
-			return err
-		}
+		if !isLinkDenied {
+			err := r.linkProductAndOcrProduct(associatedOcrProductName, *existingProduct)
+			if err != nil {
+				return err
+			}
 
-		err = r.updateProductPrice(existingProduct, product.Price)
-		if err != nil {
-			return err
+			err = r.updateCrawLinkUrl(existingProduct, product.CrawlLink.Url)
+			if err != nil {
+				return err
+			}
+
+			err = r.updateProductPrice(existingProduct, product.Price)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
