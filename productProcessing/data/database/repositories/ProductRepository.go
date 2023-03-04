@@ -11,12 +11,13 @@ import (
 
 type ProductRepository struct {
 	repositories.DbRepository[entities.ProductEntity]
-	missLinkRepository *MissLinkRepository
+	missLinkRepository   *MissLinkRepository
+	ocrProductRepository *OcrProductRepository
 }
 
 var pr *ProductRepository = nil
 
-func GetProductRepository(missLinkRepository *MissLinkRepository) *ProductRepository {
+func GetProductRepository(missLinkRepository *MissLinkRepository, ocrProductRepository *OcrProductRepository) *ProductRepository {
 	if pr == nil {
 		pr = &ProductRepository{
 			missLinkRepository: missLinkRepository,
@@ -155,6 +156,39 @@ func (r *ProductRepository) linkProductAndOcrProduct(
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+// This is a bit more expensive to run. Should be performed on a bg goroutine
+func (r *ProductRepository) BreakProductLink(productId uint, ocrProductName string) error {
+	var ocrProduct entities.OcrProductEntity
+
+	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrProductName).Error
+	if err != nil {
+		return err
+	}
+
+	var product entities.ProductEntity
+	err = r.Db.First(&product, productId).Error
+	if err != nil {
+		return err
+	}
+
+	err = r.Db.Model(&product).Association("OcrProducts").Delete(&ocrProduct)
+	if err != nil {
+		return err
+	}
+
+	err = r.Db.Model(&ocrProduct).Association("Products").Delete(&product)
+	if err != nil {
+		return err
+	}
+
+	err = r.ocrProductRepository.BreakRelatedWithoutLinkingProduct(ocrProductName)
+	if err != nil {
+		return err
 	}
 
 	return nil

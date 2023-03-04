@@ -7,6 +7,8 @@ import (
 	"lib/data/database"
 	"lib/data/database/repositories"
 	"lib/data/models/product"
+	"lib/functional"
+	"lib/helpers"
 	"productProcessing/data/database/entities"
 )
 
@@ -184,4 +186,51 @@ func (r *OcrProductRepository) GetOcrProductsByNames(names []string) (map[string
 	result := map[string]entities.OcrProductEntity{}
 	err := r.Db.Model(&entities.OcrProductEntity{}).Where("ocr_product_name IN (?)", names).Find(&result).Error
 	return result, err
+}
+
+func (r *OcrProductRepository) deleteRelated(firstOcrProduct entities.OcrProductEntity, secondOcrProduct entities.OcrProductEntity) error {
+	err := r.Db.Model(&firstOcrProduct).Association("Related").Delete(&secondOcrProduct)
+	if err != nil {
+		return err
+	}
+
+	err = r.Db.Model(&secondOcrProduct).Association("Related").Delete(&firstOcrProduct)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *OcrProductRepository) BreakRelatedWithoutLinkingProduct(ocrProductName string) error {
+	ocrProduct, err := r.GetByIdWithJoins(ocrProductName)
+
+	if err != nil {
+		return err
+	}
+
+	if ocrProduct == nil {
+		return helpers.Error{Msg: "Missing ocr product"}
+	}
+
+	productIds := functional.Map(ocrProduct.Products, func(product *entities.ProductEntity) uint {
+		return product.ID
+	})
+
+	for _, relatedOcrProduct := range ocrProduct.Related {
+		commonProductCount := r.Db.
+			Model(&relatedOcrProduct).
+			Where("id IN ?", productIds).
+			Association("Products").
+			Count()
+
+		if commonProductCount == 0 {
+			err = r.deleteRelated(*relatedOcrProduct, *ocrProduct)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

@@ -31,7 +31,10 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 	}
 
 	productService := services.NewProductService(
-		repositories.GetProductRepository(),
+		repositories.GetProductRepository(
+			repositories.GetMissLinkRepository(),
+			repositories.GetOcrProductRepository(),
+		),
 		repositories.GetOcrProductRepository(),
 		repositories.GetUserProductRepository(),
 	)
