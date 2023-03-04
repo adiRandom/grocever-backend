@@ -16,7 +16,7 @@ import (
 
 var rabbitMqBroker *multiplex.JsonBroker[crawl.ProductDto]
 var messageProcessingTimeout = 1 * time.Minute
-var deadlockTimeout = 5 * time.Second
+var deadlockTimeout = 5 * time.Minute
 var inboundQueues = multiplex.InQueues{
 	amqpLib.PriorityCrawlQueue: *multiplex.NewInQueueMetadata(
 		amqpLib.PriorityCrawlQueue,
