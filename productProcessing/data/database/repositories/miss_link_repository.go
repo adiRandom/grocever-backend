@@ -29,14 +29,52 @@ func GetMissLinkRepository() *MissLinkRepository {
 	return missLinkRepo
 }
 
+func (r *MissLinkRepository) Create(productId uint, ocrName string, userId uint) (*entities.MissLink, error) {
+	entity := entities.MissLink{
+		ProductIdFk:      productId,
+		OcrProductNameFk: ocrName,
+		UserId:           userId,
+	}
+
+	err := r.CreateEntity(&entity)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
+
 func (r *MissLinkRepository) IsLinkingDenied(productId uint, ocrName string) (bool, error) {
 	var missLinkCount int64 = 0
 	err := r.Db.Model(&entities.MissLink{}).Where("product_id_fk = ? and ocr_product_name_fk = ?", productId, ocrName).Count(&missLinkCount).Error
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	return missLinkCount >= missLinkDenyLimit, nil
+}
+
+func (r *MissLinkRepository) ShouldBreakProductLink(productId uint, ocrName string) (bool, error) {
+	var linkCount int64 = -1
+	err := r.Db.
+		Table("ocr_product-product").
+		Where(
+			"product_entity_id = ? and ocr_product_entity_ocr_product_name= ?",
+			productId,
+			ocrName,
+		).
+		Count(&linkCount).
+		Error
+	if err != nil {
+		return false, err
+	}
+
+	isLinkingDenied, err := r.IsLinkingDenied(productId, ocrName)
+	if err != nil {
+		return false, err
+	}
+
+	return linkCount > 0 && isLinkingDenied, nil
 }
 
 func toModel(entity entities.MissLink) (models.MissLink, error) {

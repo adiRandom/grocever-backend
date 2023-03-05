@@ -17,10 +17,14 @@ type ProductRepository struct {
 
 var pr *ProductRepository = nil
 
-func GetProductRepository(missLinkRepository *MissLinkRepository, ocrProductRepository *OcrProductRepository) *ProductRepository {
+func GetProductRepository(
+	missLinkRepository *MissLinkRepository,
+	ocrProductRepository *OcrProductRepository,
+) *ProductRepository {
 	if pr == nil {
 		pr = &ProductRepository{
-			missLinkRepository: missLinkRepository,
+			missLinkRepository:   missLinkRepository,
+			ocrProductRepository: ocrProductRepository,
 		}
 		db, err := database.GetDb()
 		if err != nil {

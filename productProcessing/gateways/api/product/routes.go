@@ -1,6 +1,7 @@
 package product
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	productDtos "lib/data/dto/product"
 	"lib/functional"
@@ -12,18 +13,27 @@ import (
 )
 
 type Router struct {
-	repository *repositories.PurchaseInstalmentRepository
+	purchaseInstalmentRepository *repositories.PurchaseInstalmentRepository
+	productRepository            *repositories.ProductRepository
+	missLinkRepository           *repositories.MissLinkRepository
 }
 
-func NewProductRouter(userProductRepo *repositories.PurchaseInstalmentRepository) *Router {
+func NewProductRouter(
+	userProductRepo *repositories.PurchaseInstalmentRepository,
+	productRepo *repositories.ProductRepository,
+	missLinkRepo *repositories.MissLinkRepository,
+) *Router {
 	return &Router{
-		repository: userProductRepo,
+		purchaseInstalmentRepository: userProductRepo,
+		productRepository:            productRepo,
+		missLinkRepository:           missLinkRepo,
 	}
 }
 
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/:userId/list", r.getAllUserProducts)
 	router.POST("/:userId", r.createPurchaseInstalment)
+	router.POST("/report/:productId", r.reportMissLink)
 }
 
 func (r *Router) createPurchaseInstalment(context *gin.Context) {
@@ -38,7 +48,7 @@ func (r *Router) createPurchaseInstalment(context *gin.Context) {
 		return
 	}
 
-	model, err := r.repository.CreatePurchaseInstalmentNoOcr(dto)
+	model, err := r.purchaseInstalmentRepository.CreatePurchaseInstalmentNoOcr(dto)
 	if err != nil {
 		context.JSON(500, http.Response[helpers.None]{
 			Err:        err.Error(),
@@ -67,7 +77,7 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 		return
 	}
 
-	products, err := r.repository.GetUserProducts(intUserId)
+	products, err := r.purchaseInstalmentRepository.GetUserProducts(intUserId)
 	if err != nil {
 		context.JSON(500, http.Response[helpers.None]{
 			StatusCode: 500,
@@ -87,5 +97,86 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 				},
 			),
 		},
+	}.GetH())
+}
+
+func (r *Router) reportMissLink(context *gin.Context) {
+	var dto productDtos.ReportDto
+	err := context.BindJSON(&dto)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 400,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	isLinkingDenied, err := r.missLinkRepository.IsLinkingDenied(dto.ProductId, dto.OcrProductName)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	if isLinkingDenied {
+		context.JSON(204, http.Response[helpers.None]{
+			Err:        "",
+			StatusCode: 204,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	entity, err := r.missLinkRepository.Create(dto.ProductId, dto.OcrProductName, dto.UserId)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	shouldBreakLink, err := r.missLinkRepository.ShouldBreakProductLink(dto.ProductId, dto.OcrProductName)
+	if err != nil {
+		// Revert the creation of the miss link so the user can report it again
+		deleteErr := r.missLinkRepository.Delete(*entity)
+		if deleteErr != nil {
+			context.JSON(500, http.Response[helpers.None]{
+				Err:        err.Error(),
+				StatusCode: 500,
+				Body:       helpers.None{},
+			}.GetH())
+			return
+		}
+
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+	}
+
+	if shouldBreakLink {
+		go func() {
+			err := r.productRepository.BreakProductLink(dto.ProductId, dto.OcrProductName)
+			if err != nil {
+				// Revert the creation of the miss link so the user can report it again
+				deleteErr := r.missLinkRepository.Delete(*entity)
+				if deleteErr != nil {
+					fmt.Println(err.Error())
+				}
+			}
+		}()
+	}
+
+	context.JSON(202, http.Response[helpers.None]{
+		Err:        "",
+		StatusCode: 202,
+		Body:       helpers.None{},
 	}.GetH())
 }
