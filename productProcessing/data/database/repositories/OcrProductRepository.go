@@ -154,7 +154,7 @@ func (r *OcrProductRepository) UpdateBestProduct(ocrName string) (*entities.OcrP
 		}
 	}
 
-	if ocrProduct.BestProduct != bestProduct {
+	if ocrProduct.BestProductID != nil && ocrProduct.BestProduct.ID != bestProduct.ID {
 		err = r.Db.Model(&ocrProduct).Update("best_product_ID", bestProduct.ID).Error
 		if err != nil {
 			return nil, []error{err}

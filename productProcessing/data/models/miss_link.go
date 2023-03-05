@@ -30,3 +30,15 @@ func (model *MissLink) ToEntity() *entities.MissLink {
 
 	return &entity
 }
+
+func NewMissLinkModelFromEntity(entity *entities.MissLink) *MissLink {
+	productModel := entity.Product.ToModel()
+	ocrProductModel := entity.OcrProduct.ToModel(false, false)
+
+	return &MissLink{
+		Id:         entity.ID,
+		Product:    &productModel,
+		OcrProduct: &ocrProductModel,
+		UserId:     entity.UserId,
+	}
+}

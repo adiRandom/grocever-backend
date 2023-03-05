@@ -191,6 +191,8 @@ func (r *ProductRepository) BreakProductLink(productId uint, ocrProductName stri
 		return err
 	}
 
+	r.ocrProductRepository.UpdateBestProduct(ocrProductName)
+
 	return nil
 }
 
