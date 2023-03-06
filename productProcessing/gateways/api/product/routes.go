@@ -33,7 +33,7 @@ func NewProductRouter(
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/:userId/list", r.getAllUserProducts)
 	router.POST("/:userId", r.createPurchaseInstalment)
-	router.POST("/report/:productId", r.reportMissLink)
+	router.POST("/report", r.reportMissLink)
 }
 
 func (r *Router) createPurchaseInstalment(context *gin.Context) {
@@ -101,7 +101,7 @@ func (r *Router) getAllUserProducts(context *gin.Context) {
 }
 
 func (r *Router) reportMissLink(context *gin.Context) {
-	var dto productDtos.ReportDto
+	var dto productDtos.ReportWithUserIdDto
 	err := context.BindJSON(&dto)
 	if err != nil {
 		context.JSON(400, http.Response[helpers.None]{

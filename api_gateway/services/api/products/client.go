@@ -3,6 +3,7 @@ package products
 import (
 	"fmt"
 	"lib/data/dto/product"
+	"lib/helpers"
 	"lib/network/http"
 	"os"
 )
@@ -40,4 +41,14 @@ func (s *Client) CreatePurchaseInstalmentNoOcr(userId int, purchaseInstalmentNoO
 		return nil, err
 	}
 	return res, nil
+}
+
+func (s *Client) ReportMissLink(reportMissLinkDto product.ReportWithUserIdDto) *http.Error {
+	_, err := http.UnwrapHttpResponse(
+		http.PostSync[http.Response[helpers.None]]("/product/report", reportMissLinkDto),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }

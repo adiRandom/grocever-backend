@@ -22,6 +22,7 @@ func NewProductRouter(productApiClient *products.Client) *Router {
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/list", r.getAllUserProducts)
 	router.POST("", r.createPurchaseInstalmentNoOcr)
+	router.POST("/report", r.reportMissLink)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
@@ -107,6 +108,46 @@ func (r *Router) createPurchaseInstalmentNoOcr(context *gin.Context) {
 	context.JSON(200, http.Response[product.PurchaseInstalmentDto]{
 		Err:        "",
 		Body:       *resDto,
+		StatusCode: 200,
+	}.GetH())
+}
+
+func (r *Router) reportMissLink(context *gin.Context) {
+	userId, exists := context.Get(middleware.UserIdKey)
+	if !exists {
+		context.JSON(401, http.Response[helpers.None]{
+			StatusCode: 401,
+			Err:        "Unauthorized",
+			Body:       helpers.None{},
+		})
+		return
+	}
+
+	var dto product.ReportDto
+	err := context.BindJSON(&dto)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 400,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	dtoWithUserId := product.NewReportWithUserIdDto(dto.ProductId, dto.OcrProductName, userId.(uint))
+	apiErr := r.productApiClient.ReportMissLink(*dtoWithUserId)
+	if apiErr != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        apiErr.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[helpers.None]{
+		Err:        "",
+		Body:       helpers.None{},
 		StatusCode: 200,
 	}.GetH())
 }
