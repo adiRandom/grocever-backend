@@ -60,6 +60,10 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 		return nil, readErr
 	}
 
+	if len(resBody) == 0 {
+		return nil, nil
+	}
+
 	var parsed TResult
 	jsonErr := json.Unmarshal(resBody, &parsed)
 

@@ -57,7 +57,7 @@ func (r *MissLinkRepository) IsLinkingDenied(productId uint, ocrName string) (bo
 func (r *MissLinkRepository) ShouldBreakProductLink(productId uint, ocrName string) (bool, error) {
 	var linkCount int64 = -1
 	err := r.Db.
-		Table("ocr_product-product").
+		Table("ocr-product_product").
 		Where(
 			"product_entity_id = ? and ocr_product_entity_ocr_product_name= ?",
 			productId,

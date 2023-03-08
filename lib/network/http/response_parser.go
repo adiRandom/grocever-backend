@@ -6,6 +6,9 @@ func UnwrapHttpResponse[T any](response *Response[T], err error) (*T, *Error) {
 	if err != nil {
 		return nil, &Error{Msg: err.Error(), Code: 500}
 	}
+	if response == nil {
+		return nil, nil
+	}
 	if response.Err != "" {
 		return nil, &Error{Msg: response.Err, Code: response.StatusCode}
 	}

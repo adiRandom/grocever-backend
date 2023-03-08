@@ -159,6 +159,7 @@ func (r *Router) reportMissLink(context *gin.Context) {
 			StatusCode: 500,
 			Body:       helpers.None{},
 		}.GetH())
+		return
 	}
 
 	if shouldBreakLink {
@@ -174,9 +175,5 @@ func (r *Router) reportMissLink(context *gin.Context) {
 		}()
 	}
 
-	context.JSON(202, http.Response[helpers.None]{
-		Err:        "",
-		StatusCode: 202,
-		Body:       helpers.None{},
-	}.GetH())
+	context.Status(202)
 }
