@@ -45,7 +45,7 @@ func (s *Client) CreatePurchaseInstalmentNoOcr(userId int, purchaseInstalmentNoO
 
 func (s *Client) ReportMissLink(reportMissLinkDto product.ReportWithUserIdDto) *http.Error {
 	_, err := http.UnwrapHttpResponse(
-		http.PostSync[http.Response[helpers.None]]("/product/report", reportMissLinkDto),
+		http.PostSync[http.Response[helpers.None]](s.baseUrl+"/product/report", reportMissLinkDto),
 	)
 	if err != nil {
 		return err
