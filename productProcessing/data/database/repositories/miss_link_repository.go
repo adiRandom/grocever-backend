@@ -29,7 +29,7 @@ func GetMissLinkRepository() *MissLinkRepository {
 	return missLinkRepo
 }
 
-func (r *MissLinkRepository) Create(productId uint, ocrName string, userId int) (*entities.MissLink, error) {
+func (r *MissLinkRepository) Create(productId int, ocrName string, userId int) (*entities.MissLink, error) {
 	entity := entities.MissLink{
 		ProductIdFk:      productId,
 		OcrProductNameFk: ocrName,
@@ -44,7 +44,7 @@ func (r *MissLinkRepository) Create(productId uint, ocrName string, userId int) 
 	return &entity, nil
 }
 
-func (r *MissLinkRepository) IsLinkingDenied(productId uint, ocrName string) (bool, error) {
+func (r *MissLinkRepository) IsLinkingDenied(productId int, ocrName string) (bool, error) {
 	var missLinkCount int64 = 0
 	err := r.Db.Model(&entities.MissLink{}).Where("product_id_fk = ? and ocr_product_name_fk = ?", productId, ocrName).Count(&missLinkCount).Error
 	if err != nil {
@@ -54,7 +54,7 @@ func (r *MissLinkRepository) IsLinkingDenied(productId uint, ocrName string) (bo
 	return missLinkCount >= missLinkDenyLimit, nil
 }
 
-func (r *MissLinkRepository) ShouldBreakProductLink(productId uint, ocrName string) (bool, error) {
+func (r *MissLinkRepository) ShouldBreakProductLink(productId int, ocrName string) (bool, error) {
 	var linkCount int64 = -1
 	err := r.Db.
 		Table("ocr-product_product").
@@ -75,6 +75,25 @@ func (r *MissLinkRepository) ShouldBreakProductLink(productId uint, ocrName stri
 	}
 
 	return linkCount > 0 && isLinkingDenied, nil
+}
+
+func (r *MissLinkRepository) GetReportsByUser(userId uint) ([]models.MissLink, error) {
+	entitiesList := make([]entities.MissLink, 0)
+	err := r.Db.Where("user_id = ?", userId).Find(&entitiesList).Error
+	if err != nil {
+		return nil, err
+	}
+
+	modelsList := make([]models.MissLink, 0)
+	for _, entity := range entitiesList {
+		model, err := toModel(entity)
+		if err != nil {
+			return nil, err
+		}
+		modelsList = append(modelsList, model)
+	}
+
+	return modelsList, nil
 }
 
 func toModel(entity entities.MissLink) (models.MissLink, error) {

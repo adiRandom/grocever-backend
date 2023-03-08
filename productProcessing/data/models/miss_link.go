@@ -1,6 +1,7 @@
 package models
 
 import (
+	productDto "lib/data/dto/product"
 	"lib/data/models/product"
 	"productProcessing/data/database/entities"
 )
@@ -29,6 +30,13 @@ func (model *MissLink) ToEntity() *entities.MissLink {
 	}
 
 	return &entity
+}
+
+func (model *MissLink) ToDto() *productDto.ReportDto {
+	return &productDto.ReportDto{
+		ProductId:      model.Product.ID,
+		OcrProductName: model.OcrProduct.OcrProductName,
+	}
 }
 
 func NewMissLinkModelFromEntity(entity *entities.MissLink) *MissLink {

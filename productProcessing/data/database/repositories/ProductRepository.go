@@ -166,7 +166,7 @@ func (r *ProductRepository) linkProductAndOcrProduct(
 }
 
 // This is a bit more expensive to run. Should be performed on a bg goroutine
-func (r *ProductRepository) BreakProductLink(productId uint, ocrProductName string) error {
+func (r *ProductRepository) BreakProductLink(productId int, ocrProductName string) error {
 	var ocrProduct entities.OcrProductEntity
 
 	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrProductName).Error
@@ -224,7 +224,7 @@ func (r *ProductRepository) Create(
 			return err
 		}
 	} else {
-		isLinkDenied, err := r.missLinkRepository.IsLinkingDenied(existingProduct.ID, associatedOcrProductName)
+		isLinkDenied, err := r.missLinkRepository.IsLinkingDenied(int(existingProduct.ID), associatedOcrProductName)
 		if err != nil {
 			return err
 		}

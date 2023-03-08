@@ -34,6 +34,7 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/:userId/list", r.getAllUserProducts)
 	router.POST("/:userId", r.createPurchaseInstalment)
 	router.POST("/report", r.reportMissLink)
+	router.GET(":userId/list", r.getUserReports)
 }
 
 func (r *Router) createPurchaseInstalment(context *gin.Context) {
@@ -176,4 +177,36 @@ func (r *Router) reportMissLink(context *gin.Context) {
 	}
 
 	context.Status(202)
+}
+
+func (r *Router) getUserReports(context *gin.Context) {
+	userId := context.Param("userId")
+	intUserId, err := strconv.Atoi(userId)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			StatusCode: 500,
+			Err:        "Invalid user id",
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	reports, err := r.missLinkRepository.GetReportsByUser(uint(intUserId))
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			StatusCode: 500,
+			Err:        err.Error(),
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[[]productDtos.ReportDto]{
+		StatusCode: 200,
+		Body: functional.Map(
+			reports,
+			func(report models.MissLink) productDtos.ReportDto {
+				return *report.ToDto()
+			}),
+	}.GetH())
 }
