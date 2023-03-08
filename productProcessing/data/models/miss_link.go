@@ -18,7 +18,7 @@ func (model *MissLink) ToEntity() *entities.MissLink {
 	ocrProductEntity := entities.NewOcrProductEntityFromModel(*model.OcrProduct)
 
 	entity := entities.MissLink{
-		ProductIdFk:      uint(model.Product.ID),
+		ProductIdFk:      model.Product.ID,
 		OcrProductNameFk: model.OcrProduct.OcrProductName,
 		UserId:           model.UserId,
 		Product:          productEntity,
