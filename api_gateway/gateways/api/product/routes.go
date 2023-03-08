@@ -134,7 +134,7 @@ func (r *Router) reportMissLink(context *gin.Context) {
 		return
 	}
 
-	dtoWithUserId := product.NewReportWithUserIdDto(dto.ProductId, dto.OcrProductName, userId.(uint))
+	dtoWithUserId := product.NewReportWithUserIdDto(dto.ProductId, dto.OcrProductName, userId.(int))
 	apiErr := r.productApiClient.ReportMissLink(*dtoWithUserId)
 	if apiErr != nil {
 		context.JSON(500, http.Response[helpers.None]{

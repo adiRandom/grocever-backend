@@ -29,7 +29,7 @@ func GetMissLinkRepository() *MissLinkRepository {
 	return missLinkRepo
 }
 
-func (r *MissLinkRepository) Create(productId uint, ocrName string, userId uint) (*entities.MissLink, error) {
+func (r *MissLinkRepository) Create(productId uint, ocrName string, userId int) (*entities.MissLink, error) {
 	entity := entities.MissLink{
 		ProductIdFk:      productId,
 		OcrProductNameFk: ocrName,

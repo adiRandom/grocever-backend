@@ -10,5 +10,5 @@ type MissLink struct {
 	Product          *ProductEntity    `gorm:"foreignKey:ProductIdFk;references:ID"`
 	OcrProductNameFk string            `gorm:"size:255"`
 	OcrProduct       *OcrProductEntity `gorm:"foreignKey:OcrProductNameFk;references:OcrProductName"`
-	UserId           uint              `gorm:"unique"`
+	UserId           int               `gorm:"unique"`
 }

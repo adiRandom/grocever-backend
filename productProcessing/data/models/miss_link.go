@@ -9,7 +9,7 @@ type MissLink struct {
 	Id         uint
 	Product    *product.Model
 	OcrProduct *product.OcrProductModel
-	UserId     uint
+	UserId     int
 }
 
 func (model *MissLink) ToEntity() *entities.MissLink {
