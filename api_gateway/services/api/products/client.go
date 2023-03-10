@@ -55,7 +55,7 @@ func (s *Client) ReportMissLink(reportMissLinkDto product.ReportWithUserIdDto) *
 
 func (s *Client) GetReportsByUser(userId int) (*[]product.ReportDto, *http.Error) {
 	res, err := http.UnwrapHttpResponse(
-		http.GetSync[http.Response[[]product.ReportDto]](fmt.Sprintf(s.baseUrl+"/product/%d/report/list", userId)),
+		http.GetSync[http.Response[[]product.ReportDto]](fmt.Sprintf(s.baseUrl+"/product/report/%d/list", userId)),
 	)
 	if err != nil {
 		return nil, err
