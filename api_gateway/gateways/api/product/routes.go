@@ -23,7 +23,7 @@ func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/list", r.getAllUserProducts)
 	router.POST("", r.createPurchaseInstalmentNoOcr)
 	router.POST("/report", r.reportMissLink)
-	router.GET("/reports/list", r.getUserReports)
+	router.GET("/report/list", r.getUserReports)
 }
 
 func (r *Router) getAllUserProducts(context *gin.Context) {
