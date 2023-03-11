@@ -18,20 +18,22 @@ type ProductEntity struct {
 }
 
 func (entity ProductEntity) ToModel() product.Model {
+	var ocrProducts []*product.OcrProductModel = nil
+	if entity.OcrProducts != nil {
+		ocrProducts = functional.Map(entity.OcrProducts, func(ocrProduct *OcrProductEntity) *product.OcrProductModel {
+			model := ocrProduct.ToModel(false, false)
+			return &model
+		})
+	}
 	return product.Model{
-		ID:        int(entity.ID),
-		ImageUrl:  entity.ImageUrl,
-		Name:      entity.Name,
-		StoreId:   entity.StoreId,
-		Price:     entity.Price,
-		UnityType: entity.UnityType,
-		CrawlLink: entity.CrawlLink.ToModel(),
-		OcrProducts: functional.Map(entity.OcrProducts,
-			func(ocrProductEntity *OcrProductEntity) *product.OcrProductModel {
-				model := ocrProductEntity.ToModel(false, false)
-				return &model
-			},
-		),
+		ID:          int(entity.ID),
+		ImageUrl:    entity.ImageUrl,
+		Name:        entity.Name,
+		StoreId:     entity.StoreId,
+		Price:       entity.Price,
+		UnityType:   entity.UnityType,
+		CrawlLink:   entity.CrawlLink.ToModel(),
+		OcrProducts: ocrProducts,
 	}
 }
 

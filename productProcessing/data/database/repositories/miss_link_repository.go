@@ -79,7 +79,7 @@ func (r *MissLinkRepository) ShouldBreakProductLink(productId int, ocrName strin
 
 func (r *MissLinkRepository) GetReportsByUser(userId uint) ([]models.MissLink, error) {
 	entitiesList := make([]entities.MissLink, 0)
-	err := r.Db.Where("user_id = ?", userId).Find(&entitiesList).Error
+	err := r.Db.Preload("Product").Preload("OcrProduct").Where("user_id = ?", userId).Find(&entitiesList).Error
 	if err != nil {
 		return nil, err
 	}
