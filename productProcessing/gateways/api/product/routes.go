@@ -165,7 +165,7 @@ func (r *Router) reportMissLink(context *gin.Context) {
 
 	if shouldBreakLink {
 		go func() {
-			err := r.productRepository.BreakProductLink(dto.ProductId, dto.OcrProductName)
+			err := r.productRepository.BreakProductLinkAsync(dto.ProductId, dto.OcrProductName)
 			if err != nil {
 				// Revert the creation of the miss link so the user can report it again
 				deleteErr := r.missLinkRepository.Delete(*entity)

@@ -32,9 +32,9 @@ func main() {
 	//service := services.NewProductService(
 	//	repositories.GetProductRepository(
 	//		repositories.GetMissLinkRepository(),
-	//		repositories.GetOcrProductRepository(),
+	//		repositories.GetOcrProductRepository(repositories.GetMissLinkRepository()),
 	//	),
-	//	repositories.GetOcrProductRepository(),
+	//	repositories.GetOcrProductRepository(repositories.GetMissLinkRepository()),
 	//	repositories.GetUserProductRepository(),
 	//)
 	//
@@ -42,31 +42,22 @@ func main() {
 	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
 	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
 	//			Id:        -1,
-	//			OcrName:   "test",
+	//			OcrName:   "1",
 	//			Price:     100,
 	//			Qty:       1,
-	//			UnitPrice: 1,
+	//			UnitPrice: 100,
 	//			UnitName:  "kg",
 	//			Store: store.MetadataDto{
 	//				StoreId: 1,
 	//				Name:    "test",
 	//			},
 	//		},
-	//		UserId: 1,
+	//		UserId: 4,
 	//	},
-	//	// TODO: Write dtos to test best price updates afrer link and after unlink
 	//	CrawlResults: []crawl.ResultDto{
-	//		crawl.ResultDto{
-	//			ProductName:  "test",
-	//			ProductPrice: 100,
-	//			Store: store.MetadataDto{
-	//				StoreId: 1,
-	//				Name:    "test",
-	//			},
-	//		},
-	//		crawl.ResultDto{
-	//			ProductName:  "test2",
-	//			ProductPrice: 75,
+	//		{
+	//			ProductName:  "A",
+	//			ProductPrice: 3,
 	//			Store: store.MetadataDto{
 	//				StoreId: 1,
 	//				Name:    "test",
@@ -79,31 +70,162 @@ func main() {
 	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
 	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
 	//			Id:        -1,
-	//			OcrName:   "test2",
+	//			OcrName:   "2",
 	//			Price:     100,
 	//			Qty:       1,
-	//			UnitPrice: 1,
+	//			UnitPrice: 100,
 	//			UnitName:  "kg",
 	//			Store: store.MetadataDto{
 	//				StoreId: 1,
 	//				Name:    "test",
 	//			},
 	//		},
-	//		UserId: 1,
+	//		UserId: 4,
 	//	},
-	//	// TODO: Write dtos to test best price updates afrer link and after unlink
 	//	CrawlResults: []crawl.ResultDto{
 	//		crawl.ResultDto{
-	//			ProductName:  "test",
-	//			ProductPrice: 100,
+	//			ProductName:  "B",
+	//			ProductPrice: 1,
 	//			Store: store.MetadataDto{
 	//				StoreId: 1,
 	//				Name:    "test",
 	//			},
 	//		},
+	//	},
+	//}
+	//
+	//dto3 := dto.ProductProcessDto{
+	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
+	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
+	//			Id:        -1,
+	//			OcrName:   "3",
+	//			Price:     100,
+	//			Qty:       1,
+	//			UnitPrice: 100,
+	//			UnitName:  "kg",
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//		UserId: 4,
+	//	},
+	//	CrawlResults: []crawl.ResultDto{
 	//		crawl.ResultDto{
-	//			ProductName:  "test3",
-	//			ProductPrice: 75,
+	//			ProductName:  "C",
+	//			ProductPrice: 2,
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//	},
+	//}
+	//
+	//dto4 := dto.ProductProcessDto{
+	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
+	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
+	//			Id:        -1,
+	//			OcrName:   "2",
+	//			Price:     100,
+	//			Qty:       1,
+	//			UnitPrice: 100,
+	//			UnitName:  "kg",
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//		UserId: 4,
+	//	},
+	//	CrawlResults: []crawl.ResultDto{
+	//		crawl.ResultDto{
+	//			ProductName:  "C",
+	//			ProductPrice: 2,
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//	},
+	//}
+	//
+	//dto5 := dto.ProductProcessDto{
+	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
+	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
+	//			Id:        -1,
+	//			OcrName:   "1",
+	//			Price:     100,
+	//			Qty:       1,
+	//			UnitPrice: 100,
+	//			UnitName:  "kg",
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//		UserId: 4,
+	//	},
+	//	CrawlResults: []crawl.ResultDto{
+	//		crawl.ResultDto{
+	//			ProductName:  "B",
+	//			ProductPrice: 1,
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//	},
+	//}
+	//
+	//dto6 := dto.ProductProcessDto{
+	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
+	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
+	//			Id:        -1,
+	//			OcrName:   "1",
+	//			Price:     100,
+	//			Qty:       1,
+	//			UnitPrice: 100,
+	//			UnitName:  "kg",
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//		UserId: 4,
+	//	},
+	//	CrawlResults: []crawl.ResultDto{
+	//		crawl.ResultDto{
+	//			ProductName:  "D",
+	//			ProductPrice: 4,
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//	},
+	//}
+	//
+	//dto7 := dto.ProductProcessDto{
+	//	OcrProduct: product.PurchaseInstalmentWithUserDto{
+	//		PurchaseInstalmentDto: product.PurchaseInstalmentDto{
+	//			Id:        -1,
+	//			OcrName:   "2",
+	//			Price:     100,
+	//			Qty:       1,
+	//			UnitPrice: 100,
+	//			UnitName:  "kg",
+	//			Store: store.MetadataDto{
+	//				StoreId: 1,
+	//				Name:    "test",
+	//			},
+	//		},
+	//		UserId: 4,
+	//	},
+	//	CrawlResults: []crawl.ResultDto{
+	//		crawl.ResultDto{
+	//			ProductName:  "D",
+	//			ProductPrice: 4,
 	//			Store: store.MetadataDto{
 	//				StoreId: 1,
 	//				Name:    "test",
@@ -114,9 +236,41 @@ func main() {
 	//
 	//service.ProcessCrawlProduct(dto1)
 	//service.ProcessCrawlProduct(dto2)
-
-	//repositories.GetProductRepository(
+	//service.ProcessCrawlProduct(dto3)
+	//service.ProcessCrawlProduct(dto4)
+	//service.ProcessCrawlProduct(dto5)
+	//service.ProcessCrawlProduct(dto6)
+	//service.ProcessCrawlProduct(dto7)
+	//
+	//r := repositories.GetMissLinkRepository()
+	//r.CreateMany([]entities.MissLink{
+	//	entities.MissLink{
+	//		UserId:           4,
+	//		ProductIdFk:      2,
+	//		OcrProductNameFk: "1",
+	//	},
+	//	entities.MissLink{
+	//		UserId:           1,
+	//		ProductIdFk:      2,
+	//		OcrProductNameFk: "1",
+	//	},
+	//	entities.MissLink{
+	//		UserId:           2,
+	//		ProductIdFk:      2,
+	//		OcrProductNameFk: "1",
+	//	},
+	//})
+	//
+	//err = repositories.GetProductRepository(
 	//	repositories.GetMissLinkRepository(),
-	//	repositories.GetOcrProductRepository(),
-	//).BreakProductLink(1, "test2")
+	//	repositories.GetOcrProductRepository(repositories.GetMissLinkRepository()),
+	//).BreakProductLinkAsync(2, "1")
+	//
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//
+	//// Wait for async process to finish
+	//infiniteLoop := make(chan bool)
+	//<-infiniteLoop
 }

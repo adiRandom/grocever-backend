@@ -242,11 +242,14 @@ func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 	// Update the best product for each ocr product
 	err = r.Db.Transaction(func(tx *gorm.DB) error {
 		for ocrName, bestProduct := range bestProductByOcrName {
-			return tx.
+			err := tx.
 				Model(&entities.OcrProductEntity{}).
 				Where("ocr_product_name = ?", ocrName).
 				Update("best_product_id", bestProduct.ID).
 				Error
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -273,7 +276,7 @@ func (r *OcrProductRepository) deleteRelated(firstOcrProduct entities.OcrProduct
 	return nil
 }
 
-func (r *OcrProductRepository) BreakRelatedWithoutLinkingProduct(ocrProductName string) error {
+func (r *OcrProductRepository) breakRelatedOcrWithoutLinkingProduct(ocrProductName string) error {
 	ocrProduct, err := r.GetByIdWithJoins(ocrProductName)
 
 	if err != nil {

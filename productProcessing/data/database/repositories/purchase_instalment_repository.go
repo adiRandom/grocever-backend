@@ -23,7 +23,9 @@ var repo *PurchaseInstalmentRepository = nil
 func GetUserProductRepository() *PurchaseInstalmentRepository {
 	if repo == nil {
 		repo = &PurchaseInstalmentRepository{
-			ocrProductRepository: GetOcrProductRepository(),
+			ocrProductRepository: GetOcrProductRepository(
+				GetMissLinkRepository(),
+			),
 		}
 		repo.ToModel = repo.toModel
 		repo.ToEntity = repo.toEntity

@@ -6,6 +6,7 @@ import (
 	"lib/data/database"
 	"lib/data/database/repositories"
 	"lib/data/models/product"
+	"log"
 	"productProcessing/data/database/entities"
 )
 
@@ -165,8 +166,7 @@ func (r *ProductRepository) linkProductAndOcrProduct(
 	return nil
 }
 
-// This is a bit more expensive to run. Should be performed on a bg goroutine
-func (r *ProductRepository) BreakProductLink(productId int, ocrProductName string) error {
+func (r *ProductRepository) BreakProductLinkAsync(productId int, ocrProductName string) error {
 	var ocrProduct entities.OcrProductEntity
 
 	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrProductName).Error
@@ -190,12 +190,17 @@ func (r *ProductRepository) BreakProductLink(productId int, ocrProductName strin
 		return err
 	}
 
-	err = r.ocrProductRepository.BreakRelatedWithoutLinkingProduct(ocrProductName)
+	err = r.ocrProductRepository.breakRelatedOcrWithoutLinkingProduct(ocrProductName)
 	if err != nil {
 		return err
 	}
 
-	r.ocrProductRepository.UpdateBestProductAsync(ocrProductName)
+	go func() {
+		err := r.ocrProductRepository.UpdateBestProductAsync(ocrProductName)
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	return nil
 }
