@@ -9,18 +9,23 @@ import (
 	"lib/data/models/product"
 	"lib/functional"
 	"lib/helpers"
+	"lib/types/impl"
 	"productProcessing/data/database/entities"
+	"sort"
 )
 
 type OcrProductRepository struct {
 	repositories.DbRepository[entities.OcrProductEntity]
+	missLinkRepository *MissLinkRepository
 }
 
 var ocrRepo *OcrProductRepository = nil
 
-func GetOcrProductRepository() *OcrProductRepository {
+func GetOcrProductRepository(missLinkRepository *MissLinkRepository) *OcrProductRepository {
 	if ocrRepo == nil {
-		ocrRepo = &OcrProductRepository{}
+		ocrRepo = &OcrProductRepository{
+			missLinkRepository: missLinkRepository,
+		}
 		db, err := database.GetDb()
 		if err != nil {
 			panic(err)
@@ -60,6 +65,24 @@ func (r *OcrProductRepository) GetByIdWithJoins(name string) (*entities.OcrProdu
 	return &ocrProduct, err
 }
 
+func (r *OcrProductRepository) getRelatedOcrProductNames(ocrName string) ([]string, error) {
+	var ocrProduct entities.OcrProductEntity
+	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrName).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var relatedOcrProducts []entities.OcrProductEntity
+	err = r.Db.Model(&ocrProduct).Association("Related").Find(&relatedOcrProducts)
+	if err != nil {
+		return nil, err
+	}
+
+	return functional.Map(relatedOcrProducts, func(ocrProduct entities.OcrProductEntity) string {
+		return ocrProduct.OcrProductName
+	}), nil
+}
+
 func (r *OcrProductRepository) Save(entity entities.OcrProductEntity) error {
 	return r.Db.Save(&entity).Error
 }
@@ -79,36 +102,6 @@ func (r *OcrProductRepository) CreateFromProductName(name string) (*entities.Ocr
 	}
 	err := r.Db.FirstOrCreate(&entity).Error
 	return &entity, err
-}
-
-func (r *OcrProductRepository) GetBestPrice(ocrName string) (*float32, error) {
-	var ocrProduct entities.OcrProductEntity
-	err := r.Db.First(&ocrProduct, "ocr_product_name = ?", ocrName).Error
-	if err != nil {
-		return nil, err
-	}
-
-	var relatedOcrProducts []entities.OcrProductEntity
-	err = r.Db.Model(&ocrProduct).Association("Related").Find(&relatedOcrProducts)
-	if err != nil {
-		return nil, err
-	}
-
-	var ocrProductNames = make([]string, len(relatedOcrProducts)+1)
-	ocrProductNames[0] = ocrName
-
-	for i := 1; i < len(relatedOcrProducts); i++ {
-		ocrProductNames[i] = relatedOcrProducts[i-1].OcrProductName
-	}
-
-	var bestProduct entities.ProductEntity
-	err = r.Db.Where("name IN (?)", ocrProductNames).Order("price").First(&bestProduct).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &bestProduct.Price, nil
 }
 
 func (r *OcrProductRepository) Exists(ocrName string) (bool, error) {
@@ -140,46 +133,124 @@ func (r *OcrProductRepository) ExistsMultiple(ocrNames []string) ([]bool, error)
 	return exists, nil
 }
 
-func (r *OcrProductRepository) UpdateBestProduct(ocrName string) (*entities.OcrProductEntity, []error) {
-	ocrProduct, err := r.GetByIdWithJoins(ocrName)
-	if err != nil {
-		return nil, []error{err}
+func (r *OcrProductRepository) traverseRelatedOcrGraph(ocrName string) ([]string, error) {
+	allOcrProducts := impl.NewBasicSet[string]()
+	q := impl.NewQueue[string]()
+
+	q.Push(ocrName)
+	allOcrProducts.Add(ocrName)
+
+	for !q.IsEmpty() {
+		currentOcrName := q.Pop()
+		relatedOcrProducts, err := r.getRelatedOcrProductNames(currentOcrName)
+		if err != nil {
+			return nil, err
+		}
+		for _, relatedOcrProduct := range relatedOcrProducts {
+			if !allOcrProducts.Contains(relatedOcrProduct) {
+				q.Push(relatedOcrProduct)
+				allOcrProducts.Add(relatedOcrProduct)
+			}
+		}
 	}
 
-	// Get best price from products
-	var bestProduct *entities.ProductEntity = nil
-	for _, productEntity := range ocrProduct.Products {
+	return allOcrProducts.ToSlice(), nil
+}
+
+func (r *OcrProductRepository) getAllRelatedProducts(ocrNames []string) ([]*entities.ProductEntity, error) {
+	var ocrProducts []entities.OcrProductEntity
+	err := r.Db.
+		Where("ocr_product_name IN (?)",
+			ocrNames,
+		).Preload("Products").Find(&ocrProducts).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var productSet = impl.NewIdSet[uint, *entities.ProductEntity](
+		func(product *entities.ProductEntity) uint {
+			return product.ID
+		},
+	)
+	for _, ocrProduct := range ocrProducts {
+		productSet.AddAll(ocrProduct.Products)
+	}
+
+	return productSet.ToSlice(), nil
+}
+
+// Get the products sorted by price and pick the cheapest one for this ocr name that doesn't collide with a miss link
+func (r *OcrProductRepository) pickBestProductForOcrProductAsync(
+	ocrName string,
+	sortedProducts []*entities.ProductEntity,
+	deniedLinks ocrProductsLinksDenied,
+	result chan<- bestPriceResult,
+) {
+	for _, productEntity := range sortedProducts {
+		if !deniedLinks.IsLinkDenied(ocrName, productEntity.ID) {
+			result <- bestPriceResult{
+				ocrName: ocrName,
+				product: productEntity,
+			}
+			return
+		}
+	}
+
+	result <- bestPriceResult{
+		ocrName: ocrName,
+		product: nil,
+	}
+}
+
+func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
+	// Traverse all the related ocr products and find the one with the highest number of products
+
+	allOcrProducts, err := r.traverseRelatedOcrGraph(ocrName)
+	if err != nil {
+		return err
+	}
+
+	products, err := r.getAllRelatedProducts(allOcrProducts)
+	sort.Slice(products, func(i, j int) bool {
+		return products[i].Price < products[j].Price
+	})
+
+	var bestProduct *entities.ProductEntity
+	for _, productEntity := range products {
 		if bestProduct == nil || productEntity.Price < bestProduct.Price {
 			bestProduct = productEntity
 		}
 	}
 
-	if ocrProduct.BestProductID != nil && ocrProduct.BestProduct.ID != bestProduct.ID {
-		err = r.Db.Model(&ocrProduct).Update("best_product_ID", bestProduct.ID).Error
-		if err != nil {
-			return nil, []error{err}
-		}
-
-		errList := make([]error, 0)
-
-		// Update best price for related ocr products
-		for _, relatedOcrProduct := range ocrProduct.Related {
-			err = r.Db.Model(&relatedOcrProduct).Update("best_product_ID", bestProduct.ID).Error
-			if err != nil {
-				errList = append(errList, err)
-			}
-		}
-
-		if len(errList) > 0 {
-			return nil, errList
-		}
+	bestProductResults := make(chan bestPriceResult)
+	deniedLinks, err := r.missLinkRepository.getDeniedLinksForOcrProducts(allOcrProducts)
+	if err != nil {
+		return err
 	}
 
-	updatedOcrProduct := *ocrProduct
-	updatedOcrProduct.BestProduct = bestProduct
-	updatedOcrProduct.BestProductID = &bestProduct.ID
+	for _, ocrProduct := range allOcrProducts {
+		go r.pickBestProductForOcrProductAsync(ocrProduct, products, deniedLinks, bestProductResults)
+	}
 
-	return &updatedOcrProduct, nil
+	bestProductByOcrName := make(map[string]*entities.ProductEntity)
+	for i := 0; i < len(allOcrProducts); i++ {
+		result := <-bestProductResults
+		bestProductByOcrName[result.ocrName] = result.product
+	}
+
+	// Update the best product for each ocr product
+	err = r.Db.Transaction(func(tx *gorm.DB) error {
+		for ocrName, bestProduct := range bestProductByOcrName {
+			return tx.
+				Model(&entities.OcrProductEntity{}).
+				Where("ocr_product_name = ?", ocrName).
+				Update("best_product_id", bestProduct.ID).
+				Error
+		}
+		return nil
+	})
+	return err
 }
 
 func (r *OcrProductRepository) GetOcrProductsByNames(names []string) (map[string]entities.OcrProductEntity, error) {

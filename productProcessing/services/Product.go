@@ -63,24 +63,6 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 		ocrProductToUse = existingOcrProductModel
 	}
 
-	// Create the new products
-	for _, product := range products {
-		err := s.productRepo.Create(product, ocrProductToUse.OcrProductName)
-		if err != nil {
-			errors = append(errors, err)
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-	}
-
-	// Now that everything is in the db we can set the best product for this ocr product
-	_, updateErrList := s.ocrProductRepo.UpdateBestProduct(ocrProductToUse.OcrProductName)
-	if len(updateErrList) > 0 {
-		return updateErrList
-	}
-
 	if productDto.OcrProduct.UserId != -1 {
 		userOcrProduct := productModel.NewPurchaseInstalmentModel(
 			-1,                              // ID
@@ -98,10 +80,29 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 		}
 	}
 
+	// Create the new products
+	for _, product := range products {
+		// TODO: Batch insert
+		err := s.productRepo.Create(product, ocrProductToUse.OcrProductName)
+		if err != nil {
+			errors = append(errors, err)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+	}
+
+	// Now that everything is in the db we can set the best product for this ocr product
+	updateErr := s.ocrProductRepo.UpdateBestProductAsync(ocrProductToUse.OcrProductName)
+	if updateErr != nil {
+		return []error{updateErr}
+	}
+
 	if len(errors) > 0 {
 		return errors
 	}
 
 	return nil
-	// schedule notifications for best price
+	// TODO: chedule notifications for best price
 }

@@ -3,6 +3,7 @@ package repositories
 import (
 	"lib/data/database"
 	"lib/data/database/repositories"
+	"lib/helpers"
 	"productProcessing/data/database/entities"
 	"productProcessing/data/models"
 )
@@ -46,7 +47,10 @@ func (r *MissLinkRepository) Create(productId int, ocrName string, userId int) (
 
 func (r *MissLinkRepository) IsLinkingDenied(productId int, ocrName string) (bool, error) {
 	var missLinkCount int64 = 0
-	err := r.Db.Model(&entities.MissLink{}).Where("product_id_fk = ? and ocr_product_name_fk = ?", productId, ocrName).Count(&missLinkCount).Error
+	err := r.Db.Model(&entities.MissLink{}).
+		Where("product_id_fk = ? and ocr_product_name_fk = ?", productId, ocrName).
+		Count(&missLinkCount).
+		Error
 	if err != nil {
 		return true, err
 	}
@@ -94,6 +98,46 @@ func (r *MissLinkRepository) GetReportsByUser(userId uint) ([]models.MissLink, e
 	}
 
 	return modelsList, nil
+}
+
+//func (r *MissLinkRepository) getMissLinksForOcrProducts(ocrNames []string) ([]entities.MissLink, error) {
+//	var missLinks []entities.MissLink
+//	err := r.Db.Where("ocr_product_name_fk IN (?)", ocrNames).Find(&missLinks).Error
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return missLinks, nil
+//}
+
+func (r *MissLinkRepository) getDeniedLinksForOcrProducts(ocrNames []string) (ocrProductsLinksDenied, error) {
+	rows, err := r.Db.
+		Table("miss_links").
+		Select("ocr_product_name_fk, product_id_fk,  count(*) as count").
+		Where("ocr_product_name_fk IN (?)", ocrNames).
+		Group("ocr_product_name_fk, product_id_fk").
+		Having("count(*) >= ?", missLinkDenyLimit).
+		Rows()
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer helpers.SafeClose(rows)
+
+	deniedLinks := make(ocrProductsLinksDenied)
+	for rows.Next() {
+		var ocrName string
+		var productId uint
+		var count int
+		err = rows.Scan(&ocrName, &productId, &count)
+		if err != nil {
+			return nil, err
+		}
+		deniedLinks[ocrNameAndProductId{ocrName, productId}] = struct{}{}
+	}
+
+	return deniedLinks, nil
 }
 
 func toModel(entity entities.MissLink) (models.MissLink, error) {

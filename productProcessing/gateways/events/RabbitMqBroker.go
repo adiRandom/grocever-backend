@@ -7,7 +7,6 @@ import (
 	"lib/data/dto"
 	"lib/events/rabbitmq"
 	amqpLib "lib/network/amqp"
-	"log"
 	"productProcessing/data/database/repositories"
 	"productProcessing/services"
 )
@@ -20,7 +19,7 @@ func getOnMsg(productService *services.ProductService) func(msg dto.ProductProce
 		errs := productService.ProcessCrawlProduct(msg)
 
 		for _, err := range errs {
-			log.Fatal(err)
+			fmt.Printf("%v", err)
 		}
 	}
 }
@@ -33,9 +32,13 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 	productService := services.NewProductService(
 		repositories.GetProductRepository(
 			repositories.GetMissLinkRepository(),
-			repositories.GetOcrProductRepository(),
+			repositories.GetOcrProductRepository(
+				repositories.GetMissLinkRepository(),
+			),
 		),
-		repositories.GetOcrProductRepository(),
+		repositories.GetOcrProductRepository(
+			repositories.GetMissLinkRepository(),
+		),
 		repositories.GetUserProductRepository(),
 	)
 

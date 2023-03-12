@@ -3,10 +3,10 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/chebyrash/promise"
 	"io"
 	"lib/helpers"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -33,7 +33,7 @@ func GetSync[TResult any](url string) (*TResult, error) {
 	jsonErr := json.Unmarshal(body, &parsed)
 
 	if jsonErr != nil {
-		log.Fatal(jsonErr)
+		fmt.Printf("%v", jsonErr)
 		return nil, jsonErr
 	}
 	return &parsed, nil
@@ -188,7 +188,7 @@ func PostFormSync[TResult any](url string, values map[string]readerOrString) (*T
 
 	resBody, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
-		log.Fatal(readErr)
+		fmt.Printf("%v", readErr)
 		return nil, readErr
 	}
 
@@ -196,7 +196,7 @@ func PostFormSync[TResult any](url string, values map[string]readerOrString) (*T
 	jsonErr := json.Unmarshal(resBody, &parsed)
 
 	if jsonErr != nil {
-		log.Fatal(jsonErr)
+		fmt.Printf("%v", jsonErr)
 		return nil, jsonErr
 	}
 	return &parsed, nil
