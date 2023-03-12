@@ -20,11 +20,15 @@ var router *Router = nil
 func GetRouter() *Router {
 	if router == nil {
 		router = &Router{
-			ocrProductRepository:         repositories.GetOcrProductRepository(),
+			ocrProductRepository: repositories.GetOcrProductRepository(
+				repositories.GetMissLinkRepository(),
+			),
 			purchaseInstalmentRepository: repositories.GetUserProductRepository(),
 			productRepository: repositories.GetProductRepository(
 				repositories.GetMissLinkRepository(),
-				repositories.GetOcrProductRepository(),
+				repositories.GetOcrProductRepository(
+					repositories.GetMissLinkRepository(),
+				),
 			),
 			missLinkRepository: repositories.GetMissLinkRepository(),
 		}
