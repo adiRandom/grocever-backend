@@ -6,6 +6,7 @@ import (
 	"lib/microservice"
 	"notifications/data/database/entities"
 	"notifications/data/database/repository"
+	"notifications/gateways/api"
 	"notifications/gateways/events"
 	"notifications/services"
 

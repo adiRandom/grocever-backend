@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"gorm.io/gorm/clause"
 	"lib/data/database"
 	"lib/data/database/repositories"
 	"notifications/data/database/entities"
@@ -41,4 +42,15 @@ func (r *NotificationUserRepository) GetTokensByUserIds(userIds []int) ([]string
 		tokens[i] = entity.FCMToken
 	}
 	return tokens, nil
+}
+
+func (r *NotificationUserRepository) CreateOrUpdate(userId int, fcmToken string) error {
+	// TODO: Check sql
+	return r.Db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"fcm_token"}),
+	}).Create(&entities.NotificationUser{
+		UserId:   userId,
+		FCMToken: fcmToken,
+	}).Error
 }
