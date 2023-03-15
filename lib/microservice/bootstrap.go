@@ -1,21 +1,11 @@
 package microservice
 
 import (
+	"context"
 	"github.com/joho/godotenv"
-	"lib/api"
 	"lib/data/database"
 	"os"
 )
-
-type Microservice struct {
-	HasEnv     bool
-	GetRouter  func() *api.Router
-	ApiPort    string
-	ApiPortEnv string
-	DbEntities []interface{}
-}
-
-const defaultPort = ":8080"
 
 func (m *Microservice) Start() {
 	if m.HasEnv {
@@ -48,4 +38,10 @@ func (m *Microservice) Start() {
 	}
 
 	println("Started")
+}
+
+func (m *AsyncMicroservice[T]) Start() {
+	m.Microservice.Start()
+
+	go m.MessageBroker.Start(context.Background())
 }
