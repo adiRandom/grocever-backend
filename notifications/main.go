@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"lib/data/dto/messages"
+	"lib/events/rabbitmq"
 	"lib/microservice"
 	"notifications/data/database/entities"
 	"notifications/data/database/repository"
@@ -21,6 +22,10 @@ func main() {
 		panic(err)
 	}
 
+	createMessageBroker := func() *rabbitmq.JsonBroker[messages.NotificationDto] {
+		return events.GetRabbitMqBroker(services.NewNotificationService(app, repository.GetNotificationUserRepository()))
+	}
+
 	ms := microservice.AsyncMicroservice[messages.NotificationDto]{
 		Microservice: microservice.Microservice{
 			HasEnv:     true,
@@ -28,7 +33,7 @@ func main() {
 			GetRouter:  api.GetBaseRouter,
 			DbEntities: []interface{}{entities.NotificationUser{}},
 		},
-		MessageBroker: *events.GetRabbitMqBroker(services.NewNotificationService(app, repository.GetNotificationUserRepository())),
+		CreateMessageBroker: createMessageBroker,
 	}
 	ms.Start()
 }

@@ -17,5 +17,5 @@ const defaultPort = ":8080"
 
 type AsyncMicroservice[T any] struct {
 	Microservice
-	MessageBroker rabbitmq.JsonBroker[T]
+	CreateMessageBroker func() *rabbitmq.JsonBroker[T]
 }

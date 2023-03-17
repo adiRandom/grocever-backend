@@ -43,5 +43,5 @@ func (m *Microservice) Start() {
 func (m *AsyncMicroservice[T]) Start() {
 	m.Microservice.Start()
 
-	go m.MessageBroker.Start(context.Background())
+	go m.CreateMessageBroker().Start(context.Background())
 }

@@ -45,7 +45,6 @@ func (r *NotificationUserRepository) GetTokensByUserIds(userIds []int) ([]string
 }
 
 func (r *NotificationUserRepository) CreateOrUpdate(userId int, fcmToken string) error {
-	// TODO: Check sql
 	return r.Db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "user_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"fcm_token"}),
