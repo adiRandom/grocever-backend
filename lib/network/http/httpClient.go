@@ -74,6 +74,44 @@ func PostSync[TResult any](url string, body interface{}) (*TResult, error) {
 	return &parsed, nil
 }
 
+func PutSync[TResult any](url string, body interface{}) (*TResult, error) {
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", url, io.NopCloser(bytes.NewReader(jsonBody)))
+	req.Header.Set("Content-Type", "application/json")
+	req.ContentLength = int64(len(jsonBody))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+
+	resBody, readErr := io.ReadAll(res.Body)
+	if readErr != nil {
+		println(readErr)
+		return nil, readErr
+	}
+
+	if len(resBody) == 0 {
+		return nil, nil
+	}
+
+	var parsed TResult
+	jsonErr := json.Unmarshal(resBody, &parsed)
+
+	if jsonErr != nil {
+		println(jsonErr)
+		return nil, jsonErr
+	}
+	return &parsed, nil
+}
+
 func PostAsync[TResult any](url string, body interface{}) *promise.Promise[TResult] {
 	return promise.New[TResult](func(resolve func(TResult), reject func(error)) {
 

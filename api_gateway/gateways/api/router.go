@@ -2,13 +2,15 @@ package api
 
 import (
 	"api_gateway/gateways/api/auth"
+	"api_gateway/gateways/api/notification"
 	"api_gateway/gateways/api/ocr"
 	"api_gateway/gateways/api/product"
 	"api_gateway/gateways/api/store"
 	authApi "api_gateway/services/api/auth"
+	notificationApi "api_gateway/services/api/notification"
 	ocrApi "api_gateway/services/api/ocr"
 	productApi "api_gateway/services/api/products"
-	store2 "api_gateway/services/api/store"
+	storeApi "api_gateway/services/api/store"
 	"lib/api"
 	dto "lib/data/dto/auth"
 )
@@ -34,7 +36,8 @@ func (c *Router) initEndpoints() {
 	c.GroupWithAuth("/product", product.NewProductRouter(productApi.GetClient()))
 	c.Group("/auth", auth.NewAuthRouter(authApi.GetClient()))
 	c.GroupWithAuth("/ocr", ocr.NewOcrRouter(ocrApi.GetClient()))
-	c.Group("/store", store.NewStoreRouter(store2.GetClient()))
+	c.Group("/store", store.NewStoreRouter(storeApi.GetClient()))
+	c.GroupWithAuth("/notification", notification.NewNotificationRouter(notificationApi.GetClient()))
 }
 
 func handleAuthVerification(access string) (int, error) {
