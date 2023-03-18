@@ -11,6 +11,7 @@ var PriorityCrawlQueue = "priorityCrawl"
 var OcrQueue = "ocr"
 
 const ProductProcessQueue = "productProcess"
+const NotificationQueue = "notification"
 
 var ScheduleQueue = "schedule"
 

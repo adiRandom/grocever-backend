@@ -35,5 +35,6 @@ func main() {
 		},
 		CreateMessageBroker: createMessageBroker,
 	}
+
 	ms.Start()
 }

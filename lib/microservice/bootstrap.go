@@ -41,7 +41,36 @@ func (m *Microservice) Start() {
 }
 
 func (m *AsyncMicroservice[T]) Start() {
-	m.Microservice.Start()
+	if m.HasEnv {
+		err := godotenv.Load(".env")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if m.DbEntities != nil {
+		err := database.InitDatabase(m.DbEntities...)
+		if err != nil {
+			return
+		}
+	}
+
+	println("Started")
 
 	go m.CreateMessageBroker().Start(context.Background())
+
+	router := m.GetRouter()
+
+	if router != nil {
+		port := m.ApiPort
+		apiPortEnv := os.Getenv(m.ApiPortEnv)
+		if port == "" {
+			if apiPortEnv != "" {
+				port = apiPortEnv
+			} else {
+				port = defaultPort
+			}
+		}
+		router.Run(port)
+	}
 }

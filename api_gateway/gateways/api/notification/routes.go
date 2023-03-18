@@ -33,10 +33,10 @@ func (r *Router) sendFcmToken(context *gin.Context) {
 		return
 	}
 
-	err = r.notificationClient.SendFcmToken(dto, context.GetInt(middleware.UserIdKey))
-	if err != nil {
+	apiErr := r.notificationClient.SendFcmToken(dto, context.GetInt(middleware.UserIdKey))
+	if apiErr != nil {
 		context.JSON(500, http.Response[helpers.None]{
-			Err:        err.Error(),
+			Err:        apiErr.Error(),
 			StatusCode: 500,
 			Body:       helpers.None{},
 		}.GetH())

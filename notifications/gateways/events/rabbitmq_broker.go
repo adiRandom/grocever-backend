@@ -32,8 +32,8 @@ func GetRabbitMqBroker(notificationService *services.NotificationService) *rabbi
 
 	rabbitMqBroker = rabbitmq.NewJsonBroker[messages.NotificationDto](
 		getOnMsg(notificationService),
-		amqpLib.ProductProcessQueue,
-		&amqpLib.ScheduleQueue,
+		amqpLib.NotificationQueue,
+		nil,
 		nil,
 	)
 	return rabbitMqBroker
