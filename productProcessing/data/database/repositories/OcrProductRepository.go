@@ -256,6 +256,30 @@ func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 	return err
 }
 
+// ocrNames are the products that just had their best product updated
+// Find all the users that have a purchase instalment for one of these products with the purchased price being
+// higher than the current best product price
+func (r *OcrProductRepository) getUserIdsToNotify(ocrNames []string) ([]uint, error) {
+	var purchaseInstalments []entities.PurchaseInstalment
+	err := r.Db.
+		Joins("JOIN ocr_product_entities ON ocr_product_entities.ocr_product_name = purchase_instalments.ocr_product_name_fk").
+		Joins("JOIN product_entities AS best_product ON best_product.id = ocr_product_entities.best_product_id").
+		Where("ocr_product_name_fk IN (?) AND purchase_instalments.price > best_product.price", ocrNames).
+		Find(&purchaseInstalments).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var userIds = impl.NewBasicSet[uint]()
+	for _, purchaseInstalment := range purchaseInstalments {
+		userIds.Add(purchaseInstalment.UserId)
+	}
+
+	return userIds.ToSlice(), nil
+}
+
 func (r *OcrProductRepository) GetOcrProductsByNames(names []string) (map[string]entities.OcrProductEntity, error) {
 	result := map[string]entities.OcrProductEntity{}
 	err := r.Db.Model(&entities.OcrProductEntity{}).Where("ocr_product_name IN (?)", names).Find(&result).Error
