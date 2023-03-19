@@ -228,3 +228,19 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
 
 	return purchaseInstalmentModels, nil
 }
+
+func (r *PurchaseInstalmentRepository) SetPurchaseInstalment(
+	model productModels.UpdatePurchaseInstalmentModel,
+) (*product.PurchaseInstalmentModel, error) {
+	entity := model.ToEntity()
+	err := r.Save(*entity)
+	if err != nil {
+		return nil, err
+	}
+
+	purchaseInstalmentModel, err := r.toModel(*entity)
+	if err != nil {
+		return nil, err
+	}
+	return &purchaseInstalmentModel, nil
+}

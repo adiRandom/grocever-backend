@@ -9,6 +9,7 @@ import (
 	"lib/helpers"
 	"lib/network/amqp"
 	"lib/network/http"
+	"strconv"
 )
 
 type Router struct {
@@ -22,6 +23,7 @@ func NewProductRouter(productApiClient *products.Client) *Router {
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/list", r.getAllUserProducts)
 	router.POST("", r.createPurchaseInstalmentNoOcr)
+	router.PUT("/:id", r.updatePurchaseInstalment)
 	router.POST("/report", r.reportMissLink)
 	router.GET("/report/list", r.getUserReports)
 }
@@ -177,6 +179,56 @@ func (r *Router) getUserReports(context *gin.Context) {
 	context.JSON(200, http.Response[[]product.ReportDto]{
 		Err:        "",
 		Body:       *reports,
+		StatusCode: 200,
+	}.GetH())
+}
+
+func (r *Router) updatePurchaseInstalment(context *gin.Context) {
+	var dto product.UpdatePurchaseInstalmentDto
+	err := context.BindJSON(&dto)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 400,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	userId, exists := context.Get(middleware.UserIdKey)
+	if !exists {
+		context.JSON(401, http.Response[helpers.None]{
+			StatusCode: 401,
+			Err:        "Unauthorized",
+			Body:       helpers.None{},
+		})
+		return
+	}
+
+	id := context.Param("id")
+	purchaseInstalmentId, err := strconv.Atoi(id)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 400,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	res, apiErr := r.productApiClient.SetPurchaseInstalment(dto, uint(purchaseInstalmentId), userId.(uint))
+	if apiErr != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        apiErr.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[product.PurchaseInstalmentDto]{
+		Err:        "",
+		Body:       *res,
 		StatusCode: 200,
 	}.GetH())
 }

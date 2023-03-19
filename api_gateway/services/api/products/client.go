@@ -62,3 +62,20 @@ func (s *Client) GetReportsByUser(userId int) (*[]product.ReportDto, *http.Error
 	}
 	return res, nil
 }
+
+func (s *Client) SetPurchaseInstalment(
+	dto product.UpdatePurchaseInstalmentDto,
+	id uint,
+	userId uint,
+) (*product.PurchaseInstalmentDto, *http.Error) {
+	res, err := http.UnwrapHttpResponse(
+		http.PutSync[http.Response[product.PurchaseInstalmentDto]](
+			fmt.Sprintf(s.baseUrl+"/product/%d/%d", userId, id),
+			dto,
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}

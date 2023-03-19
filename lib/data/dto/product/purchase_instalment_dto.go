@@ -44,3 +44,11 @@ type CreatePurchaseInstalmentNoOcrWithUserDto struct {
 type CreatePurchaseInstalmentListDto struct {
 	Instalments []CreatePurchaseInstalmentDto `json:"instalments"`
 }
+
+type UpdatePurchaseInstalmentDto struct {
+	OcrName   string  `json:"ocrName"`
+	Qty       float32 `json:"qty"`
+	UnitPrice float32 `json:"unitPrice"`
+	UnitName  string  `json:"unitName"`
+	StoreId   uint    `json:"storeId"`
+}

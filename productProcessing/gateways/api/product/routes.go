@@ -33,6 +33,7 @@ func NewProductRouter(
 func (r *Router) GetRoutes(router *gin.RouterGroup) {
 	router.GET("/:userId/list", r.getAllUserProducts)
 	router.POST("/:userId", r.createPurchaseInstalment)
+	router.PUT("/:userId/:id", r.updatePurchaseInstalment)
 	router.POST("/report", r.reportMissLink)
 	router.GET("/report/:userId/list", r.getUserReports)
 }
@@ -208,5 +209,62 @@ func (r *Router) getUserReports(context *gin.Context) {
 			func(report models.MissLink) productDtos.ReportDto {
 				return *report.ToDto()
 			}),
+	}.GetH())
+}
+
+func (r *Router) updatePurchaseInstalment(context *gin.Context) {
+	var dto productDtos.UpdatePurchaseInstalmentDto
+	err := context.BindJSON(&dto)
+	if err != nil {
+		context.JSON(400, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 400,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	userId := context.Param("userId")
+	intUserId, err := strconv.Atoi(userId)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			StatusCode: 500,
+			Err:        "Invalid user id",
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	purchaseInstalmentId := context.Param("id")
+	intPurchaseInstalmentId, err := strconv.Atoi(purchaseInstalmentId)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			StatusCode: 500,
+			Err:        "Invalid purchase instalment id",
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	updateModel := models.NewUpdatePurchaseInstalmentModelFromDto(
+		&dto,
+		uint(intUserId),
+		uint(intPurchaseInstalmentId),
+	)
+
+	purchaseInstalmentModel, err := r.purchaseInstalmentRepository.SetPurchaseInstalment(*updateModel)
+	if err != nil {
+		context.JSON(500, http.Response[helpers.None]{
+			Err:        err.Error(),
+			StatusCode: 500,
+			Body:       helpers.None{},
+		}.GetH())
+		return
+	}
+
+	context.JSON(200, http.Response[productDtos.PurchaseInstalmentDto]{
+		StatusCode: 200,
+		Body:       purchaseInstalmentModel.ToDto(),
+		Err:        "",
 	}.GetH())
 }
