@@ -10,21 +10,28 @@ import (
 	"lib/functional"
 	"lib/helpers"
 	"lib/types/impl"
+	"log"
 	"productProcessing/data/database/entities"
+	"productProcessing/services"
 	"sort"
 )
 
 type OcrProductRepository struct {
 	repositories.DbRepository[entities.OcrProductEntity]
-	missLinkRepository *MissLinkRepository
+	missLinkRepository  *MissLinkRepository
+	notificationService *services.NotificationService
 }
 
 var ocrRepo *OcrProductRepository = nil
 
-func GetOcrProductRepository(missLinkRepository *MissLinkRepository) *OcrProductRepository {
+func GetOcrProductRepository(
+	missLinkRepository *MissLinkRepository,
+	service *services.NotificationService,
+) *OcrProductRepository {
 	if ocrRepo == nil {
 		ocrRepo = &OcrProductRepository{
-			missLinkRepository: missLinkRepository,
+			missLinkRepository:  missLinkRepository,
+			notificationService: service,
 		}
 		db, err := database.GetDb()
 		if err != nil {
@@ -203,6 +210,48 @@ func (r *OcrProductRepository) pickBestProductForOcrProductAsync(
 	}
 }
 
+func (r *OcrProductRepository) getBestProductIdsMapForOcrProducts(ocrNames []string) (map[string]int, error) {
+	var ocrProducts []entities.OcrProductEntity
+	err := r.Db.
+		Where("ocr_product_name IN (?)",
+			ocrNames,
+		).Preload("BestProduct").Find(&ocrProducts).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var bestProductIdsMap = make(map[string]int)
+	for _, ocrProduct := range ocrProducts {
+		if ocrProduct.BestProduct != nil {
+			bestProductIdsMap[ocrProduct.OcrProductName] = int(ocrProduct.BestProduct.ID)
+		}
+	}
+
+	return bestProductIdsMap, nil
+}
+
+func (r *OcrProductRepository) notifyForUpdatedBestProduct(
+	currentBestProductIds map[string]int,
+	newBestProduct map[string]*entities.ProductEntity,
+) {
+	updatedOcrNames := make([]string, 0)
+	for ocrName, newBestProduct := range newBestProduct {
+		if currentBestProductIds[ocrName] != int(newBestProduct.ID) {
+			updatedOcrNames = append(updatedOcrNames, ocrName)
+		}
+	}
+
+	if len(updatedOcrNames) > 0 {
+		userIds, err := r.getUserIdsToNotify(updatedOcrNames)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		r.notificationService.SendNotification(userIds)
+	}
+}
+
 func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 	// Traverse all the related ocr products and find the one with the highest number of products
 
@@ -211,37 +260,39 @@ func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 		return err
 	}
 
+	currentBestProductIds, err := r.getBestProductIdsMapForOcrProducts(allOcrProducts)
+	if err != nil {
+		return err
+	}
+
 	products, err := r.getAllRelatedProducts(allOcrProducts)
+	if err != nil {
+		return err
+	}
+
 	sort.Slice(products, func(i, j int) bool {
 		return products[i].Price < products[j].Price
 	})
 
-	var bestProduct *entities.ProductEntity
-	for _, productEntity := range products {
-		if bestProduct == nil || productEntity.Price < bestProduct.Price {
-			bestProduct = productEntity
-		}
-	}
-
-	bestProductResults := make(chan bestPriceResult)
+	newBestProductCh := make(chan bestPriceResult)
 	deniedLinks, err := r.missLinkRepository.getDeniedLinksForOcrProducts(allOcrProducts)
 	if err != nil {
 		return err
 	}
 
 	for _, ocrProduct := range allOcrProducts {
-		go r.pickBestProductForOcrProductAsync(ocrProduct, products, deniedLinks, bestProductResults)
+		go r.pickBestProductForOcrProductAsync(ocrProduct, products, deniedLinks, newBestProductCh)
 	}
 
-	bestProductByOcrName := make(map[string]*entities.ProductEntity)
+	newBestProductByOcrName := make(map[string]*entities.ProductEntity)
 	for i := 0; i < len(allOcrProducts); i++ {
-		result := <-bestProductResults
-		bestProductByOcrName[result.ocrName] = result.product
+		result := <-newBestProductCh
+		newBestProductByOcrName[result.ocrName] = result.product
 	}
 
 	// Update the best product for each ocr product
 	err = r.Db.Transaction(func(tx *gorm.DB) error {
-		for ocrName, bestProduct := range bestProductByOcrName {
+		for ocrName, bestProduct := range newBestProductByOcrName {
 			err := tx.
 				Model(&entities.OcrProductEntity{}).
 				Where("ocr_product_name = ?", ocrName).
@@ -253,6 +304,12 @@ func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+
+	r.notifyForUpdatedBestProduct(currentBestProductIds, newBestProductByOcrName)
+
 	return err
 }
 

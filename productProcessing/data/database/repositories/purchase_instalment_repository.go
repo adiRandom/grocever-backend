@@ -10,6 +10,7 @@ import (
 	"lib/helpers"
 	"productProcessing/data/database/entities"
 	productModels "productProcessing/data/models"
+	"productProcessing/services"
 	"productProcessing/services/api/store"
 )
 
@@ -25,6 +26,7 @@ func GetUserProductRepository() *PurchaseInstalmentRepository {
 		repo = &PurchaseInstalmentRepository{
 			ocrProductRepository: GetOcrProductRepository(
 				GetMissLinkRepository(),
+				services.NewNotificationService(),
 			),
 		}
 		repo.ToModel = repo.toModel

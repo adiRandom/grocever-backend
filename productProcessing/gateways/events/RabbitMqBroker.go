@@ -34,10 +34,12 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 			repositories.GetMissLinkRepository(),
 			repositories.GetOcrProductRepository(
 				repositories.GetMissLinkRepository(),
+				services.NewNotificationService(),
 			),
 		),
 		repositories.GetOcrProductRepository(
 			repositories.GetMissLinkRepository(),
+			services.NewNotificationService(),
 		),
 		repositories.GetUserProductRepository(),
 	)

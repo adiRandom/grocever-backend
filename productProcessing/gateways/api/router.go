@@ -5,6 +5,7 @@ import (
 	"productProcessing/data/database/repositories"
 	"productProcessing/gateways/api/product"
 	"productProcessing/gateways/api/product/ocr"
+	"productProcessing/services"
 )
 
 type Router struct {
@@ -22,12 +23,14 @@ func GetRouter() *Router {
 		router = &Router{
 			ocrProductRepository: repositories.GetOcrProductRepository(
 				repositories.GetMissLinkRepository(),
+				services.NewNotificationService(),
 			),
 			purchaseInstalmentRepository: repositories.GetUserProductRepository(),
 			productRepository: repositories.GetProductRepository(
 				repositories.GetMissLinkRepository(),
 				repositories.GetOcrProductRepository(
 					repositories.GetMissLinkRepository(),
+					services.NewNotificationService(),
 				),
 			),
 			missLinkRepository: repositories.GetMissLinkRepository(),
