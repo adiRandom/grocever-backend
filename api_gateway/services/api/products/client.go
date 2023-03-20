@@ -66,7 +66,7 @@ func (s *Client) GetReportsByUser(userId int) (*[]product.ReportDto, *http.Error
 func (s *Client) SetPurchaseInstalment(
 	dto product.UpdatePurchaseInstalmentDto,
 	id uint,
-	userId uint,
+	userId int,
 ) (*product.PurchaseInstalmentDto, *http.Error) {
 	res, err := http.UnwrapHttpResponse(
 		http.PutSync[http.Response[product.PurchaseInstalmentDto]](

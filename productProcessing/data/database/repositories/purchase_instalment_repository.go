@@ -233,12 +233,17 @@ func (r *PurchaseInstalmentRepository) SetPurchaseInstalment(
 	model productModels.UpdatePurchaseInstalmentModel,
 ) (*product.PurchaseInstalmentModel, error) {
 	entity := model.ToEntity()
-	err := r.Save(*entity)
+	err := r.Db.Model(entity).Updates(entity).Error
 	if err != nil {
 		return nil, err
 	}
 
-	purchaseInstalmentModel, err := r.toModel(*entity)
+	var updatedEntity entities.PurchaseInstalment
+	err = r.Db.Preload("OcrProduct").First(&updatedEntity, entity.ID).Error
+	if err != nil {
+		return nil, err
+	}
+	purchaseInstalmentModel, err := r.toModel(updatedEntity)
 	if err != nil {
 		return nil, err
 	}

@@ -9,11 +9,12 @@ import (
 	amqpLib "lib/network/amqp"
 	"productProcessing/data/database/repositories"
 	"productProcessing/services"
+	"productProcessing/services/product"
 )
 
 var rabbitMqBroker *rabbitmq.JsonBroker[dto.ProductProcessDto]
 
-func getOnMsg(productService *services.ProductService) func(msg dto.ProductProcessDto, outCh *amqp.Channel, outQ *amqp.Queue, ctx context.Context) {
+func getOnMsg(productService *product.ProductService) func(msg dto.ProductProcessDto, outCh *amqp.Channel, outQ *amqp.Queue, ctx context.Context) {
 	return func(msg dto.ProductProcessDto, outCh *amqp.Channel, outQ *amqp.Queue, ctx context.Context) {
 		fmt.Printf("Processing message: %+v \n", msg)
 		errs := productService.ProcessCrawlProduct(msg)
@@ -29,7 +30,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 		return rabbitMqBroker
 	}
 
-	productService := services.NewProductService(
+	productService := product.NewProductService(
 		repositories.GetProductRepository(
 			repositories.GetMissLinkRepository(),
 			repositories.GetOcrProductRepository(

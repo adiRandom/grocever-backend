@@ -216,7 +216,7 @@ func (r *Router) updatePurchaseInstalment(context *gin.Context) {
 		return
 	}
 
-	res, apiErr := r.productApiClient.SetPurchaseInstalment(dto, uint(purchaseInstalmentId), userId.(uint))
+	res, apiErr := r.productApiClient.SetPurchaseInstalment(dto, uint(purchaseInstalmentId), userId.(int))
 	if apiErr != nil {
 		context.JSON(500, http.Response[helpers.None]{
 			Err:        apiErr.Error(),

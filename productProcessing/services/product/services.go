@@ -1,4 +1,4 @@
-package services
+package product
 
 import (
 	"lib/data/dto"
