@@ -104,5 +104,4 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 	}
 
 	return nil
-	// TODO: chedule notifications for best price
 }
