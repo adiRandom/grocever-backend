@@ -17,6 +17,8 @@ var qtyRegex = regexp.MustCompile(`^((\d+)|(\d+\.\d{1,3}))`)
 var unitRegex = regexp.MustCompile(`(BUC)|(KG)`)
 var unitPriceRegex = regexp.MustCompile(`\d+(\.|,)\d{2}$`)
 var unitAndUnitPriceRegex = regexp.MustCompile(`((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
+var unitAndUnitPriceBeginningRegex = regexp.MustCompile(`^((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
+var qtyBeginningRegex = regexp.MustCompile(`^((\d+)|(\d+\.\d{1,3}))`)
 
 type ParseService struct {
 	storeApi *store.Client
@@ -179,7 +181,7 @@ func (s *ParseService) reconcileSplitTokens(tokens []string, isFirstLinePriceLin
 
 			if qtyMatch {
 				for j := i + 1; j < len(newTokens); j++ {
-					if unitAndUnitPriceRegex.MatchString(strings.ToUpper(newTokens[j])) {
+					if unitAndUnitPriceBeginningRegex.MatchString(strings.ToUpper(newTokens[j])) {
 						newTokens[i] = token + " " + (newTokens)[j]
 						newTokens = append((newTokens)[:j], (newTokens)[j+1:]...)
 						break
@@ -187,7 +189,7 @@ func (s *ParseService) reconcileSplitTokens(tokens []string, isFirstLinePriceLin
 				}
 			} else if unitAndUnitPriceMatch {
 				for j := i - 1; j >= 0; j-- {
-					if qtyRegex.MatchString((newTokens)[j]) {
+					if qtyBeginningRegex.MatchString((newTokens)[j]) {
 						newTokens[i] = (newTokens)[j] + " " + token
 						newTokens = append((newTokens)[:j], (newTokens)[j+1:]...)
 						break
