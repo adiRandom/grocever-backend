@@ -146,6 +146,10 @@ func createSelectQueueMetadataMap[T any](
 	return metadataMap
 }
 
+func (broker *JsonBroker[T]) getCurrentInChannel() *amqp.Channel {
+	return broker.inboundConnectionMap[broker.currentQueueName].ch
+}
+
 func (broker *JsonBroker[T]) pickNextInboundQueue() {
 	nextQueueName := broker.selectQueueHandler(
 		broker.currentQueueName,
@@ -184,6 +188,11 @@ func (broker *JsonBroker[T]) onMessageReceived(
 	broker.deltaProcessedCount[broker.currentQueueName]++
 
 	broker.pickNextInboundQueue()
+
+	err := broker.getCurrentInChannel().Ack(msg.DeliveryTag, false)
+	if err != nil {
+		fmt.Printf("Failed to ack message. Error: %s", err.Error())
+	}
 }
 
 func (broker *JsonBroker[T]) getMessagesToQueueNameMap() map[string]<-chan amqp.Delivery {
