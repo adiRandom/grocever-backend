@@ -54,6 +54,7 @@ func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
 	var res []crawl.ResultModel
 	for range filteredSrcs {
 		res = append(res, <-resCh)
+		//fmt.Printf("Crawled product page %d\n", len(res)-1)
 		fmt.Printf("Got result: %+v\n", res)
 	}
 

@@ -1,0 +1,272 @@
+[
+  {
+    "id": -1,
+    "ocrName": "SACOSA MAIEU MARE BI",
+    "qty": 1,
+    "unitPrice": 1.49,
+    "unitName": "BUC",
+    "price": 1.49,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "PORUMB150G CRF CLASS",
+    "qty": 1,
+    "unitPrice": 3.29,
+    "unitName": "BUC",
+    "price": 3.29,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "CIAO MULTIVIT 21 Plic. Bob: 1",
+    "qty": 1,
+    "unitPrice": 4.75,
+    "unitName": "BUC",
+    "price": 4.75,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "CEAPA VERDE LEGATURA",
+    "qty": 1,
+    "unitPrice": 1.79,
+    "unitName": "BUC",
+    "price": 1.79,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "PUNGA BARIERA 31X41",
+    "qty": 1,
+    "unitPrice": 0.1,
+    "unitName": "BUC",
+    "price": 0.1,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "MERCI WINTER 250G",
+    "qty": 1,
+    "unitPrice": 31.5,
+    "unitName": "BUC",
+    "price": 31.5,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "FULGI PORUMB FORTZA",
+    "qty": 1,
+    "unitPrice": 5.59,
+    "unitName": "BUC",
+    "price": 5.59,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "OUA XL*4 COD1 CRF",
+    "qty": 1,
+    "unitPrice": 5,
+    "unitName": "BUC",
+    "price": 5,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "ROSII IMPORT",
+    "qty": 0,
+    "unitPrice": 7.49,
+    "unitName": "KG",
+    "price": 0,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "PUNGA BARIERA 31X41",
+    "qty": 1,
+    "unitPrice": 0.1,
+    "unitName": "BUC",
+    "price": 0.1,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "PUNGA BARIERA 31X41",
+    "qty": 1,
+    "unitPrice": 0.1,
+    "unitName": "BUC",
+    "price": 0.1,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "PRALINE CIOCO CIRESE",
+    "qty": 1,
+    "unitPrice": 18.9,
+    "unitName": "BUC",
+    "price": 18.9,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "DEO STICK WOLFTH0.50",
+    "qty": 1,
+    "unitPrice": 15.9,
+    "unitName": "BUC",
+    "price": 15.9,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "AQUA CARPATICA APA M",
+    "qty": 1,
+    "unitPrice": 2.79,
+    "unitName": "BUC",
+    "price": 2.79,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "ACTIME CIR/ACER4X100",
+    "qty": 1,
+    "unitPrice": 8.55,
+    "unitName": "BUC",
+    "price": 8.55,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "TAB CIOC CAFEA FRIS",
+    "qty": 1,
+    "unitPrice": 4.59,
+    "unitName": "BUC",
+    "price": 4.59,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "SALATA EISBERG IMPOR",
+    "qty": 1,
+    "unitPrice": 8.99,
+    "unitName": "BUC",
+    "price": 8.99,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  },
+  {
+    "id": -1,
+    "ocrName": "STICK CAPTAIN 50ML 0 RON Lel",
+    "qty": 1,
+    "unitPrice": 15.9,
+    "unitName": "BUC",
+    "price": 15.9,
+    "store": {
+      "storeId": 6,
+      "name": "Carrefour",
+      "ocrHeaderLines": 5,
+      "url": "carrefour.ro"
+    },
+    "userId": 1
+  }
+]

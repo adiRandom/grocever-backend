@@ -175,6 +175,12 @@ func (broker *JsonBroker[T]) onMessageReceived(
 	outCh *amqp.Channel,
 	outQ *amqp.Queue,
 ) {
+
+	err := broker.getCurrentInChannel().Ack(msg.DeliveryTag, false)
+	if err != nil {
+		fmt.Printf("Failed to ack message. Error: %s", err.Error())
+	}
+
 	broker.parseMessageAndProcess(
 		msg,
 		broker.currentQueueName,
@@ -189,10 +195,6 @@ func (broker *JsonBroker[T]) onMessageReceived(
 
 	broker.pickNextInboundQueue()
 
-	err := broker.getCurrentInChannel().Ack(msg.DeliveryTag, false)
-	if err != nil {
-		fmt.Printf("Failed to ack message. Error: %s", err.Error())
-	}
 }
 
 func (broker *JsonBroker[T]) getMessagesToQueueNameMap() map[string]<-chan amqp.Delivery {
