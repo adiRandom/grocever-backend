@@ -1,5 +1,13 @@
 package test
 
+import (
+	"encoding/json"
+	"lib/data/dto/crawl"
+	"lib/events/rabbitmq"
+	"lib/network/amqp"
+	"os"
+)
+
 //func ProduceCrawlMessages() {
 //	_, ch, q, err := amqpLib.GetConnection(&amqpLib.CrawlQueue)
 //	if err != nil {
@@ -46,3 +54,21 @@ package test
 //		})
 //	}
 //}
+
+func ProduceCrawlMessages(path string) {
+	// Open a file and read the contents as JSON
+
+	// Open the file
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// Read the file
+	decoder := json.NewDecoder(file)
+	var product crawl.ProductDto
+	decoder.Decode(&product)
+
+	rabbitmq.PushToQueue(amqp.PriorityCrawlQueue, product)
+}

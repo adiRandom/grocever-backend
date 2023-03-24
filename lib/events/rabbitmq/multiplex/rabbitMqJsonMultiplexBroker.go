@@ -129,11 +129,12 @@ func createSelectQueueMetadataMap[T any](
 ) OnSelectQueueCtx[T] {
 	metadataMap := make(OnSelectQueueCtx[T])
 	for queueName, connection := range connectionMap {
+		msgCount, _ := amqpLib.GetMessageCount(queueName, connection.ch)
 		metadata := InQueueContext[T]{
 			ProcessedCount:      processedCountMap[queueName],
 			DeltaProcessedCount: deltaProcessedMap[queueName],
 			QueueName:           queueName,
-			MessageCount:        connection.q.Messages,
+			MessageCount:        msgCount,
 		}
 
 		if queueName == currentQueueName {

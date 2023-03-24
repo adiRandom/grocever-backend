@@ -1,6 +1,7 @@
 package amqp
 
 import (
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"lib/helpers"
 )
@@ -14,6 +15,17 @@ const ProductProcessQueue = "productProcess"
 const NotificationQueue = "notification"
 
 var ScheduleQueue = "schedule"
+
+func declareDefaultQueue(ch *amqp.Channel, queueName string) (amqp.Queue, error) {
+	return ch.QueueDeclare(
+		queueName,
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+}
 
 func GetConnection(queueName *string) (*amqp.Connection, *amqp.Channel, *amqp.Queue, *helpers.Error) {
 	if queueName == nil {
@@ -30,14 +42,8 @@ func GetConnection(queueName *string) (*amqp.Connection, *amqp.Channel, *amqp.Qu
 		return nil, nil, nil, &helpers.Error{Msg: "Failed to open a channel", Reason: err.Error()}
 	}
 
-	q, err := ch.QueueDeclare(
-		*queueName,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
+	q, err := declareDefaultQueue(ch, *queueName)
+
 	if err != nil {
 		return nil, nil, nil, &helpers.Error{Msg: "Failed to declare a queue", Reason: err.Error()}
 	}
@@ -83,14 +89,7 @@ func GetConnectionWithMultipleChannels(
 				&helpers.Error{Msg: "Failed to open a channel", Reason: err.Error()}
 		}
 
-		q, err := ch.QueueDeclare(
-			queueName,
-			false,
-			false,
-			false,
-			false,
-			nil,
-		)
+		q, err := declareDefaultQueue(ch, queueName)
 		if err != nil {
 			cleanup()
 			return nil,
@@ -105,4 +104,15 @@ func GetConnectionWithMultipleChannels(
 	}
 
 	return conn, channels, queues, cleanup, nil
+}
+
+func GetMessageCount(queueName string, ch *amqp.Channel) (int, *helpers.Error) {
+	q, err := ch.QueueInspect(queueName)
+	if err != nil {
+		fmt.Println(err)
+		return 0, &helpers.Error{Msg: "Failed to inspect queue", Reason: err.Error()}
+	}
+	fmt.Println(q.Messages)
+
+	return q.Messages, nil
 }
