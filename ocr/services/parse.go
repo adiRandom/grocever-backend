@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	libModels "lib/data/models"
 	"lib/data/models/product"
 	"lib/helpers"
@@ -52,7 +51,7 @@ func (s *ParseService) GetOcrProducts(ocrText string, userId int) ([]product.Pur
 	tokens = tokens[storeMetadata.OcrHeaderLines:]
 	productAndPrice := s.zipProductAndPrice(tokens)
 
-	products, err := s.getOcrProductsFromPairs(productAndPrice, storeMetadata, userId)
+	products := s.getOcrProductsFromPairs(productAndPrice, storeMetadata, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 	productAndPrice []helpers.Pair[string, string],
 	store libModels.StoreMetadata,
 	userId int,
-) ([]product.PurchaseInstalmentModel, error) {
+) []product.PurchaseInstalmentModel {
 	products := make([]product.PurchaseInstalmentModel, len(productAndPrice))
 	for i, pair := range productAndPrice {
 		ocrProductName := pair.First
@@ -72,18 +71,12 @@ func (s *ParseService) getOcrProductsFromPairs(
 
 		qty, err := s.getQty(priceLine)
 		if err != nil {
-			return nil, helpers.Error{
-				Msg:    fmt.Sprintf("Could not parse qty for %s", ocrProductName),
-				Reason: err.Error(),
-			}
+			continue
 		}
 		unit := s.getUnit(priceLine)
 		unitPrice, err := s.getUnitPrice(priceLine)
 		if err != nil {
-			return nil, helpers.Error{
-				Msg:    fmt.Sprintf("Could not parse unit price for %s", ocrProductName),
-				Reason: err.Error(),
-			}
+			continue
 		}
 
 		price := float32(utils.TruncateFloat(qty, 3)) * float32(utils.TruncateFloat(unitPrice, 3))
@@ -101,7 +94,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 			unit,  // unit
 		)
 	}
-	return products, nil
+	return products
 }
 
 func (s *ParseService) getStore(ocrText string) (string, error) {
