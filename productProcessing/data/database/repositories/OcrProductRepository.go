@@ -337,10 +337,22 @@ func (r *OcrProductRepository) getUserIdsToNotify(ocrNames []string) ([]uint, er
 	return userIds.ToSlice(), nil
 }
 
-func (r *OcrProductRepository) GetOcrProductsByNames(names []string) (map[string]entities.OcrProductEntity, error) {
-	result := map[string]entities.OcrProductEntity{}
-	err := r.Db.Model(&entities.OcrProductEntity{}).Where("ocr_product_name IN (?)", names).Find(&result).Error
-	return result, err
+func (r *OcrProductRepository) GetOcrProductsByNames(names []string) (map[string]*entities.OcrProductEntity, error) {
+	var orcProducts []*entities.OcrProductEntity
+	err := r.Db.Model(&entities.OcrProductEntity{}).
+		Where("ocr_product_name IN (?)", names).
+		Find(&orcProducts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return functional.Reduce(orcProducts,
+			func(acc map[string]*entities.OcrProductEntity,
+				ocrProduct *entities.OcrProductEntity) map[string]*entities.OcrProductEntity {
+				acc[ocrProduct.OcrProductName] = ocrProduct
+				return acc
+			}, make(map[string]*entities.OcrProductEntity)),
+		nil
 }
 
 func (r *OcrProductRepository) deleteRelated(firstOcrProduct entities.OcrProductEntity, secondOcrProduct entities.OcrProductEntity) error {

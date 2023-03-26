@@ -204,7 +204,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
 			return *entities.NewPurchaseInstalment(
 				dto.UserId,
 				dto.OcrName,
-				ocrProducts[dto.OcrName],
+				*ocrProducts[dto.OcrName],
 				dto.Qty,
 				dto.UnitPrice,
 				dto.Qty*dto.UnitPrice,
