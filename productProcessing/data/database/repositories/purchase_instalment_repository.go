@@ -102,7 +102,9 @@ func (r *PurchaseInstalmentRepository) GetUserProducts(userId int) ([]productMod
 		purchaseInstalmentsModels := functional.Map(
 			purchaseInstalments,
 			func(purchaseInstalment entities.PurchaseInstalment) product.PurchaseInstalmentModel {
-				return purchaseInstalment.ToModel(storeMetadata)
+				purchaseInstalmentStoreMetadata, _ :=
+					r.getStoreMetadataForId(int(purchaseInstalment.StoreId))
+				return purchaseInstalment.ToModel(purchaseInstalmentStoreMetadata)
 			})
 		userProduct := productModels.NewUserProduct(
 			bestProduct.ID,
