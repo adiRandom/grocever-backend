@@ -16,7 +16,7 @@ import (
 
 var rabbitMqBroker *multiplex.JsonBroker[crawl.ProductDto]
 var messageProcessingTimeout = 1 * time.Minute
-var deadlockTimeout = 5 * time.Minute
+var deadlockTimeout = 5 * time.Second
 var inboundQueues = multiplex.InQueues{
 	amqpLib.PriorityCrawlQueue: *multiplex.NewInQueueMetadata(
 		amqpLib.PriorityCrawlQueue,
@@ -38,27 +38,18 @@ func pickInboundQueue(currentQueueName string,
 	}
 
 	if currentQueueName == amqpLib.PriorityCrawlQueue {
-		if queueMetadata[amqpLib.PriorityCrawlQueue].MessageCount == 0 {
+		if queueMetadata[amqpLib.PriorityCrawlQueue].QueueTimeout {
 			return amqpLib.CrawlQueue
 		}
-
 		if queueMetadata[amqpLib.PriorityCrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
 			return amqpLib.CrawlQueue
 		}
 	}
 
 	if currentQueueName == amqpLib.CrawlQueue {
-		if queueMetadata[amqpLib.PriorityCrawlQueue].MessageCount == 0 {
-			return amqpLib.CrawlQueue
-		}
-
-		if queueMetadata[amqpLib.CrawlQueue].MessageCount == 0 {
-			println("Reason: No messages in queue")
+		if queueMetadata[amqpLib.CrawlQueue].QueueTimeout {
 			return amqpLib.PriorityCrawlQueue
 		}
-
-		println("Delta processed count: ", queueMetadata[amqpLib.CrawlQueue].DeltaProcessedCount)
-
 		if queueMetadata[amqpLib.CrawlQueue].DeltaProcessedCount >= queueSwitchInterval {
 			println("Reason: Switch interval reached")
 			return amqpLib.PriorityCrawlQueue

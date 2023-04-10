@@ -42,7 +42,7 @@ type InQueueContext[T any] struct {
 	LastMessage         *T
 	ProcessedCount      int
 	DeltaProcessedCount int
-	MessageCount        int
+	QueueTimeout        bool
 }
 
 type OnSelectQueueCtx[T any] map[string]InQueueContext[T]

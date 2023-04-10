@@ -11,6 +11,7 @@ import (
 	"lib/helpers"
 	"lib/types/impl"
 	"log"
+	"math"
 	"productProcessing/data/database/entities"
 	"productProcessing/services"
 	"sort"
@@ -23,6 +24,8 @@ type OcrProductRepository struct {
 }
 
 var ocrRepo *OcrProductRepository = nil
+
+const similarityEpsilon = 0.02
 
 func GetOcrProductRepository(
 	missLinkRepository *MissLinkRepository,
@@ -252,9 +255,28 @@ func (r *OcrProductRepository) notifyForUpdatedBestProduct(
 	}
 }
 
+func (r *OcrProductRepository) getAllSimilarities(ocrProductNames []string, productIds []uint) productSimilarities {
+	var similarities []entities.ProductOcrProductSimilarityEntity
+	var result = make(productSimilarities)
+	err := r.Db.
+		Where("ocr_product_name IN (?) AND product_id IN (?)",
+			ocrProductNames,
+			productIds,
+		).Find(&similarities).Error
+
+	if err != nil {
+		return result
+	}
+
+	for _, similarity := range similarities {
+		result[similarity.ProductId] = similarity.Similarity
+	}
+
+	return result
+}
+
 func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 	// Traverse all the related ocr products and find the one with the highest number of products
-
 	allOcrProducts, err := r.traverseRelatedOcrGraph(ocrName)
 	if err != nil {
 		return err
@@ -270,8 +292,19 @@ func (r *OcrProductRepository) UpdateBestProductAsync(ocrName string) error {
 		return err
 	}
 
+	productIds := functional.Map(products, func(product *entities.ProductEntity) uint {
+		return product.ID
+	})
+
+	similarities := r.getAllSimilarities(allOcrProducts, productIds)
+
 	sort.Slice(products, func(i, j int) bool {
-		return products[i].Price < products[j].Price
+		similarityDelta := math.Abs(similarities[int(products[i].ID)] - similarities[int(products[j].ID)])
+		if similarityDelta > similarityEpsilon {
+			return similarities[int(products[i].ID)] > similarities[int(products[j].ID)]
+		} else {
+			return products[i].Price < products[j].Price
+		}
 	})
 
 	newBestProductCh := make(chan bestPriceResult)

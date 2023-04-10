@@ -9,6 +9,7 @@ import (
 	amqpLib "lib/network/amqp"
 	"productProcessing/data/database/repositories"
 	"productProcessing/services"
+	"productProcessing/services/api/nlp"
 	"productProcessing/services/product"
 )
 
@@ -37,6 +38,7 @@ func GetRabbitMqBroker() *rabbitmq.JsonBroker[dto.ProductProcessDto] {
 				repositories.GetMissLinkRepository(),
 				services.NewNotificationService(),
 			),
+			nlp.GetClient(),
 		),
 		repositories.GetOcrProductRepository(
 			repositories.GetMissLinkRepository(),

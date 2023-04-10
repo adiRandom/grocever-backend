@@ -8,12 +8,14 @@ import (
 	"lib/data/models/product"
 	"log"
 	"productProcessing/data/database/entities"
+	"productProcessing/services/api/nlp"
 )
 
 type ProductRepository struct {
 	repositories.DbRepository[entities.ProductEntity]
 	missLinkRepository   *MissLinkRepository
 	ocrProductRepository *OcrProductRepository
+	nlpClient            *nlp.Client
 }
 
 var pr *ProductRepository = nil
@@ -21,11 +23,13 @@ var pr *ProductRepository = nil
 func GetProductRepository(
 	missLinkRepository *MissLinkRepository,
 	ocrProductRepository *OcrProductRepository,
+	nlpClient *nlp.Client,
 ) *ProductRepository {
 	if pr == nil {
 		pr = &ProductRepository{
 			missLinkRepository:   missLinkRepository,
 			ocrProductRepository: ocrProductRepository,
+			nlpClient:            nlpClient,
 		}
 		db, err := database.GetDb()
 		if err != nil {
@@ -163,6 +167,10 @@ func (r *ProductRepository) linkProductAndOcrProduct(
 		}
 	}
 
+	similarity := r.nlpClient.GetSimilarity(ocrProductName, product.Name)
+	similarityEntity := entities.NewProductOcrProductSimilarityEntity(ocrProduct.OcrProductName, int(product.ID), similarity)
+	err = r.Db.Create(similarityEntity).Error
+
 	return nil
 }
 
@@ -191,6 +199,15 @@ func (r *ProductRepository) BreakProductLinkAsync(productId int, ocrProductName 
 	}
 
 	err = r.ocrProductRepository.breakRelatedOcrWithoutLinkingProduct(ocrProductName)
+	if err != nil {
+		return err
+	}
+
+	err = r.Db.Delete(&entities.ProductOcrProductSimilarityEntity{}, "product_id = ? AND ocr_product_name = ?",
+		productId,
+		ocrProductName,
+	).Error
+
 	if err != nil {
 		return err
 	}

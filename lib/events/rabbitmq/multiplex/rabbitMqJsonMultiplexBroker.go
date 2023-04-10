@@ -126,15 +126,15 @@ func createSelectQueueMetadataMap[T any](
 	currentQueueMessage *T,
 	processedCountMap map[string]int,
 	deltaProcessedMap map[string]int,
+	queueTimeoutReached bool,
 ) OnSelectQueueCtx[T] {
 	metadataMap := make(OnSelectQueueCtx[T])
-	for queueName, connection := range connectionMap {
-		msgCount, _ := amqpLib.GetMessageCount(queueName, connection.ch)
+	for queueName, _ := range connectionMap {
 		metadata := InQueueContext[T]{
 			ProcessedCount:      processedCountMap[queueName],
 			DeltaProcessedCount: deltaProcessedMap[queueName],
 			QueueName:           queueName,
-			MessageCount:        msgCount,
+			QueueTimeout:        queueTimeoutReached,
 		}
 
 		if queueName == currentQueueName {
@@ -151,7 +151,7 @@ func (broker *JsonBroker[T]) getCurrentInChannel() *amqp.Channel {
 	return broker.inboundConnectionMap[broker.currentQueueName].ch
 }
 
-func (broker *JsonBroker[T]) pickNextInboundQueue() {
+func (broker *JsonBroker[T]) pickNextInboundQueue(queueTimeoutReached bool) {
 	nextQueueName := broker.selectQueueHandler(
 		broker.currentQueueName,
 		createSelectQueueMetadataMap[T](
@@ -160,6 +160,7 @@ func (broker *JsonBroker[T]) pickNextInboundQueue() {
 			broker.lastMessage,
 			broker.processedCount,
 			broker.deltaProcessedCount,
+			queueTimeoutReached,
 		),
 	)
 
@@ -194,7 +195,7 @@ func (broker *JsonBroker[T]) onMessageReceived(
 	broker.processedCount[broker.currentQueueName]++
 	broker.deltaProcessedCount[broker.currentQueueName]++
 
-	broker.pickNextInboundQueue()
+	broker.pickNextInboundQueue(false)
 
 }
 
@@ -225,17 +226,18 @@ func (broker *JsonBroker[T]) listenForMessages(
 	outQ *amqp.Queue,
 ) {
 	msgChannels := broker.getMessagesToQueueNameMap()
-	broker.pickNextInboundQueue()
+	broker.pickNextInboundQueue(false)
 
 	broker.currentConnection = broker.inboundConnectionMap[broker.currentQueueName]
-	var recheckTicker *time.Ticker = nil
-
-	if broker.changeQueueTimeout != nil {
-		recheckTicker = time.NewTicker(*broker.changeQueueTimeout)
-	}
 
 	for {
 		msgCh := msgChannels[broker.currentQueueName]
+
+		var recheckTicker *time.Ticker = nil
+
+		if broker.changeQueueTimeout != nil {
+			recheckTicker = time.NewTicker(*broker.changeQueueTimeout)
+		}
 
 		if recheckTicker != nil {
 			select {
@@ -245,7 +247,7 @@ func (broker *JsonBroker[T]) listenForMessages(
 				}
 			case <-recheckTicker.C:
 				{
-					broker.pickNextInboundQueue()
+					broker.pickNextInboundQueue(true)
 				}
 			}
 		} else {

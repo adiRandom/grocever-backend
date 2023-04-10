@@ -6,6 +6,7 @@ import (
 	"productProcessing/gateways/api/product"
 	"productProcessing/gateways/api/product/ocr"
 	"productProcessing/services"
+	"productProcessing/services/api/nlp"
 )
 
 type Router struct {
@@ -32,6 +33,7 @@ func GetRouter() *Router {
 					repositories.GetMissLinkRepository(),
 					services.NewNotificationService(),
 				),
+				nlp.GetClient(),
 			),
 			missLinkRepository: repositories.GetMissLinkRepository(),
 		}

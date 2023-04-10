@@ -18,3 +18,7 @@ func (m ocrProductsLinksDenied) IsLinkDenied(ocrName string, productId uint) boo
 	_, ok := m[ocrNameAndProductId{ocrName: ocrName, productId: productId}]
 	return ok
 }
+
+// ProductSimilarities
+// ProductId -> Similarity
+type productSimilarities map[int]float64
