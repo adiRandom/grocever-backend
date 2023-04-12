@@ -15,9 +15,8 @@ type StoreMetadata struct {
 
 func (s *StoreMetadata) ToModel() models.StoreMetadata {
 	return models.StoreMetadata{
-		StoreId:        s.StoreId,
-		Name:           s.Name,
-		OcrHeaderLines: s.OcrHeaderLines,
-		Url:            s.Url,
+		StoreId: s.StoreId,
+		Name:    s.Name,
+		Url:     s.Url,
 	}
 }

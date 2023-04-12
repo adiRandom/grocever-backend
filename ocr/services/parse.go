@@ -19,6 +19,15 @@ var unitAndUnitPriceRegex = regexp.MustCompile(`((BUC)|(KG))\.? *(X|x) *\d+(\.|,
 var unitAndUnitPriceBeginningRegex = regexp.MustCompile(`^((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
 var qtyBeginningRegex = regexp.MustCompile(`^((\d+)|(\d+\.\d{1,3}))`)
 
+var skipLinesMarkers = []string{
+	"C.I.F",
+	"CIF",
+	"COD IDENTIFICARE FISCALA",
+	"LEI",
+	"RON",
+	"BON FISCAL",
+}
+
 type ParseService struct {
 	storeApi *store.Client
 }
@@ -48,7 +57,7 @@ func (s *ParseService) GetOcrProducts(ocrText string, userId int) ([]product.Pur
 
 	tokens := strings.Split(ocrText, "\n")
 	// Remove the header
-	tokens = tokens[storeMetadata.OcrHeaderLines:]
+	tokens = s.getRelevantTokens(tokens)
 	productAndPrice := s.zipProductAndPrice(tokens)
 
 	products := s.getOcrProductsFromPairs(productAndPrice, storeMetadata, userId)
@@ -57,6 +66,25 @@ func (s *ParseService) GetOcrProducts(ocrText string, userId int) ([]product.Pur
 	}
 
 	return products, nil
+}
+
+func (s *ParseService) getRelevantTokens(tokens []string) []string {
+	// Get the first line that matches the price line regex
+	for index, token := range tokens {
+		if priceLineRegex.MatchString(token) {
+			upperPrevToken := strings.ToUpper(tokens[index-1])
+			for _, marker := range skipLinesMarkers {
+				if strings.Contains(upperPrevToken, marker) {
+					// The line above the first price line is a skipped line
+					return tokens[index:]
+				}
+			}
+			// The line above the first price line is not a skipped line
+			return tokens[index-1:]
+		}
+	}
+
+	return []string{}
 }
 
 func (s *ParseService) getOcrProductsFromPairs(
