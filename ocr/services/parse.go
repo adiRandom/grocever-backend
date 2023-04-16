@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var priceLineRegex = regexp.MustCompile(`((\d+)|(\d+(\.|,)\d{1,3})) * ((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
@@ -18,6 +19,7 @@ var unitPriceRegex = regexp.MustCompile(`\d+(\.|,)\d{2}$`)
 var unitAndUnitPriceRegex = regexp.MustCompile(`((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
 var unitAndUnitPriceBeginningRegex = regexp.MustCompile(`^((BUC)|(KG))\.? *(X|x) *\d+(\.|,)\d{2}`)
 var qtyBeginningRegex = regexp.MustCompile(`^((\d+)|(\d+\.\d{1,3}))`)
+var dateRegex = regexp.MustCompile(`\d\d(\/|\.|-)\d\d(\/|\.|-)((\d\d\d\d)|(\d\d))`)
 
 var skipLinesMarkers = []string{
 	"C.I.F",
@@ -58,9 +60,10 @@ func (s *ParseService) GetOcrProducts(ocrText string, userId int) ([]product.Pur
 	tokens := strings.Split(ocrText, "\n")
 	// Remove the header
 	tokens = s.getRelevantTokens(tokens)
+	date := s.getDate(tokens)
 	productAndPrice := s.zipProductAndPrice(tokens)
 
-	products := s.getOcrProductsFromPairs(productAndPrice, storeMetadata, userId)
+	products := s.getOcrProductsFromPairs(productAndPrice, storeMetadata, userId, date)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +94,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 	productAndPrice []helpers.Pair[string, string],
 	store libModels.StoreMetadata,
 	userId int,
+	date *time.Time,
 ) []product.PurchaseInstalmentModel {
 	products := make([]product.PurchaseInstalmentModel, len(productAndPrice))
 	for i, pair := range productAndPrice {
@@ -120,6 +124,7 @@ func (s *ParseService) getOcrProductsFromPairs(
 			float32(utils.TruncateFloat(unitPrice, 3)), // unitPrice
 			store, // store
 			unit,  // unit
+			date,  // date
 		)
 	}
 	return products
@@ -246,4 +251,24 @@ func (s *ParseService) getUnitPrice(priceLine string) (float64, error) {
 	match := unitPriceRegex.FindString(trimmedLine)
 	match = strings.ReplaceAll(match, ",", ".")
 	return strconv.ParseFloat(match, 32)
+}
+func (s *ParseService) getDateFormat(date string) string {
+	date = strings.ReplaceAll(date, "-", "/")
+	date = strings.ReplaceAll(date, ".", "/")
+	date = strings.ReplaceAll(date, " ", "/")
+	return date
+}
+
+func (s *ParseService) getDate(tokens []string) *time.Time {
+	for _, token := range tokens {
+		if date := dateRegex.FindString(token); date != "" {
+			parsedDate, err := time.Parse(s.getDateFormat(date), date)
+			if err != nil {
+				return nil
+			}
+			return &parsedDate
+		}
+	}
+
+	return nil
 }

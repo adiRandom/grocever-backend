@@ -64,6 +64,7 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 	}
 
 	if productDto.OcrProduct.UserId != -1 {
+		date := time.Unix(productDto.OcrProduct.Date, 0)
 		userOcrProduct := productModel.NewPurchaseInstalmentModel(
 			-1,                              // ID
 			productDto.OcrProduct.Qty,       // Qty
@@ -73,6 +74,7 @@ func (s *ProductService) ProcessCrawlProduct(productDto dto.ProductProcessDto) [
 			productDto.OcrProduct.UnitPrice, // UnitPrice
 			models.NewStoreMetadataFromDto(productDto.OcrProduct.Store), // Store
 			productDto.OcrProduct.UnitName,                              // UnitType
+			&date,                                                       // Date
 		)
 		err = s.userProductRepo.CreateModel(*userOcrProduct)
 		if err != nil {

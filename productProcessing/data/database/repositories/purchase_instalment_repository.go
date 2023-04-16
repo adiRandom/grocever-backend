@@ -12,6 +12,7 @@ import (
 	productModels "productProcessing/data/models"
 	"productProcessing/services"
 	"productProcessing/services/api/store"
+	"time"
 )
 
 type PurchaseInstalmentRepository struct {
@@ -141,6 +142,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalment(
 		dto.Qty*dto.UnitPrice,
 		uint(dto.Store.StoreId),
 		dto.UnitName,
+		dto.Date,
 	)
 	err = r.Create(entity)
 	if err != nil {
@@ -160,6 +162,12 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalmentNoOcr(
 		return nil, err
 	}
 
+	var date *time.Time = nil
+	if dto.Date != nil {
+		parsed := time.Unix(*dto.Date, 0)
+		date = &parsed
+	}
+
 	entity := entities.NewPurchaseInstalment(
 		dto.UserId,
 		dto.ProductName,
@@ -169,6 +177,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalmentNoOcr(
 		dto.Qty*dto.UnitPrice,
 		dto.StoreId,
 		dto.UnitName,
+		date,
 	)
 	err = r.Create(entity)
 	if err != nil {
@@ -212,6 +221,7 @@ func (r *PurchaseInstalmentRepository) CreatePurchaseInstalments(
 				dto.Qty*dto.UnitPrice,
 				uint(dto.Store.StoreId),
 				dto.UnitName,
+				dto.Date,
 			)
 		},
 	)

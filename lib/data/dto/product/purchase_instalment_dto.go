@@ -2,6 +2,7 @@ package product
 
 import (
 	"lib/data/dto/store"
+	"time"
 )
 
 type PurchaseInstalmentDto struct {
@@ -12,6 +13,7 @@ type PurchaseInstalmentDto struct {
 	UnitName  string            `json:"unitName"`
 	Price     float32           `json:"price"`
 	Store     store.MetadataDto `json:"store"`
+	Date      int64             `json:"date"`
 }
 
 type PurchaseInstalmentWithUserDto struct {
@@ -26,6 +28,7 @@ type CreatePurchaseInstalmentDto struct {
 	UnitName  string            `json:"unitName"`
 	Store     store.MetadataDto `json:"store"`
 	UserId    uint              `json:"userId"`
+	Date      *time.Time        `json:"date"`
 }
 
 type CreatePurchaseInstalmentNoOcrDto struct {
@@ -34,6 +37,7 @@ type CreatePurchaseInstalmentNoOcrDto struct {
 	UnitPrice   float32 `json:"unitPrice"`
 	UnitName    string  `json:"unitName"`
 	StoreId     uint    `json:"storeId"`
+	Date        *int64  `json:"date"`
 }
 
 type CreatePurchaseInstalmentNoOcrWithUserDto struct {
@@ -51,4 +55,5 @@ type UpdatePurchaseInstalmentDto struct {
 	UnitPrice float32 `json:"unitPrice"`
 	UnitName  string  `json:"unitName"`
 	StoreId   uint    `json:"storeId"`
+	Date      *int64  `json:"date"`
 }

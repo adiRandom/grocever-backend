@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"lib/data/models"
 	"lib/data/models/product"
+	"time"
 )
 
 type PurchaseInstalment struct {
@@ -16,6 +17,7 @@ type PurchaseInstalment struct {
 	Price            float32
 	StoreId          uint
 	UnitType         string
+	Date             *time.Time
 }
 
 func NewPurchaseInstalment(
@@ -27,6 +29,7 @@ func NewPurchaseInstalment(
 	price float32,
 	storeId uint,
 	unitType string,
+	date *time.Time,
 ) *PurchaseInstalment {
 	return &PurchaseInstalment{
 		UserId:           userId,
@@ -37,6 +40,7 @@ func NewPurchaseInstalment(
 		Price:            price,
 		StoreId:          storeId,
 		UnitType:         unitType,
+		Date:             date,
 	}
 }
 
@@ -50,6 +54,7 @@ func (entity PurchaseInstalment) ToModel(store models.StoreMetadata) product.Pur
 		Price:      entity.Price,
 		Store:      store,
 		UnitType:   entity.UnitType,
+		Date:       entity.Date,
 	}
 }
 
@@ -63,6 +68,7 @@ func NewPurchaseInstalmentFromModel(model product.PurchaseInstalmentModel) *Purc
 		StoreId:          uint(model.Store.StoreId),
 		Price:            model.Price,
 		UnitType:         model.UnitType,
+		Date:             model.Date,
 	}
 
 	if model.Id != -1 {
