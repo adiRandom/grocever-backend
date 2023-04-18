@@ -252,11 +252,22 @@ func (s *ParseService) getUnitPrice(priceLine string) (float64, error) {
 	match = strings.ReplaceAll(match, ",", ".")
 	return strconv.ParseFloat(match, 32)
 }
+
 func (s *ParseService) getDateFormat(date string) string {
-	date = strings.ReplaceAll(date, "-", "/")
-	date = strings.ReplaceAll(date, ".", "/")
-	date = strings.ReplaceAll(date, " ", "/")
-	return date
+	separator := "/"
+	if strings.Contains(date, "-") {
+		separator = "-"
+	} else if strings.Contains(date, ".") {
+		separator = "."
+	}
+
+	year := "06"
+	// /02/01/2006 las 10 characters
+	if len(date) == 10 {
+		year = "2006"
+	}
+
+	return "02" + separator + "01" + separator + year
 }
 
 func (s *ParseService) getDate(tokens []string) *time.Time {
