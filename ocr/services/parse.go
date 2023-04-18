@@ -3,6 +3,7 @@ package services
 import (
 	libModels "lib/data/models"
 	"lib/data/models/product"
+	"lib/functional"
 	"lib/helpers"
 	"ocr/api/store"
 	"ocr/utils"
@@ -271,7 +272,8 @@ func (s *ParseService) getDateFormat(date string) string {
 }
 
 func (s *ParseService) getDate(tokens []string) *time.Time {
-	for _, token := range tokens {
+	reversedTokens := functional.Reverse(tokens)
+	for _, token := range reversedTokens {
 		if date := dateRegex.FindString(token); date != "" {
 			parsedDate, err := time.Parse(s.getDateFormat(date), date)
 			if err != nil {

@@ -119,3 +119,12 @@ func GroupByPointer[T any, S comparable](s []T, fn func(T) S) map[S][]*T {
 
 	return grouped
 }
+
+func Reverse[T any](s []T) []T {
+	reversed := make([]T, len(s))
+	for i, el := range s {
+		reversed[len(s)-1-i] = el
+	}
+
+	return reversed
+}
