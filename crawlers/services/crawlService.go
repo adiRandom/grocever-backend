@@ -7,7 +7,10 @@ import (
 	"lib/data/models"
 	"lib/data/models/crawl"
 	"lib/functional"
+	"time"
 )
+
+const timeout = 1 * time.Minute
 
 func getCrawler(store models.StoreMetadata) Crawler {
 	switch store.StoreId {
@@ -44,6 +47,7 @@ func crawlProductPages(srcs []crawl2.SourceDto, resCh chan crawl.ResultModel) {
 
 func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
 	resCh := make(chan crawl.ResultModel)
+	timeoutCh := time.NewTimer(timeout).C
 
 	filteredSrcs := functional.Filter(srcs, func(src crawl2.SourceDto) bool {
 		return src.Url != ""
@@ -52,10 +56,20 @@ func CrawlProductPages(srcs []crawl2.SourceDto) []crawl.ResultModel {
 	crawlProductPages(filteredSrcs, resCh)
 
 	var res []crawl.ResultModel
+	timeoutReached := false
+
 	for range filteredSrcs {
-		res = append(res, <-resCh)
-		//fmt.Printf("Crawled product page %d\n", len(res)-1)
-		fmt.Printf("Got result: %+v\n", res)
+		if timeoutReached {
+			break
+		}
+
+		select {
+		case <-timeoutCh:
+			timeoutReached = true
+		case r := <-resCh:
+			res = append(res, r)
+			fmt.Printf("Got result: %+v\n", res)
+		}
 	}
 
 	return functional.Filter(res, func(r crawl.ResultModel) bool {
