@@ -9,7 +9,11 @@ import (
 	"log"
 	"productProcessing/data/database/entities"
 	"productProcessing/services/api/nlp"
+	"regexp"
+	"strings"
 )
+
+var productNameUnitRegex = regexp.MustCompile(` *\d*\.?\d((kg)|(l)|(g)|(buc))`)
 
 type ProductRepository struct {
 	repositories.DbRepository[entities.ProductEntity]
@@ -128,6 +132,12 @@ func (r *ProductRepository) createProductAndCrawlLink(
 	return entity, nil
 }
 
+func (r *ProductRepository) processProductNameForSimilarity(productName string) string {
+	lower := strings.ToLower(productName)
+	// Remove the unit from the product name
+	return productNameUnitRegex.ReplaceAllString(lower, "")
+}
+
 func (r *ProductRepository) linkProductAndOcrProduct(
 	ocrProductName string,
 	product entities.ProductEntity,
@@ -152,7 +162,7 @@ func (r *ProductRepository) linkProductAndOcrProduct(
 		return err
 	}
 
-	// Link this ocr product to the eixsting ocr product
+	// Link this ocr product to the existing ocr product
 	// Then link the existing ocr product to this ocr product
 	for _, existingOcrProduct := range existingOcrProducts {
 		if existingOcrProduct.OcrProductName != ocrProductName {
@@ -167,7 +177,10 @@ func (r *ProductRepository) linkProductAndOcrProduct(
 		}
 	}
 
-	similarity := r.nlpClient.GetSimilarity(ocrProductName, product.Name)
+	similarity := r.nlpClient.GetSimilarity(
+		strings.ToLower(ocrProductName),
+		r.processProductNameForSimilarity(product.Name),
+	)
 	similarityEntity := entities.NewProductOcrProductSimilarityEntity(ocrProduct.OcrProductName, int(product.ID), similarity)
 	err = r.Db.Create(similarityEntity).Error
 
