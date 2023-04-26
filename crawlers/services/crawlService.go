@@ -26,6 +26,14 @@ func getCrawler(store models.StoreMetadata) Crawler {
 		{
 			return &CoraCrawler{store}
 		}
+	case constants.CarrefourStoreId:
+		{
+			return &CarrefourCrawler{store}
+		}
+	case constants.SezamoStoreId:
+		{
+			return &SezamoCrawler{store}
+		}
 	}
 	return nil
 }
